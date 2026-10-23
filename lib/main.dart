@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: SparkleenApp()));
+  await initializeDateFormatting('id_ID');
+  runApp(
+    ProviderScope(
+      retry: (retryCount, error) => null,
+      child: const SparkleenApp(),
+    ),
+  );
 }
 
 class SparkleenApp extends ConsumerWidget {
