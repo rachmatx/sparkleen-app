@@ -9,16 +9,16 @@ void main() {
   runApp(const ProviderScope(child: SparkleenApp()));
 }
 
-class SparkleenApp extends StatelessWidget {
+class SparkleenApp extends ConsumerWidget {
   const SparkleenApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'Sparkleen',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
-      routerConfig: appRouter,
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }
