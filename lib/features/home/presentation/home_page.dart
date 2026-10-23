@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/async_value_view.dart';
@@ -27,7 +26,7 @@ class HomePage extends ConsumerWidget {
         ref.read(outletProvider.future),
         ref.read(pesananAktifProvider.future),
       ]);
-    } on ApiException {
+    } on Object {
       // Kegagalan ditampilkan per bagian oleh AsyncValueView.
     }
   }
@@ -86,7 +85,7 @@ class HomePage extends ConsumerWidget {
                 ),
                 builder: (context, transaksi) => _ActiveOrderCard(
                   transaksi: transaksi!,
-                  onTap: () => context.go('/pesanan/${transaksi.id}'),
+                  onTap: () => context.push('/pesanan/${transaksi.id}'),
                 ),
               ),
               const SizedBox(height: 24),
