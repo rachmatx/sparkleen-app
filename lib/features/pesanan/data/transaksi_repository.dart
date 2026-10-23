@@ -1,4 +1,5 @@
 import '../../../core/api/api_client.dart';
+import '../../nota/data/nota_data.dart';
 import 'transaksi_detail.dart';
 import 'transaksi_ringkas.dart';
 
@@ -52,5 +53,10 @@ class TransaksiRepository {
   Future<TransaksiDetail> detail(int id) async {
     final response = await _client.get('/transaksi/$id');
     return TransaksiDetail.fromJson(response.asMap);
+  }
+
+  Future<NotaData> nota(int id) async {
+    final response = await _client.get('/transaksi/$id/nota');
+    return NotaData.fromJson(response.asMap);
   }
 }

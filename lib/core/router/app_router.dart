@@ -7,6 +7,7 @@ import '../../features/auth/presentation/activate_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
 import '../../features/home/presentation/home_page.dart';
+import '../../features/nota/presentation/nota_page.dart';
 import '../../features/pesanan/presentation/detail_pesanan_page.dart';
 import '../../features/pesanan/presentation/pesanan_page.dart';
 import '../../features/profil/presentation/profil_page.dart';
@@ -50,6 +51,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/pesanan/:id',
         builder: (context, state) => DetailPesananPage(
+          id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+        ),
+      ),
+      GoRoute(
+        path: '/pesanan/:id/nota',
+        builder: (context, state) => NotaPage(
           id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
         ),
       ),

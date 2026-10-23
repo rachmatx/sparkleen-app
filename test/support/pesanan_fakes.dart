@@ -1,3 +1,4 @@
+import 'package:sparkleen_mobile/features/nota/data/nota_data.dart';
 import 'package:sparkleen_mobile/features/pesanan/data/transaksi_detail.dart';
 import 'package:sparkleen_mobile/features/pesanan/data/transaksi_repository.dart';
 import 'package:sparkleen_mobile/features/pesanan/data/transaksi_ringkas.dart';
@@ -31,9 +32,12 @@ class FakeTransaksiRepository implements TransaksiRepository {
   final int lastPage;
   Object? error;
   Object? detailError;
+  Object? notaError;
   final Map<int, TransaksiDetail> detailResults = {};
+  final Map<int, NotaData> notaResults = {};
   final List<({String status, int page})> calls = [];
   final List<int> detailCalls = [];
+  final List<int> notaCalls = [];
 
   @override
   Future<TransaksiListResult> list({
@@ -64,5 +68,17 @@ class FakeTransaksiRepository implements TransaksiRepository {
       throw StateError('Detail transaksi $id belum disiapkan di fake.');
     }
     return detail;
+  }
+
+  @override
+  Future<NotaData> nota(int id) async {
+    notaCalls.add(id);
+    final failure = notaError;
+    if (failure != null) throw failure;
+    final nota = notaResults[id];
+    if (nota == null) {
+      throw StateError('Nota transaksi $id belum disiapkan di fake.');
+    }
+    return nota;
   }
 }
