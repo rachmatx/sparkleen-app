@@ -7,6 +7,7 @@ import '../../features/auth/presentation/activate_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
 import '../../features/home/presentation/home_page.dart';
+import '../../features/pesanan/presentation/detail_pesanan_page.dart';
 import '../../features/pesanan/presentation/pesanan_page.dart';
 import '../../features/profil/presentation/profil_page.dart';
 import '../../features/splash/splash_page.dart';
@@ -45,6 +46,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/activate',
         builder: (context, state) => const ActivatePage(),
+      ),
+      GoRoute(
+        path: '/pesanan/:id',
+        builder: (context, state) => DetailPesananPage(
+          id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

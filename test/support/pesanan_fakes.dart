@@ -1,3 +1,4 @@
+import 'package:sparkleen_mobile/features/pesanan/data/transaksi_detail.dart';
 import 'package:sparkleen_mobile/features/pesanan/data/transaksi_repository.dart';
 import 'package:sparkleen_mobile/features/pesanan/data/transaksi_ringkas.dart';
 
@@ -29,7 +30,10 @@ class FakeTransaksiRepository implements TransaksiRepository {
   final Map<String, List<TransaksiRingkas>> results;
   final int lastPage;
   Object? error;
+  Object? detailError;
+  final Map<int, TransaksiDetail> detailResults = {};
   final List<({String status, int page})> calls = [];
+  final List<int> detailCalls = [];
 
   @override
   Future<TransaksiListResult> list({
@@ -48,5 +52,17 @@ class FakeTransaksiRepository implements TransaksiRepository {
       lastPage: lastPage,
       total: items.length,
     );
+  }
+
+  @override
+  Future<TransaksiDetail> detail(int id) async {
+    detailCalls.add(id);
+    final failure = detailError;
+    if (failure != null) throw failure;
+    final detail = detailResults[id];
+    if (detail == null) {
+      throw StateError('Detail transaksi $id belum disiapkan di fake.');
+    }
+    return detail;
   }
 }

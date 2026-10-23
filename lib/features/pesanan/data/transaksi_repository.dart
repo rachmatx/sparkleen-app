@@ -1,4 +1,5 @@
 import '../../../core/api/api_client.dart';
+import 'transaksi_detail.dart';
 import 'transaksi_ringkas.dart';
 
 class TransaksiListResult {
@@ -46,5 +47,10 @@ class TransaksiRepository {
       lastPage: (meta['last_page'] as num?)?.toInt() ?? page,
       total: (meta['total'] as num?)?.toInt() ?? items.length,
     );
+  }
+
+  Future<TransaksiDetail> detail(int id) async {
+    final response = await _client.get('/transaksi/$id');
+    return TransaksiDetail.fromJson(response.asMap);
   }
 }
