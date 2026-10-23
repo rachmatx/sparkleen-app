@@ -1,0 +1,246 @@
+{
+  "info": {
+    "name": "Sparkleen Mobile API v1",
+    "description": "REST API aplikasi mobile pelanggan Sparkleen Laundry.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_transaksi",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Budi Santoso\",\n  \"no_telp\": \"081298765432\",\n  \"alamat\": \"Jl. Merdeka No. 10\",\n  \"pin\": \"654321\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.token) { pm.collectionVariables.set('token', json.data.token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Activate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"no_telp\": \"081298765432\",\n  \"no_nota\": \"LAU/20261021/0001\",\n  \"pin\": \"654321\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/activate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "activate"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.token) { pm.collectionVariables.set('token', json.data.token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"no_telp\": \"081298765432\",\n  \"pin\": \"654321\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.token) { pm.collectionVariables.set('token', json.data.token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profil",
+      "item": [
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Me",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Budi Santoso\",\n  \"alamat\": \"Jl. Merdeka No. 11\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Katalog",
+      "item": [
+        {
+          "name": "Layanan",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/layanan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "layanan"]
+            }
+          }
+        },
+        {
+          "name": "Outlet",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/outlet",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "outlet"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transaksi",
+      "item": [
+        {
+          "name": "List Transaksi",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/transaksi?status=semua&page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "transaksi"],
+              "query": [
+                { "key": "status", "value": "semua" },
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detail Transaksi",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "transaksi", "{{id_transaksi}}"]
+            }
+          }
+        },
+        {
+          "name": "Nota",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/nota",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "nota"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
