@@ -6,8 +6,11 @@ import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/activate_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
+import '../../features/home/presentation/home_page.dart';
+import '../../features/pesanan/presentation/pesanan_page.dart';
+import '../../features/profil/presentation/profil_page.dart';
 import '../../features/splash/splash_page.dart';
-import 'placeholder_page.dart';
+import '../widgets/app_shell.dart';
 
 const _authRoutes = {'/login', '/register', '/activate'};
 
@@ -43,12 +46,35 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/activate',
         builder: (context, state) => const ActivatePage(),
       ),
-      GoRoute(
-        path: '/beranda',
-        builder: (context, state) => const PlaceholderPage(
-          title: 'Beranda',
-          icon: Icons.home_rounded,
-        ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            AppShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/beranda',
+                builder: (context, state) => const HomePage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/pesanan',
+                builder: (context, state) => const PesananPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profil',
+                builder: (context, state) => const ProfilPage(),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
