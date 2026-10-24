@@ -1412,7 +1412,13 @@ final class PermintaanFlowTest extends CIUnitTestCase
         $result->assertStatus(409);
         $this->assertStringContainsString('ACTIVE_REQUEST_EXISTS', (string) $result->getJSON());
 
-        $this->assertSame(1, db_connect('tests')->table('tb_permintaan_pesanan')->countAllResults());
+        // Discoped ke pemilik permintaan, bukan countAllResults() global: DatabaseTestTrait
+        // TIDAK melakukan rollback transaksi per-test (tearDown hanya membersihkan baris
+        // hasInDatabase()), jadi baris test sebelumnya bisa bocor dan membuat assert 1 jadi 2.
+        // Tiap createPelanggan() unik (phone counter), jadi hitung per id_pelanggan deterministik
+        // dan `migrateOnce` boleh tetap true.
+        $this->assertSame(1, db_connect('tests')->table('tb_permintaan_pesanan')
+            ->where('id_pelanggan', $p['id_pelanggan'])->countAllResults());
     }
 
     public function testValidasiMenolakSlotSalahDanBeratNol(): void
