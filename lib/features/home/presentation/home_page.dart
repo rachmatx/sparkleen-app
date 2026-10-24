@@ -529,7 +529,7 @@ class _PoinCard extends StatelessWidget {
               Text('Total transaksi', style: whiteMuted),
               const SizedBox(height: 2),
               Text(
-                '${pelanggan?.totalTransaksi ?? 0}x',
+                formatRupiah(pelanggan?.totalTransaksi ?? 0),
                 style: textTheme.titleMedium?.copyWith(color: Colors.white),
               ),
             ],

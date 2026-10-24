@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/data/pelanggan.dart';
@@ -60,7 +61,7 @@ class ProfilPage extends ConsumerWidget {
                 child: _StatCard(
                   icon: Icons.receipt_long_outlined,
                   label: 'Total transaksi',
-                  value: '${pelanggan.totalTransaksi}',
+                  value: formatRupiah(pelanggan.totalTransaksi),
                 ),
               ),
             ],

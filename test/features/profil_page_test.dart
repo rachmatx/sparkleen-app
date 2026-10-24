@@ -34,6 +34,7 @@ void main() {
     expect(find.text('PLG012'), findsOneWidget);
     expect(find.text('6281298765432'), findsOneWidget);
     expect(find.text('15'), findsOneWidget);
+    expect(find.text('Rp 4'), findsOneWidget);
 
     await tester.tap(find.text('Keluar Akun'));
     await tester.pumpAndSettle();
