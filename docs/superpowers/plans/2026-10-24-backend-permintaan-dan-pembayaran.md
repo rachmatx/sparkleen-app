@@ -105,6 +105,7 @@ bertambah*, bukan *nol*. Kalau angka baseline berbeda saat lu mulai, pakai angka
 **Files:**
 - Create: `app/Database/Migrations/2026-10-24-000001_CreatePermintaanPesananTable.php`
 - Create: `app/Models/MPermintaanPesanan.php`
+- Modify: `tests/_support/Api/ApiTestTrait.php` (helper `createPermintaan` + `createLayanan`, Step 5)
 - Test: `tests/database/PermintaanPesananModelTest.php`
 
 **Interfaces:**
@@ -1959,9 +1960,22 @@ Di `app/Controllers/Api/V1/BaseApiController.php`, tambah method berikut (di baw
     }
 ```
 
-Di `app/Controllers/Api/V1/TransaksiController.php`, hapus method privat
-`findOwnTransaction()` (baris ±100-110) — ia sekarang diwarisi. Helper `payload()` privat di
-`AuthController` dibiarkan; tidak digabung di task ini supaya perubahan tetap kecil.
+Sekarang hapus **semua** salinan privat `payload()` di subclass — meninggalkan salah satunya
+adalah fatal error PHP, bukan sekadar duplikasi: method `private` di child yang menimpa method
+`protected` di parent membuat class itu tidak bisa dimuat sama sekali
+(`Access level to C::payload() must be protected (as in class P) or weaker`), dan itu meledak
+saat route-nya disentuh, bukan saat test ditulis.
+
+1. `app/Controllers/Api/V1/AuthController.php` — hapus `private function payload(): array`
+   (sekarang di baris ±238) dan `use` yang jadi tidak terpakai.
+2. `app/Controllers/Api/V1/PermintaanController.php` — hapus `private function payload(): array`
+   yang Task 4 tulis.
+3. `app/Controllers/Api/V1/TransaksiController.php` — hapus method privat
+   `findOwnTransaction()` (baris ±100-110), ia sekarang diwarisi.
+
+Setelah menghapus, panggil `php -l` di ketiga file dan jalan
+`php vendor/bin/phpunit --filter Auth` untuk memastikan `AuthController` masih hidup —
+method itu dipakai `register()`, `login()`, dan `aktivasi()`.
 
 - [ ] **Step 4: Tambah `sisaTagihan()` di MApiTransaksi**
 
@@ -1997,6 +2011,15 @@ Lalu di `TransaksiController::show()`, tambahkan satu field ke array response, s
 ```
 
 `$model` di situ sudah tersedia (`$model = new MApiTransaksi()` di method yang sama).
+
+Catatan yang sengaja ditinggal: `TransaksiService::hitungSisaTagihan()` (baris ±396) sudah
+melakukan aritmetika yang sama. Dua salinan ini **dipertahankan sadar**, bukan kelalaian —
+`MApiTransaksi` adalah lapisan baca murni (dipakai `PembayaranController` dan `show()`, dan
+merupakan kontrak Task 6), sedangkan `TransaksiService` adalah kelas tulis berat tempat jalur
+kasir memanggil Node API. Menyatukannya berarti controller API mobile ikut menarik
+`TransaksiService`, yang konstruksinya menyeret model transaksi + pembayaran + jalur HTTP.
+Kalau reviewer nanti menandai duplikasi ini, itu sudah dijawab di sini — bukan untuk diubah
+di task ini.
 
 - [ ] **Step 5: Tulis controller pembayaran**
 
