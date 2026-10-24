@@ -100,6 +100,20 @@ lain, jadi suite lama memang tidak hijau. **Semua step "Expected: OK" di plan in
 test yang task itu tulis sendiri**; untuk suite lama aturannya adalah *jumlah failure tidak
 bertambah*, bukan *nol*. Kalau angka baseline berbeda saat lu mulai, pakai angka yang lu catat.
 
+Baseline suite penuh yang dicatat tepat sebelum Task 1 (tree = branch `feature/mobile-api` dengan
+13 file WIP milik pekerjaan lain masih belum di-commit):
+
+```
+Tests: 118, Assertions: 288, Failures: 17.
+```
+
+Rinciannya: `Tests\Unit\Models\TransaksiModelTest` 1, `Tests\Feature\AuthFeatureTest` 5,
+`Tests\Feature\RateLimitTest` 4, `Tests\Feature\TransaksiFeatureTest` 7. Yang penting:
+**nol error dan nol failure di `tests/Feature/Api/`** — semua test kontrak API mobile yang
+sudah ada masih hijau, jadi gate task-task di plan ini (`--filter` ke test API) tidak terganggu
+kekacauan suite lama. Contoh kegagalannya juga murni web (`Redirect URL '…/login' does not match
+'…/'`), akibat WIP di `app/Controllers/Auth.php`, bukan akibat kode API.
+
 ## Task 1: Tabel `tb_permintaan_pesanan` + model
 
 **Files:**
