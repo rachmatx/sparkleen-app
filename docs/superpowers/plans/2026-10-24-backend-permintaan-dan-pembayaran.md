@@ -2464,6 +2464,25 @@ git commit -m "feat(api): intent pembayaran dari sisi pelanggan"
 - Produces: rute web `permintaan`, `permintaan/konfirmasi/(:num)`, `permintaan/prosesKonfirmasi`,
   `permintaan/prosesTolak`, dan satu baris transaksi `tb_transaksi` asli per konfirmasi.
 
+> **Catatan eksekusi (Task 7 selesai; commit `52eeabe` + fix `8b67765`).** Tiga cacat teks plan ditemukan
+> saat review, dua sudah dibetulkan di kode:
+> 1. **View fatal (Critical).** Baris `<input ... value="<?= esc($this->request->getPost('berat_actual')) ?>">`
+>    di `konfirmasi.php` **tidak jalan**: view CI4 di-include dengan `$this` = `CodeIgniter\View\View` yang tak
+>    punya properti `$request` → `ErrorException`, layar konfirmasi 500. Pakai `<?= old('berat_actual') ?>`
+>    (sudah ter-escape). Jangan menulis `$this->request` di dalam view; pola view repo ini `service('request')`
+>    bila perlu membaca request.
+> 2. **`tb_transaksi` butuh master refs saat test terisolasi.** Test yang mengonfirmasi (menyisipkan
+>    `tb_transaksi` asli) WAJIB memastikan baris master status terisi — di `--filter` isolasi,
+>    `laundry_db_test` hasil `migrate` punya `tb_master_status_transaksi`/`tb_master_status_pembayaran` KOSONG
+>    dan FK `tb_transaksi` menolaknya (produksi diisi `MasterSeeder`). Pakai helper idempoten
+>    `ensureMasterTransactionRefs(db_connect('tests'))` di `setUp` (sudah ada di `ApiTestTrait`).
+> 3. **Layar konfirmasi harus JOIN layanan.** `MPermintaanPesanan::find()` hanya mengembalikan baris mentah,
+>    jadi view tak bisa menampilkan nama layanan + `harga_per_kg` (kasir menyetik `berat_actual` buta harga).
+>    `konfirmasi()` wajib query join `tb_layanan` (pola inline seperti `daftar()`), bukan `find()`.
+> 4. Gate `assertSession`: `TestResponse::assertRedirect()` bertipe `:void` dan tak ada `assertSession()`;
+>    pakai `assertSessionHas('error')`. Test render layar (`call('get','permintaan/konfirmasi/{id}')`) adalah
+>    penjaga C1 — sertakan.
+
 - [ ] **Step 1: Tulis test gagal**
 
 Buat `tests/Feature/PermintaanKonfirmasiTest.php`:
