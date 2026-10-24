@@ -1942,6 +1942,11 @@ final class PembayaranFlowTest extends CIUnitTestCase
         putenv('PAYMENT_API_KEY=key-uji');
 
         $this->transport = new FakePaymentTransport();
+        // Default FakePaymentTransport::$expiredAt hardcoded (2026-10-24) sudah lewat per
+        // hari ini; tanpa override setiap intent yang dibuat test akan dibaca EXPIRED, bukan
+        // PENDING, dan test idempoten/conflict jadi salah. testReadKedaluwarsa menimpa ini
+        // ke masa lalu secara eksplisit.
+        $this->transport->expiredAt = date('c', strtotime('+15 minutes'));
         ConfigServices::injectMock('paymentApi', new PaymentApiService($this->transport));
 
         $p     = $this->createPelanggan();
@@ -2011,6 +2016,14 @@ final class PembayaranFlowTest extends CIUnitTestCase
 
     public function testTransaksiLunasTidakBisaDibayarLagi(): void
     {
+        // LUNAS yang sebenarnya (per Webhook::payment()) SELALU menulis baris tb_pembayaran
+        // penuh + status. Guard controller memakai sisaTagihan() (= grand_total - SUM(nominal_bayar)),
+        // jadi simulasi harus menyisipkan pembayaran penuh supaya sisa jadi 0; hanya menandai
+        // id_status_pembayaran=1 tanpa baris pembayaran menyisakan sisa 21000 dan guard tidak fires.
+        db_connect('tests')->table('tb_pembayaran')->insert([
+            'id_transaksi' => $this->idTrx, 'tgl_bayar' => date('Y-m-d H:i:s'),
+            'nominal_bayar' => 21000, 'sisa_tagihan' => 0, 'id_metode_pembayaran' => 2,
+        ]);
         db_connect('tests')->table('tb_transaksi')->where('id_transaksi', $this->idTrx)
             ->update(['id_status_pembayaran' => 1]);
 
@@ -2228,8 +2241,13 @@ class PembayaranController extends BaseApiController
 
         $aktif = $this->bacaIntent($transaksi);
 
-        if ($aktif !== null) {
-            if ($aktif['metode'] === $metode && $aktif['status'] === 'PENDING') {
+        // bacaIntent() TIDAK PERNAH mengembalikan null (show()/read butuh objek NONE penuh),
+        // jadi guard `if ($aktif !== null)` yang lama salah: permintaan fresh (status NONE)
+        // ikut masuk blok itu, tidak match PENDING, lalu kena CONFLICT 409 alih-alih membuat
+        // intent → test happy-path 201 gagal. Yang memblokir hanyalah intent PENDING aktif;
+        // NONE dan EXPIRED lanjut membuat intent baru.
+        if ($aktif['status'] === 'PENDING') {
+            if ($aktif['metode'] === $metode) {
                 return $this->ok($aktif);
             }
 
