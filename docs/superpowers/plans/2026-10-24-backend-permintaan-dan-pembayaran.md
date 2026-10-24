@@ -607,8 +607,15 @@ final class PaymentApiServiceTest extends CIUnitTestCase
         $transport = new FakePaymentTransport();
         $service   = new PaymentApiService($transport);
 
-        $this->expectException(PaymentApiException::class);
-        $service->buatIntent('LAU/1', 1000.0, 'CASH');
+        // Jangan pakai expectException() di sini: PHPUnit menghentikan badan test begitu
+        // exception yang diharapkan terlempar, jadi assertion callCount di bawahnya tidak
+        // pernah jalan dan jaminan "ditolak SEBELUM bertanya ke Node" tidak teruji.
+        try {
+            $service->buatIntent('LAU/1', 1000.0, 'CASH');
+            $this->fail('PaymentApiException diharapkan untuk metode CASH');
+        } catch (PaymentApiException $e) {
+            // harapan terpenuhi — bukti sebenarnya ada di callCount berikutnya
+        }
 
         $this->assertSame(0, $transport->callCount);
     }
