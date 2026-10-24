@@ -93,15 +93,15 @@ Jalankan sekali di awal, catat angkanya, dan pakai angka itu sebagai pembanding 
 php vendor/bin/phpunit 2>&1 | tail -6
 ```
 
-Sudah terverifikasi di mesin ini (2026-10-24): `--filter TransaksiFeatureTest` menghasilkan
-`Tests: 10, Assertions: 23, Failures: 7`, contoh gagalnya `Key 'kembalian' is not in the current
-$_SESSION` di `tests/Feature/TransaksiFeatureTest.php:283`. Repo backend sedang dipakai pekerjaan
-lain, jadi suite lama memang tidak hijau. **Semua step "Expected: OK" di plan ini berlaku untuk
-test yang task itu tulis sendiri**; untuk suite lama aturannya adalah *jumlah failure tidak
-bertambah*, bukan *nol*. Kalau angka baseline berbeda saat lu mulai, pakai angka yang lu catat.
+**Expected: baseline 17 failure**, bukan nol. Repo backend dipakai pekerjaan lain, jadi suite lama
+memang tidak hijau — contoh gagalnya `Key 'kembalian' is not in the current $_SESSION` di
+`tests/Feature/TransaksiFeatureTest.php:283` dan `Redirect URL '…/login' does not match '…/'`.
+**Semua step "Expected: OK" di plan ini berlaku untuk test yang task itu tulis sendiri**; untuk suite
+lama aturannya *jumlah failure tidak bertambah*. Kalau angka baseline berbeda saat lu mulai, pakai
+angka yang lu catat.
 
 Baseline suite penuh yang dicatat tepat sebelum Task 1 (tree = branch `feature/mobile-api` dengan
-13 file WIP milik pekerjaan lain masih belum di-commit):
+13 file WIP milik pekerjaan lain, yang kemudian sudah di-commit sebagai `8ea1221`):
 
 ```
 Tests: 118, Assertions: 288, Failures: 17.
@@ -111,8 +111,38 @@ Rinciannya: `Tests\Unit\Models\TransaksiModelTest` 1, `Tests\Feature\AuthFeature
 `Tests\Feature\RateLimitTest` 4, `Tests\Feature\TransaksiFeatureTest` 7. Yang penting:
 **nol error dan nol failure di `tests/Feature/Api/`** — semua test kontrak API mobile yang
 sudah ada masih hijau, jadi gate task-task di plan ini (`--filter` ke test API) tidak terganggu
-kekacauan suite lama. Contoh kegagalannya juga murni web (`Redirect URL '…/login' does not match
-'…/'`), akibat WIP di `app/Controllers/Auth.php`, bukan akibat kode API.
+kekacauan suite lama.
+
+Setelah Task 1: `Tests: 130, Assertions: 340, Failures: 17` — 12 test baru hijau, failure lama
+tidak bertambah.
+
+### Fakta CI4 yang sudah dibuktikan Task 1 (jangan diulang kesalahannya)
+
+Tiga potong kode di brief Task 1 tidak bisa jalan dan sudah dibetulkan di implementasi. Kalau
+task berikutnya menulis pola yang sama, pakai koreksi ini:
+
+- `countResults()` **tidak ada**. Method yang benar `countAllResults()` — sudah dipakai di
+  `MPermintaanPesanan::countMenunggu()`.
+- Rantai klaim atomik tidak boleh `$this->update($data)` dengan array sebagai argumen pertama:
+  `BaseModel::update($id, $data)` membaca argumen pertama sebagai `$id`, lalu `doUpdate()`
+  melempar `DataException: There is no data to update`. Bentuk yang jalan:
+  `$this->set($data)->where(...)->update()` (`Model::__call` meneruskan `set`/`where` ke builder
+  dan mengembalikan `$this`).
+- `baseSelect()` **tidak** memasang `orderBy`. Kalau baseSelect ikut mengurutkan, hasil
+  `findForPelangganByStatus()` dan `paginateForPelanggan()` mengandung `ORDER BY` dobel.
+- Sudah terbukti aman: `BaseBuilder::update()` memanggil `resetWrite()`, jadi `QBWhere` tidak
+  bocor antar panggilan berurutan pada satu instance model (penting untuk
+  `claim → assignKasir → finalize`). `foundRows` `false` di kedua group DB, jadi
+  `$this->db->affectedRows()` benar-benar menghitung baris yang berubah.
+
+Dua hal yang sengaja ditinggal longgar oleh Task 1 dan **wajib** ditangani task berikutnya:
+`assignKasir()` mengembalikan `true` bahkan untuk 0 baris (guard sebenarnya predikat `finalize()`),
+dan `paginateForPelanggan()` tidak men-clamp `page < 1` → OFFSET negatif = error MySQL. Controller
+(Task 5) yang memvalidasi `page`/`perPage`, atau clamp di model sebelum dipanggil controller lain.
+
+Satu utang lingkungan: migrasi baru sudah jalan di `laundry_db_test` saja. DB dev `laundry_db`
+belum di-migrate, jadi sebelum verifikasi manual Task 7/8 harus `php spark migrate` lebih dulu
+(sengaja tidak dilakukan otomatis karena DB dev dipakai bersama).
 
 ## Task 1: Tabel `tb_permintaan_pesanan` + model
 
@@ -296,7 +326,7 @@ class MPermintaanPesanan extends Model
     {
         return $this->where('id_pelanggan', $idPelanggan)
             ->where('status', self::MENUNGGU)
-            ->countResults();
+            ->countAllResults();
     }
 
     /**
@@ -2485,7 +2515,7 @@ class Permintaan extends BaseController
         $data = [
             'permintaan'    => $rows->orderBy('p.id_permintaan', 'DESC')->limit(200)->get()->getResultArray(),
             'status'        => $filter,
-            'menungguCount' => $model->where('status', MPermintaanPesanan::MENUNGGU)->countResults(),
+            'menungguCount' => $model->where('status', MPermintaanPesanan::MENUNGGU)->countAllResults(),
             'activeMenu'    => 'permintaan',
         ];
 
@@ -2810,7 +2840,7 @@ $routes->group('permintaan', ['filter' => 'role:admin,kasir'], static function (
 
 Di `app/Views/backend/template/sidebar.php`, salin persis blok `<li class="nav-item">` milik
 `daftar_transaksi` (baris 43-48) lalu ganti empat isinya. Jangan tambahkan badge jumlah menunggu:
-sidebar tidak punya akses model, dan menaruh `\App\Models\...::where(...)->countResults()` di view
+sidebar tidak punya akses model, dan menaruh `\App\Models\...::where(...)->countAllResults()` di view
 adalah query tersembunyi di setiap render halaman backend.
 
 ```php
