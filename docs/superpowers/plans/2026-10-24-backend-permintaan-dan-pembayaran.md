@@ -1158,7 +1158,7 @@ blok metode 2/3 diganti seluruhnya menjadi:
 
                 return [
                     'success' => false,
-                    'message' => 'Payment API tidak dapat dihubungi. Pembayaran TIDAK dicatat; '
+                    'message' => self::pesanPaymentApi($e) . ' Pembayaran TIDAK dicatat; '
                         . 'silakan coba lagi atau gunakan metode Cash.',
                 ];
             }
@@ -1221,6 +1221,88 @@ perbaiki sebelum commit.
 git add "app/Services/TransaksiService.php" "tests/Feature/TransaksiPembayaranApiTest.php"
 git commit -m "refactor(api): jalur kasir memakai payment service terpusat"
 ```
+
+---
+
+### Koreksi hasil review Task 3 (fix round 1 — sudah diputuskan controller, jangan didebat ulang di task berikutnya)
+
+Task 3 ter-review dua kali dan keduanya **cacat teks brief**, bukan cacat implementer. Kontrak task
+ini adalah "tanpa perubahan perilaku", dan dua hal di bawah melanggar kontrak itu:
+
+1. **Tiga pesan failure operator jadi satu.** Kode lama membedakan
+   `Payment API belum dikonfigurasi…` (env URL/key kosong), `Payment API menolak permintaan pembayaran…`
+   (API merespons tapi menolak), dan `Payment API tidak dapat dihubungi…` (transport mati).
+   Snippet brief hanya punya satu pesan. Karena kontraknya tanpa perubahan perilaku, pemisahan itu
+   **wajib** dipulihkan. Jangan pakai pencocokan `strpos($e->getMessage(), ...)` — rapuh dan
+   pesan tolakan bisa berisi teks mentah dari hulu. Bentuk yang disetujui: `PaymentApiException`
+   membawa kode alasan.
+
+   ```php
+   // app/Services/PaymentApiException.php
+   class PaymentApiException extends \RuntimeException
+   {
+       public const MISCONFIG  = 1;  // PAYMENT_API_URL / PAYMENT_API_KEY belum diset
+       public const REJECTED   = 2;  // hulu membalas success !== true
+       public const UNREACHABLE = 3; // transport melempar
+   }
+   ```
+
+   `PaymentApiService` melempar dengan kode yang sesuai pada keempat titik lemparnya
+   (`url()`/`key()` → `MISCONFIG`, `success !== true` dan `transaction_id` kosong → `REJECTED`,
+   `catch (\RuntimeException)` di sekitar transport → `UNREACHABLE`; validasi metode/nominal boleh
+   tetap `REJECTED` karena sama-sama "permintaan ditolak sebelum sempat keluar").
+   Di `TransaksiService`, satu helper privat memetakan kode ke teks lama yang persis:
+
+   ```php
+    private static function pesanPaymentApi(PaymentApiException $e): string
+    {
+        return match ($e->getCode()) {
+            PaymentApiException::MISCONFIG   => 'Payment API belum dikonfigurasi.',
+            PaymentApiException::UNREACHABLE => 'Payment API tidak dapat dihubungi.',
+            default                          => 'Payment API menolak permintaan pembayaran.',
+        };
+    }
+   ```
+
+   Ini **aditif** terhadap surface Task 2 — signature `buatIntent`/`batalkanIntent`/`idMetode`
+   tidak berubah — dan Task 6 ikut diuntungkan: ia bisa memetakan `MISCONFIG` ke 500
+   `PAYMENT_API_NOT_CONFIGURED` dan `UNREACHABLE` ke 502 `PAYMENT_API_UNAVAILABLE` tanpa membaca
+   teks pesan.
+
+2. **Persistensi sesudah intent dibuat tidak lagi terlindungi.** `catch` dipersempit ke
+   `PaymentApiException` (benar — yang lama menelan `\Throwable` dan menyamarkan bug sebagai
+   "koneksinya gagal"), tapi `update()` dipindah keluar dari `try`. Kalau `update()` melempar
+   (DB error), request jadi 500 **dan** intent Node yang barusan dibuat tidak dibatalkan,
+   meninggalkan pembayaran PENDING yatim di sisi pembayar. Bentuk yang disetujui:
+
+   ```php
+            try {
+                $saved = $this->transaksiModel->update($id_transaksi, [ ... ]);
+            } catch (\Throwable $e) {
+                log_message('error', 'Gagal menyimpan payment_ref: ' . $e->getMessage());
+                service('paymentApi')->batalkanIntent((string) $intent['transaction_id']);
+
+                return [
+                    'success' => false,
+                    'message' => 'Gagal menyimpan data pembayaran. Pembayaran TIDAK dicatat; '
+                        . 'silakan coba lagi atau gunakan metode Cash.',
+                ];
+            }
+   ```
+
+   `batalkanIntent()` sudah best-effort (menelan `Throwable` dan hanya me-log pesan), jadi aman
+   dipanggil dari jalur error. Note: `update()` yang melempar tidak bisa dipaksa lewat API model
+   publik, jadi cukup guard-nya ada; test yang bisa ditulis adalah cabang `! $saved`.
+
+3. Minor sekalian dibereskan: `use App\Services\PaymentApiException;` dan
+   `use App\Services\PaymentApiService;` di `TransaksiService.php` redundan (file itu sendiri
+   berada di namespace `App\Services`) — hapus.
+
+**Diputus untuk TIDAK dikerjakan di Task 3:** `Transaksi::batalAPI()` (baris ±585-620) masih
+membangun panggilan cancel-nya sendiri dengan curl mentah. Memindahkannya ke `batalkanIntent()`
+**mengubah perilaku** — jalur lama memblokir penghapusan `payment_ref` kalau cancel gagal, sedangkan
+`batalkanIntent()` menelan kegagalan. Reviewer sudah mengonfirmasi ini di luar Files list task ini.
+Kalau nanti mau dirapikan, itu task tersendiri dengan kontrak perilakunya sendiri.
 
 ---
 
