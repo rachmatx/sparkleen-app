@@ -29,6 +29,11 @@
       "key": "id_transaksi",
       "value": "1",
       "type": "string"
+    },
+    {
+      "key": "id_permintaan",
+      "value": "1",
+      "type": "string"
     }
   ],
   "item": [
@@ -237,6 +242,142 @@
               "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/nota",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "nota"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Permintaan",
+      "item": [
+        {
+          "name": "Buat Permintaan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_layanan\": 1,\n  \"berat_perkiraan\": 4.5,\n  \"alamat_jemput\": \"Jl. Melati No. 7, RT 2\",\n  \"tgl_jemput\": \"2026-10-25\",\n  \"slot_jemput\": \"siang\",\n  \"catatan\": \"Cuci pisah dengan handuk\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/permintaan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "permintaan"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.id_permintaan) { pm.collectionVariables.set('id_permintaan', json.data.id_permintaan); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Daftar Permintaan",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/permintaan?status=aktif&page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "permintaan"],
+              "query": [
+                { "key": "status", "value": "aktif" },
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detail Permintaan",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/permintaan/{{id_permintaan}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "permintaan", "{{id_permintaan}}"]
+            }
+          }
+        },
+        {
+          "name": "Batal Permintaan",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/permintaan/{{id_permintaan}}/batal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "permintaan", "{{id_permintaan}}", "batal"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pembayaran",
+      "item": [
+        {
+          "name": "Buat Intent Pembayaran",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metode\": \"QRIS\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/pembayaran",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "pembayaran"]
+            }
+          }
+        },
+        {
+          "name": "Buat Intent Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metode\": \"TRANSFER\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/pembayaran",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "pembayaran"]
+            }
+          }
+        },
+        {
+          "name": "Status Pembayaran",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/pembayaran",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "pembayaran"]
+            }
+          }
+        },
+        {
+          "name": "Batal Intent Pembayaran",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/pembayaran/batal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "pembayaran", "batal"]
             }
           }
         }
