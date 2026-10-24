@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../pesanan/application/pesanan_controller.dart';
 import '../../pesanan/data/transaksi_detail.dart';
@@ -36,14 +37,14 @@ class NotaPage extends ConsumerWidget {
         value: async,
         onRetry: () => ref.invalidate(notaProvider(id)),
         loadingBuilder: (context) => const Padding(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(20),
           child: LoadingList(itemCount: 2, itemHeight: 160),
         ),
         builder: (context, nota) => RefreshIndicator(
           onRefresh: () => _refresh(ref),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
             children: [_NotaReceipt(nota: nota)],
           ),
         ),
@@ -63,35 +64,48 @@ class _NotaReceipt extends StatelessWidget {
     final lunas = nota.statusPembayaran == 'lunas';
     final metode = nota.metode;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        border: Border.all(color: AppColors.border),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
+      shadow: AppColors.cardShadow,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Center(
+            child: Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                gradient: AppColors.buttonGradient,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: AppColors.softShadow,
+              ),
+              child: const Icon(
+                Icons.local_laundry_service_rounded,
+                color: Colors.white,
+                size: 23,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
           Center(
             child: Text(
               'Sparkleen',
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: AppColors.primary,
-                letterSpacing: 0.5,
+                letterSpacing: -0.3,
               ),
             ),
           ),
           if (nota.outlet.nama.isNotEmpty) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Center(
               child: Text(
                 nota.outlet.nama,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w700,
+                  color: AppColors.text,
                 ),
               ),
             ),
@@ -101,60 +115,52 @@ class _NotaReceipt extends StatelessWidget {
               child: Text(
                 nota.outlet.alamat,
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.muted,
-                ),
+                style: theme.textTheme.bodySmall,
               ),
             ),
           if (nota.outlet.noWa.isNotEmpty)
-            Center(
-              child: Text(
-                nota.outlet.noWa,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.muted,
-                ),
-              ),
-            ),
-          const Divider(height: 28),
+            Center(child: Text(nota.outlet.noWa, style: theme.textTheme.bodySmall)),
+          const Divider(height: 30, color: AppColors.border),
           _NotaRow(label: 'No. Nota', value: nota.noNota),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           _NotaRow(label: 'Tanggal', value: formatTanggal(nota.tanggal)),
-          const Divider(height: 28),
+          const Divider(height: 30, color: AppColors.border),
           if (nota.items.isEmpty)
-            Text(
-              'Tidak ada rincian layanan.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: AppColors.muted,
-              ),
-            )
+            Text('Tidak ada rincian layanan.', style: theme.textTheme.bodySmall)
           else
             for (var index = 0; index < nota.items.length; index++) ...[
-              if (index > 0) const SizedBox(height: 10),
+              if (index > 0) const SizedBox(height: 12),
               _NotaItem(item: nota.items[index]),
             ],
-          const Divider(height: 28),
-          _AmountRow(label: 'Subtotal', value: formatRupiah(nota.subtotal)),
-          if (nota.diskon > 0)
-            _AmountRow(
-              label: 'Diskon',
-              value: '-${formatRupiah(nota.diskon)}',
-              color: AppColors.success,
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(16),
             ),
-          const SizedBox(height: 6),
-          _AmountRow(
-            label: 'Grand total',
-            value: formatRupiah(nota.grandTotal),
-            bold: true,
+            child: Column(
+              children: [
+                _AmountRow(label: 'Subtotal', value: formatRupiah(nota.subtotal)),
+                if (nota.diskon > 0)
+                  _AmountRow(
+                    label: 'Diskon',
+                    value: '-${formatRupiah(nota.diskon)}',
+                    color: AppColors.success,
+                  ),
+                const SizedBox(height: 4),
+                _AmountRow(
+                  label: 'Grand total',
+                  value: formatRupiah(nota.grandTotal),
+                  bold: true,
+                ),
+              ],
+            ),
           ),
-          const Divider(height: 28),
+          const SizedBox(height: 14),
           Row(
             children: [
-              Text(
-                'Pembayaran',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.muted,
-                ),
-              ),
+              Text('Pembayaran', style: theme.textTheme.bodySmall),
               const Spacer(),
               Text(
                 lunas ? 'Lunas' : 'Belum dibayar',
@@ -165,12 +171,7 @@ class _NotaReceipt extends StatelessWidget {
               ),
               if (metode != null && metode.isNotEmpty) ...[
                 const SizedBox(width: 6),
-                Text(
-                  '· $metode',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppColors.muted,
-                  ),
-                ),
+                Text('· $metode', style: theme.textTheme.bodySmall),
               ],
             ],
           ),
@@ -179,7 +180,7 @@ class _NotaReceipt extends StatelessWidget {
             child: Text(
               'Terima kasih',
               style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
@@ -188,9 +189,7 @@ class _NotaReceipt extends StatelessWidget {
             child: Text(
               'Terima kasih telah menggunakan Sparkleen.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: AppColors.muted,
-              ),
+              style: theme.textTheme.bodySmall,
             ),
           ),
         ],
@@ -211,17 +210,15 @@ class _NotaRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(color: AppColors.muted),
-        ),
+        Text(label, style: theme.textTheme.bodySmall),
         const SizedBox(width: 16),
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.right,
             style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text,
             ),
           ),
         ),
@@ -253,9 +250,7 @@ class _NotaItem extends StatelessWidget {
               ),
               Text(
                 '${formatBerat(item.berat)} × ${formatRupiah(item.hargaSatuan)}/kg',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.muted,
-                ),
+                style: theme.textTheme.bodySmall,
               ),
             ],
           ),
@@ -264,7 +259,7 @@ class _NotaItem extends StatelessWidget {
         Text(
           formatRupiah(item.subtotal),
           style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -306,7 +301,7 @@ class _AmountRow extends StatelessWidget {
             value,
             style: (bold ? theme.textTheme.titleSmall : theme.textTheme.bodySmall)
                 ?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   color: color ?? AppColors.text,
                 ),
           ),

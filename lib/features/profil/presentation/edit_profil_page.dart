@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/presentation/validators.dart';
 import '../../auth/presentation/widgets/auth_scaffold.dart';
@@ -94,75 +96,83 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
                 AuthErrorBanner(message: _serverError!.message),
                 const SizedBox(height: 16),
               ],
-              TextFormField(
-                controller: _nama,
-                textInputAction: TextInputAction.next,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Nama lengkap',
-                  prefixIcon: Icon(Icons.person_outline_rounded),
-                ),
-                validator: (value) =>
-                    _serverError?.fieldError('nama') ?? validateNama(value),
-                onChanged: (_) => _clearServerError(),
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _alamat,
-                textCapitalization: TextCapitalization.sentences,
-                minLines: 1,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Alamat',
-                  prefixIcon: Icon(Icons.location_on_outlined),
-                ),
-                validator: (value) =>
-                    _serverError?.fieldError('alamat') ?? validateAlamat(value),
-                onChanged: (_) => _clearServerError(),
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                initialValue: _noTelp,
-                readOnly: true,
-                enabled: false,
-                decoration: const InputDecoration(
-                  labelText: 'Nomor telepon',
-                  prefixIcon: Icon(Icons.phone_android_rounded),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.info_outline_rounded,
-                    size: 15,
-                    color: AppColors.muted,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      'Hubungi outlet untuk mengubah nomor telepon.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.muted,
+              AppCard(
+                padding: const EdgeInsets.all(18),
+                shadow: AppColors.softShadow,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Informasi akun',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _saving ? null : _submit,
-                child: _saving
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          valueColor: AlwaysStoppedAnimation(Colors.white),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _nama,
+                      textInputAction: TextInputAction.next,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                        labelText: 'Nama lengkap',
+                        prefixIcon: Icon(Icons.person_outline_rounded),
+                      ),
+                      validator: (value) =>
+                          _serverError?.fieldError('nama') ??
+                          validateNama(value),
+                      onChanged: (_) => _clearServerError(),
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _alamat,
+                      textCapitalization: TextCapitalization.sentences,
+                      minLines: 1,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Alamat',
+                        prefixIcon: Icon(Icons.location_on_outlined),
+                      ),
+                      validator: (value) =>
+                          _serverError?.fieldError('alamat') ??
+                          validateAlamat(value),
+                      onChanged: (_) => _clearServerError(),
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      initialValue: _noTelp,
+                      readOnly: true,
+                      enabled: false,
+                      decoration: const InputDecoration(
+                        labelText: 'Nomor telepon',
+                        prefixIcon: Icon(Icons.phone_android_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.info_outline_rounded,
+                          size: 15,
+                          color: AppColors.soft,
                         ),
-                      )
-                    : const Text('Simpan'),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Hubungi outlet untuk mengubah nomor telepon.',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              AppGradientButton(
+                label: 'Simpan',
+                loading: _saving,
+                onPressed: _saving ? null : _submit,
               ),
             ],
           ),

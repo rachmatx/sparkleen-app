@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/data/pelanggan.dart';
@@ -24,7 +26,7 @@ class ProfilPage extends ConsumerWidget {
       return Scaffold(
         appBar: AppBar(title: const Text('Profil')),
         body: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: auth.isLoading
               ? const LoadingList()
               : ErrorState(
@@ -40,57 +42,51 @@ class ProfilPage extends ConsumerWidget {
       );
     }
 
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        children: [
-          _ProfileHeader(pelanggan: pelanggan),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.stars_rounded,
-                  label: 'Poin',
-                  value: '${pelanggan.poin}',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.receipt_long_outlined,
-                  label: 'Total transaksi',
-                  value: formatRupiah(pelanggan.totalTransaksi),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _DetailCard(pelanggan: pelanggan),
-          const SizedBox(height: 16),
-          FilledButton.tonalIcon(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) => const EditProfilPage(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text('Ubah Profil'),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: () => _confirmLogout(context, ref),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.danger,
-              side: const BorderSide(color: Color(0xFFFECACA)),
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 116),
+          children: [
+            Text('Profil', style: textTheme.headlineMedium),
+            const SizedBox(height: 2),
+            Text(
+              'Kelola data akun dan pengaturan kamu.',
+              style: textTheme.bodySmall,
             ),
-            icon: const Icon(Icons.logout_rounded, size: 18),
-            label: const Text('Keluar Akun'),
-          ),
-        ],
+            const SizedBox(height: 18),
+            _ProfileHeader(pelanggan: pelanggan),
+            const SizedBox(height: 18),
+            Text('Detail akun', style: textTheme.titleSmall),
+            const SizedBox(height: 10),
+            _DetailCard(pelanggan: pelanggan),
+            const SizedBox(height: 20),
+            AppGradientButton(
+              label: 'Ubah Profil',
+              icon: Icons.edit_outlined,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const EditProfilPage(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: () => _confirmLogout(context, ref),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.danger,
+                backgroundColor: AppColors.dangerSoft,
+                side: const BorderSide(color: Color(0xFFFAD2DD)),
+              ),
+              icon: const Icon(Icons.logout_rounded, size: 18),
+              label: const Text('Keluar Akun'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -131,108 +127,123 @@ class _ProfileHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final nama = pelanggan.nama.trim();
     final initial = nama.isEmpty ? '?' : nama.substring(0, 1).toUpperCase();
+    final whiteMuted = theme.textTheme.labelSmall?.copyWith(
+      color: Colors.white.withValues(alpha: 0.68),
+    );
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
+    return AppCard(
+      padding: const EdgeInsets.all(20),
+      gradient: AppColors.heroGradient,
+      shadow: AppColors.elevatedShadow,
+      child: Column(
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.primarySoft,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              initial,
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  pelanggan.nama,
-                  style: theme.textTheme.titleMedium?.copyWith(
+          Row(
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
+                  initial,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Text(
-                    pelanggan.kode,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: AppColors.muted,
-                      fontWeight: FontWeight.w700,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pelanggan.nama,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        pelanggan.kode,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Poin', style: whiteMuted),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${pelanggan.poin}',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 30,
+                  margin: const EdgeInsets.symmetric(horizontal: 14),
+                  color: Colors.white.withValues(alpha: 0.18),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Total transaksi', style: whiteMuted),
+                      const SizedBox(height: 2),
+                      Text(
+                        formatRupiah(pelanggan.totalTransaksi),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: AppColors.primary),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: AppColors.muted,
             ),
           ),
         ],
@@ -248,13 +259,9 @@ class _DetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        border: Border.all(color: AppColors.border),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(18),
+      shadow: AppColors.softShadow,
       child: Column(
         children: [
           _DetailRow(
@@ -262,7 +269,7 @@ class _DetailCard extends StatelessWidget {
             label: 'Nomor telepon',
             value: pelanggan.noTelp,
           ),
-          const Divider(height: 24),
+          const Divider(height: 24, color: AppColors.border),
           _DetailRow(
             icon: Icons.location_on_outlined,
             label: 'Alamat',
@@ -291,18 +298,21 @@ class _DetailRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: AppColors.muted),
-        const SizedBox(width: 10),
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceMuted,
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(icon, size: 18, color: AppColors.primary),
+        ),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.muted,
-                ),
-              ),
+              Text(label, style: theme.textTheme.labelSmall),
               const SizedBox(height: 2),
               Text(
                 value,

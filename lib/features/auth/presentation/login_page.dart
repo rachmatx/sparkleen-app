@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/widgets/app_button.dart';
 import '../application/auth_controller.dart';
 import 'validators.dart';
 import 'widgets/auth_scaffold.dart';
@@ -100,18 +101,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 24),
-            FilledButton(
-              onPressed: isLoading ? null : _submit,
-              child: isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        valueColor: AlwaysStoppedAnimation(Colors.white),
-                      ),
-                    )
-                  : const Text('Masuk'),
+            AppGradientButton(
+              label: 'Masuk',
+              loading: isLoading,
+              onPressed: _submit,
             ),
             const SizedBox(height: 18),
             AuthLinkPrompt(

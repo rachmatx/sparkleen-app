@@ -52,14 +52,13 @@ class LoadingList extends StatelessWidget {
         return Padding(
           padding: EdgeInsets.only(bottom: index == itemCount - 1 ? 0 : 10),
           child: Shimmer.fromColors(
-            baseColor: AppColors.surface,
+            baseColor: AppColors.surfaceMuted,
             highlightColor: Colors.white,
             child: Container(
               height: itemHeight,
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: AppColors.surfaceMuted,
                 borderRadius: BorderRadius.circular(AppColors.radiusCard),
-                border: Border.all(color: AppColors.border),
               ),
             ),
           ),
@@ -83,20 +82,28 @@ class ErrorState extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.softShadow,
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.cloud_off_rounded,
-            size: 32,
-            color: AppColors.muted,
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.cloud_off_rounded,
+              size: 22,
+              color: AppColors.soft,
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Text(
             message,
             textAlign: TextAlign.center,
@@ -136,16 +143,16 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 26),
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.softShadow,
       ),
       child: Column(
         children: [
-          Icon(icon, size: 30, color: AppColors.muted.withValues(alpha: 0.7)),
-          const SizedBox(height: 10),
+          Icon(icon, size: 30, color: AppColors.soft),
+          const SizedBox(height: 12),
           Text(
             message,
             textAlign: TextAlign.center,
