@@ -1669,9 +1669,14 @@ git commit -m "feat(api): endpoint buat permintaan jemput"
 - Modify: `app/Controllers/Api/V1/PermintaanController.php`
 - Test: `tests/Feature/Api/PermintaanFlowTest.php` (tambah method)
 
+**Files:**
+- Modify: `app/Controllers/Api/V1/PermintaanController.php`
+- Modify: `app/Models/MPermintaanPesanan.php` (tambah method additive `batalkanMenunggu()` — lihat catatan fix round Task 5)
+- Test: `tests/Feature/Api/PermintaanFlowTest.php` (tambah method)
+
 **Interfaces:**
 - Consumes: `MPermintaanPesanan::paginateForPelanggan()`, `findForPelanggan()`,
-  `claimUntukDiproses()` (dipakai ulang untuk membatalkan secara atomik).
+  `batalkanMenunggu()` (guard+finalize batal dalam satu UPDATE kondisional, bukan `claimUntukDiproses`).
 - Produces: `GET /api/v1/permintaan` (meta pagination sama seperti `/transaksi`),
   `GET /api/v1/permintaan/{id}`, `POST /api/v1/permintaan/{id}/batal`.
 
@@ -1813,16 +1818,40 @@ Tambahkan ke `PermintaanController` (di dalam kelas, sebelum `payload()`):
             );
         }
 
-        // Klaim atomik lalu timpa statusnya: dua tap cepat hanya boleh menghasilkan satu batal.
-        if (! $model->claimUntukDiproses((int) $id, $idPelanggan)) {
+        // Satu UPDATE kondisional: guard MENUNGGU + tulis DIBATALKAN sekaligus, jadi tidak ada
+        // jeda status `diproses` dan tidak ada update() kedua yang bisa gagal diam-diam
+        // (bentuk claim→timpa sebelumnya bisa meninggalkan baris di `diproses` / melaporkan
+        // batal yang gagal sebagai HTTP 200). affectedRows()===1 = tap pertama menang.
+        if (! $model->batalkanMenunggu((int) $id, $idPelanggan)) {
             return $this->fail('CANNOT_CANCEL', 'Permintaan sudah sedang diproses.', 409);
         }
-
-        $model->update((int) $id, ['status' => MPermintaanPesanan::DIBATALKAN]);
 
         return $this->ok($this->present($model->findForPelanggan((int) $id, $idPelanggan)));
     }
 ```
+
+> Catatan fix round Task 5 (sudah diputuskan controller): `batal()` TIDAK lagi memakai
+> `claimUntukDiproses()`. Ia memanggil method model baru **`batalkanMenunggu()`** yang additive
+> (method baru di `MPermintaanPesanan`, tanpa perubahan skema). Tambahkan di samping
+> `claimUntukDiproses()`:
+>
+> ```php
+>     /**
+>      * Batalkan secara atomik: hanya permintaan `menunggu` milik pelanggan ini yang berubah
+>      * menjadi `dibatalkan`. Satu UPDATE kondisional sehingga dua tap cepat hanya menghasilkan
+>      * satu pembatalan dan tidak ada jeda status `diproses`.
+>      */
+>     public function batalkanMenunggu(int $idPermintaan, int $idPelanggan): bool
+>     {
+>         $updated = $this->set(['status' => self::DIBATALKAN])
+>             ->where('id_permintaan', $idPermintaan)
+>             ->where('id_pelanggan', $idPelanggan)
+>             ->where('status', self::MENUNGGU)
+>             ->update();
+>
+>         return $updated && $this->db->affectedRows() === 1;
+>     }
+> ```
 
 - [ ] **Step 4: Jalankan test, pastikan hijau**
 
