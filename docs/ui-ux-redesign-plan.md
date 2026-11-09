@@ -2,7 +2,9 @@
 
 Tanggal: 9 November 2026  
 Baseline: `140786c` pada branch lokal `feat/sparkleen-visual-assets`  
-Status: rencana dan konsep interaksi; implementasi redesign belum dimulai.
+Status: rencana dan konsep interaksi direvisi sesuai arahan pengguna; implementasi redesign belum dimulai.
+
+Arahan visual terbaru: background solid, tanpa gradasi, material kaca lebih padat, dan detail lebih rapi/modern. Arahan ini menggantikan eksplorasi latar bercahaya pada konsep pertama.
 
 ## 1. Tujuan produk
 
@@ -15,7 +17,7 @@ Permintaan “100 kali lebih bagus” diterjemahkan menjadi perubahan yang dapat
 | Temuan | Bukti baseline | Implikasi desain |
 | --- | --- | --- |
 | Kartu berukuran besar dan memiliki bobot visual yang hampir sama. | Beranda: sapaan, pesanan aktif, tombol penuh, katalog; kartu lain pada detail/profil. | Bedakan elemen utama, sekunder, dan baris informasi. Kurangi wadah yang tidak perlu. |
-| Efek kaca kurang terbaca. | `AppCard` memakai blur 14 dan fill 0,72; beberapa area memakai bidang opaque. Background dominan tekstur tenun berulang. | Bentuk lapisan kaca di atas bidang warna yang memiliki kedalaman; atur tint, tepi, dan blur per tingkat. |
+| Material kartu perlu diperhalus. | `AppCard` memakai blur 14 dan fill 0,72; beberapa area memakai bidang opaque. Background dominan tekstur tenun berulang. | Gunakan background solid dan permukaan kaca yang lebih padat, dengan tint, tepi, dan bayangan halus. |
 | Tipografi terlalu sering memakai bobot 700–800. | `app_theme.dart`: hampir seluruh judul dan label berinteraksi. | Gunakan 400/500 untuk isi, 600 untuk judul bagian, 700 untuk informasi utama. Batasi judul besar. |
 | Aksi ke daftar/detail pesanan berulang. | Kartu aktif, “Lihat perjalanan cucian”, “Lihat semua pesanan”, dan tab Pesanan. | Kartu aktif menuju detail; tautan bagian “Semua” menuju daftar. Hindari tombol penuh yang mengulang tujuan yang sama. |
 | Data outlet belum dimanfaatkan. | Model memuat nama, alamat, nomor WA, jam buka/tutup; beranda hanya menyalin nomor WA. | Tampilkan identitas outlet, alamat, jam operasional yang tersedia, dan aksi kontak yang jelas. |
@@ -30,19 +32,20 @@ Temuan berasal dari kode dan screenshot demo yang sudah dirender. Belum ada wawa
 ### Material dan warna
 
 - Pertahankan royal blue Sparkleen `#0D63D8` sebagai warna tindakan dan identitas.
-- Dasar terang: putih kebiruan; dasar gelap: navy. Teks utama tetap memiliki kontras yang jelas.
-- Bentuk latar berupa bidang biru luas dengan perubahan cahaya halus. Kurangi tekstur berulang yang mengganggu isi.
-- Gunakan tepi kaca tipis, sorotan bagian atas, tint yang lembut, dan bayangan pendek. Hindari glow neon dan dekorasi warna yang tidak berkaitan dengan merek.
-- Kaca memiliki tiga tingkat: permukaan isi, kartu informasi utama, dan dock navigasi. Besar blur dan opacity bukan satu nilai untuk semua komponen.
+- Background terang berupa satu warna solid `#EFF3F8`; background gelap satu warna solid `#101C2C`. Tidak ada bidang cahaya, tekstur, atau bentuk dekoratif pada latar.
+- Tidak menggunakan linear/radial/conic gradient pada background, kartu, border, maupun tombol UI.
+- Material kaca tampil lebih padat: opacity awal 95% pada kartu terang dan 96% pada kartu gelap; dock 98%. Transparansi hanya menjadi aksen sangat halus.
+- Kedalaman berasal dari border tipis, garis highlight solid, tint, dan bayangan pendek. Tidak menggunakan sorotan yang dibentuk melalui gradasi.
+- Kaca memiliki tiga tingkat penekanan: permukaan isi, kartu informasi utama, dan dock navigasi. Bedakan terutama melalui padding, border, dan bayangan; jaga seluruhnya tetap padat dan terbaca.
 - Blur diklip sesuai batas elemen. Kartu di dalam kartu tidak otomatis mendapatkan blur lagi. Dock yang bertumpuk di atas isi tidak berbagi kelompok blur dengan isi yang tertutup.
-- Rentang eksplorasi awal blur 16–24 untuk permukaan utama. Nilai akhir ditentukan melalui render dan pengukuran di perangkat, bukan dianggap sudah optimal.
+- Rentang eksplorasi awal blur 8–12; efek tidak perlu dibuat kuat pada latar solid. Nilai akhir ditentukan melalui render dan pengukuran di perangkat, bukan dianggap sudah optimal.
 
 ### Tipografi dan geometri
 
 - Pertahankan Plus Jakarta Sans untuk judul dan Manrope untuk isi.
 - Skala awal: judul halaman 26–28, judul bagian 17–18, isi 14–15, keterangan 12–13 logical pixel. Ukuran mengikuti pembesaran teks sistem.
 - Bobot 700 hanya untuk titik fokus seperti estimasi, nama, atau total. Label kecil tidak semuanya menjadi uppercase dengan jarak huruf lebar.
-- Grid jarak 4/8; margin layar sekitar 20; radius utama 24–28, elemen kecil 12–16.
+- Grid jarak 4/8; margin layar sekitar 20; radius kartu utama 22–24, kartu layanan 18, elemen kecil 12–16. Gunakan radius secara konsisten agar tampilan lebih terstruktur.
 - Nominal dan tanggal memakai perataan yang konsisten; angka uang dapat menggunakan tabular figures.
 - Target sentuh minimal 48 × 48 logical pixel. Jangan mengecilkan area interaksi agar tampak minimalis.
 
@@ -82,7 +85,7 @@ Temuan berasal dari kode dan screenshot demo yang sudah dirender. Belum ada wawa
 | --- | --- |
 | Token tema | Warna, opacity, border, bayangan, radius, jarak, dan tipografi terang/gelap. |
 | `AppCard` / material kaca | Kaca yang konsisten dengan tingkat penekanan berbeda dan blur yang dibatasi. |
-| `AppBackdrop` | Dasar opaque dan bidang cahaya biru statis di belakang kaca. |
+| `AppBackdrop` | Satu warna solid per tema, tanpa gradasi, tekstur, atau bidang cahaya. |
 | Header halaman | Judul, penjelasan singkat, dan aksi yang benar-benar tersedia. |
 | Kartu pesanan | Versi utama pada beranda dan versi ringkas pada daftar, berbagi bahasa visual. |
 | Penanda tahap | Label proses aktual dan keadaan selesai/aktif/menunggu. |
@@ -106,7 +109,7 @@ Tetap gunakan widget native Flutter untuk interaksi dasar, semantik, fokus, dan 
 | Tahap | Keluaran konkret | Syarat lanjut |
 | --- | --- | --- |
 | A. Perencanaan | Dokumen ini dan konsep interaksi untuk memeriksa hierarki/arah kaca. | Informasi utama jelas, cakupan sesuai fitur aktual. |
-| B. Sistem visual | Token dan komponen kaca pada Flutter. | Kontras, clipping blur, dan tema gelap terverifikasi. |
+| B. Sistem visual | Token, background solid, dan komponen kaca padat pada Flutter. | Tanpa gradasi; kontras, clipping blur ringan, dan tema gelap terverifikasi. |
 | C. Layar utama | Beranda dan masuk, dirender dari widget Flutter dengan data demo. | Status/estimasi serta formulir terlihat pada viewport sasaran; gambar tidak mendominasi. |
 | D. Konsistensi alur | Pesanan, detail, nota, profil, edit, daftar, aktivasi, empty/error/loading. | Setiap aksi dan state bekerja; data dan route tetap benar. |
 | E. Verifikasi | Analisis statis, test, build web, screenshot, pemeriksaan sentuh dan keyboard. | Tidak ada regresi, overflow, atau kontrol palsu. |
@@ -118,6 +121,8 @@ Perencanaan memakai audit source dan konsep interaksi. Eksekusi memakai implemen
 
 ### Visual dan kegunaan
 
+- Background memakai satu warna solid per tema; tidak ada gradient pada dekorasi UI.
+- Kartu dan dock terasa padat: isi di belakang tidak terlihat jelas melalui kaca. Acuan awal opacity 95–98%, dengan pengecekan visual sebelum nilai ditetapkan.
 - Pada viewport 390 × 844 dengan ukuran teks normal, kartu aktif memperlihatkan status dan estimasi pada tampilan awal; pengguna tidak perlu melewati ilustrasi besar.
 - Pada layar masuk dengan viewport yang sama dan keyboard tertutup, kedua field dan tombol masuk dapat ditemukan tanpa gulir panjang.
 - Layout diperiksa pada lebar 320, 360, 390, dan 412 logical pixel serta layar lebih lebar yang dibatasi aplikasi.
