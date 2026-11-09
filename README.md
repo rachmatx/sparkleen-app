@@ -169,14 +169,14 @@ lib/
 
 Fase 1 selesai, redesign UI/UX dengan background solid, kaca padat, dan paket aset Sparkleen sudah diterapkan pada
 layar terkait. Seluruh layar utama terhubung ke API, `flutter analyze` bersih,
-dan `flutter test` hijau (84 test). Hasil render dan batas verifikasi ada di dokumen redesign.
+dan `flutter test` hijau (94 test). Hasil render dan batas verifikasi ada di dokumen redesign.
 
 ## Integrasi backend pelanggan
 
 API pelanggan membutuhkan branch backend `feat/customer-api-foundation` atau versi
 yang sudah memuat 11 endpoint inti `/api/v1`. Hasil pengujian lokal dan batas
 penerapannya dicatat di [integration-foundation-results](docs/integration-foundation-results.md).
-Endpoint jemput/pembayaran dalam dokumen API masih merupakan rencana tahap berikutnya.
+Endpoint jemput tersedia pada `feat/pickup-requests`; endpoint pembayaran pelanggan masih rencana tahap berikutnya.
 
 Uji eksplisit dengan backend dan database test lokal:
 
@@ -190,3 +190,6 @@ database `laundry_db_test`; suite widget biasa tetap memakai isolasi HTTP.
 
 Verifikasi Android fisik dan syarat APK produksi:
 [Android verification](docs/release/android-verification.md).
+
+Permintaan jemput dari beranda dan alur antrean kasir:
+[Pickup requests](docs/pickup-requests.md).

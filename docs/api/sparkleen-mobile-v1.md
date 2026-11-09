@@ -1,6 +1,6 @@
 # Sparkleen Mobile API v1
 
-> Status implementasi 9 November 2026: fondasi 11 endpoint akun/profil/katalog/outlet/transaksi/nota diterapkan pada branch backend `feat/customer-api-foundation` dari `524f554`. Bagian `/permintaan` dan `/transaksi/{id}/pembayaran` di dokumen ini adalah rencana berikutnya, **belum tersedia** pada implementasi fondasi tersebut. Contoh dan catatan fase pembayaran di bawah tidak boleh dianggap sebagai hasil uji backend yang sedang berjalan. Lihat `docs/integration-foundation-results.md` untuk bukti dan batas verifikasi.
+> Status implementasi 10 November 2026: fondasi API pelanggan dan empat endpoint `/permintaan` tersedia pada kandidat backend `feat/pickup-requests`. Antrean web kasir berada di `/penjemputan`. Endpoint pembayaran pelanggan `/transaksi/{id}/pembayaran` masih rencana. Belum push/deploy; lihat `docs/pickup-requests.md` untuk hasil verifikasi dan batas penerapan.
 
 REST API untuk aplikasi mobile pelanggan Sparkleen Laundry. Hanya berisi kebutuhan
 pelanggan (auth, profil, katalog, transaksi, nota, permintaan jemput, pembayaran online,
@@ -302,8 +302,10 @@ Data terstruktur untuk render nota digital. **Tidak** memuat `pin_pengambilan`.
 
 ### POST /permintaan
 
+Contoh tanggal harus diganti dengan slot yang belum lewat; koleksi Postman menyiapkan tanggal besok WIB secara otomatis.
+
 Mengajukan permintaan jemput. Satu pelanggan hanya boleh punya **satu** permintaan
-berstatus `menunggu`.
+berstatus `menunggu` atau `diproses` (belum menjadi transaksi).
 
 Body:
 
@@ -312,7 +314,7 @@ Body:
   "id_layanan": 1,
   "berat_perkiraan": 4.5,
   "alamat_jemput": "Jl. Melati No. 7, RT 2",
-  "tgl_jemput": "2026-10-25",
+  "tgl_jemput": "2026-11-11",
   "slot_jemput": "siang",
   "catatan": "Cuci pisah dengan handuk"
 }
@@ -320,10 +322,10 @@ Body:
 
 | Field | Tipe | Wajib | Aturan di server |
 |---|---|---|---|
-| `id_layanan` | int | ya | numerik; layanan harus ada dan `is_aktif = 1` |
-| `berat_perkiraan` | number | ya | > 0 dan ≤ 100; disimpan dibulatkan ke 2 desimal (pesan error menyebut "0.1 dan 100 kg") |
-| `alamat_jemput` | string | ya | minimal 10 karakter setelah `trim` |
-| `tgl_jemput` | string `YYYY-MM-DD` | ya | tanggal valid, tidak boleh di masa lalu |
+| `id_layanan` | int | ya | JSON integer positif; layanan harus ada dan `is_aktif = 1` |
+| `berat_perkiraan` | number | ya | 0,1–100 kg; disimpan dibulatkan ke 2 desimal |
+| `alamat_jemput` | string | ya | 10–500 karakter setelah `trim` |
+| `tgl_jemput` | string `YYYY-MM-DD` | ya | tanggal valid, hingga 30 hari ke depan; slot WIB harus belum lewat |
 | `slot_jemput` | string | ya | `pagi` \| `siang` \| `sore` |
 | `catatan` | string | tidak | maksimal 255 karakter; kosong disimpan sebagai `null` |
 
@@ -343,7 +345,7 @@ Response `201`:
     "berat_perkiraan": 4.5,
     "estimasi_harga": 31500,
     "alamat_jemput": "Jl. Melati No. 7, RT 2",
-    "tgl_jemput": "2026-10-25T12:00:00+07:00",
+    "tgl_jemput": "2026-11-11T12:00:00+07:00",
     "slot_jemput": "siang",
     "catatan": "Cuci pisah dengan handuk",
     "estimasi_hari": 2,
@@ -359,9 +361,9 @@ rupiah. `estimasi_hari` diambil dari layanan. `id_transaksi` terisi setelah kasi
 mengonfirmasi dan pesanan jadi transaksi nyata; selama itu `null`.
 
 Objek permintaan juga dipakai `GET /permintaan`, `GET /permintaan/{id}`, dan
-`POST /permintaan/{id}/batal`. `status` yang mungkin dilihat klien: `menunggu`,
-`dikonfirmasi`, `ditolak`, `dibatalkan`. State internal kasir `diproses` sengaja
-dinormalkan menjadi `menunggu` — bagi pelanggan belum ada yang berubah.
+`POST /permintaan/{id}/batal`. Status publik: `menunggu`, `diproses`, `dikonfirmasi`,
+`ditolak`, `dibatalkan`. Status `diproses` ditampilkan tersendiri agar pelanggan
+mengetahui penjemputan sudah ditangani kasir.
 `alasan_penolakan` hanya terisi saat `ditolak`.
 
 Error:
@@ -370,14 +372,13 @@ Error:
 |---|---|---|
 | 422 | `VALIDATION_ERROR` | Salah satu aturan tabel di atas gagal; `error.fields` memakai nama field yang sama |
 | 422 | `VALIDATION_ERROR` | `id_layanan` tidak ada atau tidak aktif → `error.fields.id_layanan = ["Layanan tidak tersedia."]` |
-| 409 | `ACTIVE_REQUEST_EXISTS` | Masih ada permintaan `menunggu` milik pelanggan ini |
+| 409 | `ACTIVE_REQUEST_EXISTS` | Masih ada permintaan `menunggu`/`diproses` milik pelanggan ini |
 
 ### GET /permintaan
 
-Query: `status=aktif|selesai|semua` (default `semua`; nilai lain diperlakukan sebagai
-`semua`), `page` (default 1), `per_page` (default 20, maksimal 50).
+Query: `status=aktif|selesai|semua` (default `semua`), `page` (default 1, maksimal 1.000.000), `per_page` (default 20, maksimal 50). Filter/pagination yang tidak valid menghasilkan 422.
 
-`aktif` = `menunggu`, `diproses`, `dikonfirmasi`. `selesai` = `ditolak`, `dibatalkan`.
+`aktif` = `menunggu`, `diproses`. `selesai` = `dikonfirmasi`, `ditolak`, `dibatalkan`. Setelah dikonfirmasi, kelanjutan cucian dipantau lewat `id_transaksi`.
 
 ```json
 {
@@ -390,7 +391,7 @@ Query: `status=aktif|selesai|semua` (default `semua`; nilai lain diperlakukan se
       "berat_perkiraan": 4.5,
       "estimasi_harga": 31500,
       "alamat_jemput": "Jl. Melati No. 7, RT 2",
-      "tgl_jemput": "2026-10-25T12:00:00+07:00",
+      "tgl_jemput": "2026-11-11T12:00:00+07:00",
       "slot_jemput": "siang",
       "catatan": "Cuci pisah dengan handuk",
       "estimasi_hari": 2,
@@ -413,17 +414,15 @@ di atas. Permintaan milik pelanggan lain atau ID yang tidak dikenal menghasilkan
 
 ### POST /permintaan/{id}/batal
 
-Tanpa body. Hanya permintaan berstatus `menunggu` yang bisa dibatalkan; pembatalannya
-atomik (satu `UPDATE` dengan predikat status), jadi dua tap cepat tetap menghasilkan
-satu pembatalan dan permintaan tidak pernah singgah di status `diproses`.
+Tanpa body. Hanya permintaan berstatus `menunggu` yang bisa dibatalkan; pembatalannya atomik dengan lock pelanggan dan permintaan. Pengiriman ulang pembatalan yang sudah berhasil mengembalikan 200 dengan status `dibatalkan`.
 
 Response `200` berisi objek permintaan dengan `status` sudah menjadi `dibatalkan`.
 
 | HTTP | Code | Kondisi |
 |---|---|---|
 | 404 | `NOT_FOUND` | Permintaan tidak ada atau bukan milik pelanggan pemilik token |
-| 409 | `CANNOT_CANCEL` | Status sudah bukan `menunggu` (sudah diproses/dikonfirmasi/ditolak/dibatalkan) |
-| 409 | `CANNOT_CANCEL` | Kasir mengambil permintaan di antara baca dan update ("Permintaan sudah sedang diproses.") — permintaan tetap utuh |
+| 409 | `REQUEST_NOT_CANCELLABLE` | Status sudah diproses/dikonfirmasi/ditolak |
+| 200 | - | Pengiriman ulang pembatalan yang sebelumnya berhasil |
 
 ### POST /transaksi/{id}/pembayaran
 
@@ -664,7 +663,7 @@ Konsekuensinya bagi app:
 | 409 | `PHONE_TAKEN` | Nomor telepon sudah terdaftar |
 | 409 | `AUTH_NOT_ACTIVATED` | Akun belum punya PIN, harus aktivasi |
 | 409 | `AUTH_ALREADY_ACTIVATED` | Aktivasi ulang padahal PIN sudah ada |
-| 409 | `ACTIVE_REQUEST_EXISTS` | Masih ada permintaan jemput `menunggu` untuk pelanggan ini |
+| 409 | `ACTIVE_REQUEST_EXISTS` | Masih ada permintaan jemput `menunggu`/`diproses` untuk pelanggan ini |
 | 409 | `CANNOT_CANCEL` | Permintaan hanya bisa dibatalkan selama belum diproses kasir |
 | 409 | `ALREADY_PAID` | Tagihan transaksi sudah lunas, intent tidak dibuat |
 | 409 | `CONFLICT_METHOD` | Intent `PENDING` metode lain masih berjalan; batalkan dulu |

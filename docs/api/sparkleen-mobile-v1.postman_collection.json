@@ -251,7 +251,7 @@
       "name": "Permintaan",
       "item": [
         {
-          "name": "[PLANNED] Buat Permintaan",
+          "name": "Buat Permintaan",
           "request": {
             "method": "POST",
             "header": [
@@ -259,7 +259,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id_layanan\": 1,\n  \"berat_perkiraan\": 4.5,\n  \"alamat_jemput\": \"Jl. Melati No. 7, RT 2\",\n  \"tgl_jemput\": \"2026-10-25\",\n  \"slot_jemput\": \"siang\",\n  \"catatan\": \"Cuci pisah dengan handuk\"\n}"
+              "raw": "{\n  \"id_layanan\": 1,\n  \"berat_perkiraan\": 4.5,\n  \"alamat_jemput\": \"Jl. Melati No. 7, RT 2\",\n  \"tgl_jemput\": \"{{pickup_date}}\",\n  \"slot_jemput\": \"siang\",\n  \"catatan\": \"Cuci pisah dengan handuk\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/permintaan",
@@ -268,6 +268,13 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.variables.set('pickup_date', new Date(Date.now() + 31 * 60 * 60 * 1000).toISOString().slice(0, 10));"]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -281,7 +288,7 @@
           ]
         },
         {
-          "name": "[PLANNED] Daftar Permintaan",
+          "name": "Daftar Permintaan",
           "request": {
             "method": "GET",
             "url": {
@@ -297,7 +304,7 @@
           }
         },
         {
-          "name": "[PLANNED] Detail Permintaan",
+          "name": "Detail Permintaan",
           "request": {
             "method": "GET",
             "url": {
@@ -308,7 +315,7 @@
           }
         },
         {
-          "name": "[PLANNED] Batal Permintaan",
+          "name": "Batal Permintaan",
           "request": {
             "method": "POST",
             "url": {

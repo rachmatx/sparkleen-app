@@ -7,6 +7,8 @@ import '../../features/auth/presentation/activate_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
 import '../../features/home/presentation/home_page.dart';
+import '../../features/jemput/presentation/pickup_page.dart';
+import '../../features/jemput/presentation/pickup_form_page.dart';
 import '../../features/nota/presentation/nota_page.dart';
 import '../../features/pesanan/presentation/detail_pesanan_page.dart';
 import '../../features/pesanan/presentation/pesanan_page.dart';
@@ -32,14 +34,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) => _redirect(ref, state.matchedLocation),
     routes: [
-      GoRoute(
-        path: '/splash',
-        builder: (context, state) => const SplashPage(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginPage(),
-      ),
+      GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
+      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterPage(),
@@ -56,9 +52,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/pesanan/:id/nota',
-        builder: (context, state) => NotaPage(
-          id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
-        ),
+        builder: (context, state) =>
+            NotaPage(id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0),
+      ),
+      GoRoute(path: '/jemput', builder: (context, state) => const PickupPage()),
+      GoRoute(
+        path: '/jemput/baru',
+        builder: (context, state) => const PickupFormPage(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

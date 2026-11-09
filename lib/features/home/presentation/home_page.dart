@@ -104,6 +104,36 @@ class HomePage extends ConsumerWidget {
                 const SizedBox(height: 24),
                 _WelcomeHeader(nama: nama),
                 const SizedBox(height: 16),
+                AppCard(
+                  onTap: () => context.push('/jemput'),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.local_shipping_outlined,
+                        color: colors.primary,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Jemput laundry',
+                              style: theme.textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              'Ajukan jadwal dan pantau penjemputan',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
