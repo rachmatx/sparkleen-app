@@ -2,6 +2,10 @@
 
 10 November 2026 · verifikasi lokal pada branch `feat/customer-api-foundation` di kedua repo.
 
+> Pembaruan tahap 6–8: backend terbaru lulus 106 test dan 404 assertions.
+> Angka kegagalan pada tabel fondasi di bawah adalah hasil historis sebelum
+> perbaikan test. Android fisik dan deployment operasional masih belum selesai.
+
 ## Yang sudah diterapkan
 
 Backend Laundry memperoleh 11 endpoint pelanggan `/api/v1`: daftar, aktivasi,
@@ -129,3 +133,21 @@ diakses perangkat dan konfigurasi release HTTPS.
   webhook/retry/otorisasi yang belum diselesaikan. Jalur debug/seed web lama juga
   perlu ditinjau sebelum deployment publik.
 - Perubahan ini disiapkan sebagai commit lokal per repo. Belum push atau deploy.
+
+## Pembaruan tahap 6–8
+
+Suite backend penuh lulus pada tahap 6 (104 test, 392 assertions). Sesudah
+persiapan rilis, suite penuh kembali lulus (106 test, 404 assertions), ditambah
+3 skenario startup shell. Route debug/seed kini hanya tersedia dalam development;
+startup tidak otomatis membuat akun default dan migrasi menjadi langkah eksplisit.
+Rehearsal backup → restore → migrasi lulus pada fixture lokal, bukan DB operasional.
+
+Android SDK/perangkat tidak tersedia; Java 21 ada, tetapi secure storage native,
+background dan jaringan perangkat belum diuji. Release masih memakai signing debug
+dan keystore pemilik belum tersedia. Langkah uji ada di
+[Android verification](release/android-verification.md).
+
+GitHub belum terautentikasi dan dry-run push ditolak. Target hosting/URL serta
+versi backend operasional belum diketahui, sehingga belum push, backup operasional,
+migrasi operasional atau deployment. Koneksi GitHub serta akses hosting dan
+perangkat diperlukan untuk menyelesaikan tahap 7–8. Tidak memakai token GitHub lama.

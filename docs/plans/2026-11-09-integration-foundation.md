@@ -142,3 +142,11 @@ Urutan berikutnya: konsistensi/otorisasi pembayaran → permintaan jemput besert
 - Payment API: `src/routes/transactions.js`, `src/services/paymentService.js`, `src/middleware/auth.js`.
 - Smart Pay: `lib/services/payment_service.dart`, `lib/screens/home_screen.dart`, `lib/screens/pin_screen.dart`.
 - Rencana Oktober digunakan untuk menelusuri keputusan lama, dengan verifikasi ulang terhadap snapshot repo yang dicantumkan di atas.
+
+## Pembaruan 10 November: tahap 6–8
+
+Suite backend penuh: 106 test, 404 assertions lulus sesudah perbaikan kesiapan rilis.
+Rehearsal backup/restore lokal dan 3 skenario startup lulus. Tahap Android fisik,
+signing rilis, koneksi GitHub dan identitas/akses hosting masih diperlukan; tidak
+ada push atau deployment operasional. Lihat `docs/release/android-verification.md`
+dan laporan kesiapan rilis pada repo Laundry.

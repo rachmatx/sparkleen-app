@@ -187,3 +187,6 @@ CI=true flutter test tool/customer_api_integration_test.dart --dart-define=API_B
 Siapkan fixture backend terlebih dahulu dan set `LAUNDRY_TEST_ROOT` serta
 `TEST_PHP_BIN` sesuai petunjuk backend. Uji ini memakai HTTP sungguhan dan
 database `laundry_db_test`; suite widget biasa tetap memakai isolasi HTTP.
+
+Verifikasi Android fisik dan syarat APK produksi:
+[Android verification](docs/release/android-verification.md).
