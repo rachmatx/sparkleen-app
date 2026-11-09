@@ -7,7 +7,6 @@ import '../../data/transaksi_ringkas.dart';
 
 class TransaksiCard extends StatelessWidget {
   const TransaksiCard({super.key, required this.transaksi, this.onTap});
-
   final TransaksiRingkas transaksi;
   final VoidCallback? onTap;
 
@@ -15,64 +14,11 @@ class TransaksiCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: colors.primaryContainer.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: colors.primary.withValues(alpha: 0.15),
-                  ),
-                ),
-                child: Icon(
-                  Icons.local_laundry_service_outlined,
-                  size: 22,
-                  color: colors.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'NOTA LAUNDRY',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      transaksi.noNota,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: colors.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 20,
-                color: colors.primary,
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
           Wrap(
             spacing: 12,
             runSpacing: 8,
@@ -82,29 +28,34 @@ class TransaksiCard extends StatelessWidget {
                 status: transaksi.status,
                 label: transaksi.statusLabel,
               ),
-              Text(
-                formatTanggalSingkat(transaksi.tglMasuk),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
+              Text(transaksi.noNota, style: theme.textTheme.titleSmall),
             ],
           ),
+          const SizedBox(height: 14),
+          Text(
+            transaksi.isAktif ? 'Estimasi selesai' : 'Tanggal masuk',
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            transaksi.isAktif
+                ? (transaksi.tglEstimasi == null
+                      ? 'Menunggu estimasi'
+                      : formatEstimasi(transaksi.tglEstimasi!))
+                : formatTanggalSingkat(transaksi.tglMasuk),
+            style: theme.textTheme.titleSmall,
+          ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: TicketDivider(),
+            padding: EdgeInsets.symmetric(vertical: 14),
+            child: Divider(),
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.scale_outlined, size: 17, color: colors.primary),
-              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   formatBerat(transaksi.totalBerat),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
+                  style: theme.textTheme.bodySmall,
                 ),
               ),
               const SizedBox(width: 12),
@@ -112,11 +63,14 @@ class TransaksiCard extends StatelessWidget {
                 child: Text(
                   formatRupiah(transaksi.grandTotal),
                   textAlign: TextAlign.right,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: colors.onSurface,
-                  ),
+                  style: theme.textTheme.titleSmall,
                 ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: colors.primary,
+                size: 20,
               ),
             ],
           ),

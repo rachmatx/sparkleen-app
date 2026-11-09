@@ -2,7 +2,7 @@
 
 Tanggal: 9 November 2026  
 Baseline: `140786c` pada branch lokal `feat/sparkleen-visual-assets`  
-Status: rencana dan konsep interaksi direvisi sesuai arahan pengguna; implementasi redesign belum dimulai.
+Status: redesign diterapkan pada Flutter; hasil dan batas verifikasi dicatat di `ui-ux-implementation.md`.
 
 Arahan visual terbaru: background solid, tanpa gradasi, material kaca lebih padat, dan detail lebih rapi/modern. Arahan ini menggantikan eksplorasi latar bercahaya pada konsep pertama.
 

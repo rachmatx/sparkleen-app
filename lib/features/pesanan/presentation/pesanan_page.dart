@@ -66,15 +66,6 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'LAUNDRY KAMU',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: colors.primary,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.6,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
                     Text('Pesanan', style: textTheme.headlineMedium),
                     const SizedBox(height: 6),
                     Text(
@@ -90,46 +81,55 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: AppCard(
                   padding: const EdgeInsets.all(4),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<PesananScope>(
-                      style: SegmentedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        selectedBackgroundColor: AppColors.primary,
-                        selectedForegroundColor: Colors.white,
-                        foregroundColor: colors.onSurfaceVariant,
-                        side: BorderSide.none,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        textStyle: textTheme.labelMedium,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                      segments: const [
-                        ButtonSegment(
-                          value: PesananScope.aktif,
-                          label: Text('Aktif'),
-                        ),
-                        ButtonSegment(
-                          value: PesananScope.selesai,
-                          label: Text('Selesai'),
-                        ),
-                        ButtonSegment(
-                          value: PesananScope.semua,
-                          label: Text('Semua'),
-                        ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [
+                        for (final scope in PesananScope.values)
+                          SizedBox(
+                            width: (constraints.maxWidth - 8) / 3,
+                            child: Semantics(
+                              selected: scope == activeScope,
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  minimumSize: const Size(48, 48),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 12,
+                                  ),
+                                  backgroundColor: scope == activeScope
+                                      ? AppColors.primary
+                                      : Colors.transparent,
+                                  foregroundColor: scope == activeScope
+                                      ? Colors.white
+                                      : colors.onSurfaceVariant,
+                                  textStyle: textTheme.labelLarge?.copyWith(
+                                    fontSize: 13,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  if (scope == activeScope) return;
+                                  setState(() => _scope = scope);
+                                  ref
+                                      .read(pesananControllerProvider.notifier)
+                                      .load(scope);
+                                  if (_scrollController.hasClients) {
+                                    _scrollController.jumpTo(0);
+                                  }
+                                },
+                                child: Text(switch (scope) {
+                                  PesananScope.aktif => 'Aktif',
+                                  PesananScope.selesai => 'Selesai',
+                                  PesananScope.semua => 'Semua',
+                                }, textAlign: TextAlign.center),
+                              ),
+                            ),
+                          ),
                       ],
-                      selected: {activeScope},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (selection) {
-                        final next = selection.first;
-                        if (next == activeScope) return;
-                        setState(() => _scope = next);
-                        ref.read(pesananControllerProvider.notifier).load(next);
-                        if (_scrollController.hasClients) {
-                          _scrollController.jumpTo(0);
-                        }
-                      },
                     ),
                   ),
                 ),

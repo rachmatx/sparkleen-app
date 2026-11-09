@@ -42,45 +42,51 @@ class AuthScaffold extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _AuthHeader(showBack: showBack),
-                    if (!keyboardVisible &&
-                        MediaQuery.sizeOf(context).height >= 700 &&
-                        illustrationAsset != null) ...[
-                      const SizedBox(height: 20),
-                      IllustrationPanel(
-                        asset: illustrationAsset!,
-                        width: double.infinity,
-                        height: 124,
-                        padding: const EdgeInsets.all(12),
-                      ),
-                    ],
-                    SizedBox(height: keyboardVisible ? 16 : 28),
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        title,
-                        style: theme.textTheme.headlineLarge?.copyWith(
-                          color: colors.onSurface,
-                          fontSize: 32,
-                          height: 1.2,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        fontSize: 16,
-                        height: 1.5,
-                      ),
+                    SizedBox(height: keyboardVisible ? 20 : 28),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final showArt =
+                            !keyboardVisible &&
+                            illustrationAsset != null &&
+                            MediaQuery.textScalerOf(context).scale(16) <= 22;
+                        final intro = Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Semantics(
+                              header: true,
+                              child: Text(
+                                title,
+                                style: theme.textTheme.headlineLarge,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              subtitle,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        );
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(child: intro),
+                            if (showArt) ...[
+                              const SizedBox(width: 12),
+                              IllustrationPanel(
+                                asset: illustrationAsset!,
+                                width: 76,
+                                height: 84,
+                                padding: const EdgeInsets.all(4),
+                              ),
+                            ],
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 24),
-                    AppCard(
-                      padding: const EdgeInsets.all(20),
-                      color: colors.surface.withValues(alpha: 0.9),
-                      child: child,
-                    ),
+                    AppCard(padding: const EdgeInsets.all(20), child: child),
                     if (footer != null) ...[
                       const SizedBox(height: 16),
                       footer!,
@@ -126,19 +132,19 @@ class _AuthHeader extends StatelessWidget {
           ),
           const SizedBox(width: 12),
         ],
-        const BrandMark(size: 48),
+        const BrandMark(size: 36),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'SPARKLEEN',
+                'sparkleen',
                 style: theme.textTheme.titleSmall?.copyWith(
                   color: colors.onSurface,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.5,
                 ),
               ),
               const SizedBox(height: 2),
@@ -240,7 +246,7 @@ class AuthLinkPrompt extends StatelessWidget {
             visualDensity: VisualDensity.standard,
             textStyle: theme.textTheme.labelLarge?.copyWith(
               fontSize: 14,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               decoration: TextDecoration.underline,
             ),
           ),

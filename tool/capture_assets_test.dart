@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:sparkleen_mobile/core/providers.dart';
+import 'package:sparkleen_mobile/core/router/app_router.dart';
 import 'package:sparkleen_mobile/core/theme/app_theme.dart';
 import 'package:sparkleen_mobile/features/auth/application/auth_controller.dart';
 import 'package:sparkleen_mobile/features/home/application/home_providers.dart';
@@ -21,7 +22,7 @@ import 'package:sparkleen_mobile/main.dart';
 
 import '../test/support/auth_fakes.dart';
 import '../test/support/home_fakes.dart';
-import '../test/support/pesanan_fakes.dart';
+import '../test/support/redesign_fixtures.dart';
 
 void main() {
   const output = String.fromEnvironment(
@@ -57,10 +58,18 @@ void main() {
   });
 
   for (final scenario in [
-    (name: 'beranda-aset', dark: false, login: false, empty: false),
-    (name: 'beranda-aset-gelap', dark: true, login: false, empty: false),
-    (name: 'login-aset', dark: false, login: true, empty: false),
-    (name: 'pesanan-kosong-aset', dark: true, login: false, empty: true),
+    (name: 'beranda-aset', dark: false, route: '/beranda', empty: false),
+    (name: 'beranda-aset-gelap', dark: true, route: '/beranda', empty: false),
+    (name: 'login-aset', dark: false, route: '/login', empty: false),
+    (name: 'login-aset-gelap', dark: true, route: '/login', empty: false),
+    (name: 'pesanan-kosong-aset', dark: true, route: '/pesanan', empty: true),
+    (name: 'pesanan-terang', dark: false, route: '/pesanan', empty: false),
+    (name: 'profil-terang', dark: false, route: '/profil', empty: false),
+    (name: 'profil-gelap', dark: true, route: '/profil', empty: false),
+    (name: 'detail-terang', dark: false, route: '/pesanan/87', empty: false),
+    (name: 'nota-terang', dark: false, route: '/pesanan/87/nota', empty: false),
+    (name: 'daftar-terang', dark: false, route: '/register', empty: false),
+    (name: 'aktivasi-terang', dark: false, route: '/activate', empty: false),
   ]) {
     testWidgets('capture ${scenario.name}', (tester) async {
       tester.view.physicalSize = const Size(780, 1688);
@@ -89,12 +98,18 @@ void main() {
           retry: (retryCount, error) => null,
           overrides: [
             tokenStorageProvider.overrideWithValue(
-              FakeTokenStorage(scenario.login ? null : 'demo-token'),
+              FakeTokenStorage(
+                ['/login', '/register', '/activate'].contains(scenario.route)
+                    ? null
+                    : 'demo-token',
+              ),
             ),
             authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
             homeRepositoryProvider.overrideWithValue(home),
             transaksiRepositoryProvider.overrideWithValue(
-              FakeTransaksiRepository(),
+              scenario.empty
+                  ? (redesignTransaksiRepository()..results.clear())
+                  : redesignTransaksiRepository(),
             ),
           ],
           child: RepaintBoundary(key: boundaryKey, child: const SparkleenApp()),
@@ -102,7 +117,12 @@ void main() {
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
       final context = boundaryKey.currentContext!;
+      ProviderScope.containerOf(tester.element(find.byType(SparkleenApp)))
+          .read(routerProvider)
+          .go(scenario.route);
+      await tester.pumpAndSettle();
       final images = tester.widgetList<Image>(find.byType(Image)).toList();
       await tester.runAsync(() async {
         for (final image in images) {

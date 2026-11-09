@@ -9,28 +9,28 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
   final colors = ColorScheme.fromSeed(
     seedColor: AppColors.primary,
     brightness: brightness,
-    primary: dark ? const Color(0xFF85BBFF) : AppColors.primary,
-    onPrimary: dark ? const Color(0xFF071523) : Colors.white,
+    primary: dark ? const Color(0xFF98C0FF) : AppColors.link,
+    onPrimary: dark ? const Color(0xFF101C2C) : Colors.white,
     primaryContainer: dark ? const Color(0xFF173756) : AppColors.primarySoft,
     onPrimaryContainer: dark ? const Color(0xFFB5D6FF) : AppColors.primaryDark,
     secondary: dark ? const Color(0xFF85BBFF) : AppColors.primary,
-    onSecondary: dark ? const Color(0xFF071523) : Colors.white,
+    onSecondary: dark ? const Color(0xFF101C2C) : Colors.white,
     secondaryContainer: dark ? const Color(0xFF173756) : AppColors.primarySoft,
     onSecondaryContainer: dark
         ? const Color(0xFFB5D6FF)
         : AppColors.primaryDark,
-    surface: dark ? const Color(0xFF122841) : AppColors.surface,
-    surfaceDim: dark ? const Color(0xFF071523) : AppColors.surfaceMuted,
+    surface: dark ? const Color(0xFF1A2B40) : AppColors.surface,
+    surfaceDim: dark ? const Color(0xFF101C2C) : AppColors.surfaceMuted,
     surfaceBright: dark ? const Color(0xFF2C455E) : AppColors.surface,
-    surfaceContainerLowest: dark ? const Color(0xFF071523) : Colors.white,
+    surfaceContainerLowest: dark ? const Color(0xFF101C2C) : Colors.white,
     surfaceContainerLow: dark ? const Color(0xFF0D2035) : AppColors.surface,
-    surfaceContainer: dark ? const Color(0xFF122841) : AppColors.background,
+    surfaceContainer: dark ? const Color(0xFF1A2B40) : AppColors.background,
     surfaceContainerHigh: dark
         ? const Color(0xFF193149)
         : AppColors.surfaceMuted,
     surfaceContainerHighest: dark ? const Color(0xFF233B54) : AppColors.border,
     onSurface: dark ? const Color(0xFFF0F6FD) : AppColors.text,
-    onSurfaceVariant: dark ? const Color(0xFFA5B7CA) : AppColors.muted,
+    onSurfaceVariant: dark ? const Color(0xFFB0BFD2) : AppColors.muted,
     outline: dark ? const Color(0xFF8299B1) : AppColors.soft,
     outlineVariant: dark ? const Color(0xFF30465E) : AppColors.border,
     inverseSurface: dark ? AppColors.surface : AppColors.text,
@@ -51,37 +51,37 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
   final textTheme = base.textTheme.copyWith(
     headlineLarge: GoogleFonts.plusJakartaSans(
       fontSize: 28,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w600,
       letterSpacing: -0.9,
       color: colors.onSurface,
     ),
     headlineMedium: GoogleFonts.plusJakartaSans(
-      fontSize: 24,
-      fontWeight: FontWeight.w800,
+      fontSize: 26,
+      fontWeight: FontWeight.w600,
       letterSpacing: -0.7,
       color: colors.onSurface,
     ),
     headlineSmall: GoogleFonts.plusJakartaSans(
       fontSize: 20,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w600,
       letterSpacing: -0.5,
       color: colors.onSurface,
     ),
     titleLarge: GoogleFonts.plusJakartaSans(
       fontSize: 18,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w600,
       letterSpacing: -0.4,
       color: colors.onSurface,
     ),
     titleMedium: GoogleFonts.plusJakartaSans(
       fontSize: 16,
-      fontWeight: FontWeight.w700,
+      fontWeight: FontWeight.w500,
       letterSpacing: -0.3,
       color: colors.onSurface,
     ),
     titleSmall: GoogleFonts.plusJakartaSans(
       fontSize: 14,
-      fontWeight: FontWeight.w700,
+      fontWeight: FontWeight.w500,
       letterSpacing: -0.2,
       color: colors.onSurface,
     ),
@@ -102,17 +102,17 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     ),
     labelLarge: GoogleFonts.plusJakartaSans(
       fontSize: 14,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w600,
       letterSpacing: 0,
     ),
     labelMedium: GoogleFonts.manrope(
       fontSize: 12,
-      fontWeight: FontWeight.w700,
+      fontWeight: FontWeight.w500,
       color: colors.onSurfaceVariant,
     ),
     labelSmall: GoogleFonts.manrope(
       fontSize: 12,
-      fontWeight: FontWeight.w700,
+      fontWeight: FontWeight.w500,
       color: colors.onSurfaceVariant,
     ),
   );
@@ -142,7 +142,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     ),
     inputDecorationTheme: InputDecorationThemeData(
       filled: true,
-      fillColor: colors.surface.withValues(alpha: 0.62),
+      fillColor: dark ? const Color(0xFF132237) : const Color(0xFFF5F7FB),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
       hintStyle: textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
       labelStyle: textTheme.bodyMedium?.copyWith(
@@ -150,17 +150,17 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       ),
       floatingLabelStyle: textTheme.labelMedium?.copyWith(
         color: colors.primary,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w500,
       ),
       prefixIconColor: colors.onSurfaceVariant,
       suffixIconColor: colors.onSurfaceVariant,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusInput),
-        borderSide: BorderSide(color: colors.outlineVariant, width: 1.4),
+        borderSide: BorderSide(color: colors.outline, width: 1),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusInput),
-        borderSide: BorderSide(color: colors.outlineVariant, width: 1.4),
+        borderSide: BorderSide(color: colors.outline, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusInput),
@@ -191,7 +191,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(48, 52),
         foregroundColor: colors.primary,
-        side: BorderSide(color: colors.outlineVariant, width: 1.4),
+        side: BorderSide(color: colors.outline, width: 1),
         textStyle: textTheme.labelLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
@@ -210,7 +210,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       space: 1,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      height: 66,
+      height: 72,
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       indicatorColor: colors.primaryContainer,
@@ -226,8 +226,8 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => textTheme.labelMedium?.copyWith(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
           color: states.contains(WidgetState.selected)
               ? colors.primary
               : colors.onSurfaceVariant,
@@ -250,6 +250,14 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       titleTextStyle: textTheme.titleLarge,
       contentTextStyle: textTheme.bodyMedium?.copyWith(
         color: colors.onSurfaceVariant,
+      ),
+    ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: colors.surface,
+      surfaceTintColor: Colors.transparent,
+      showDragHandle: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(color: colors.primary),

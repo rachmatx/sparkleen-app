@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:sparkleen_mobile/core/api/api_exception.dart';
 import 'package:sparkleen_mobile/core/theme/app_theme.dart';
+import 'package:sparkleen_mobile/core/widgets/status_chip.dart';
 import 'package:sparkleen_mobile/features/auth/application/auth_controller.dart';
 import 'package:sparkleen_mobile/features/home/application/home_providers.dart';
 import 'package:sparkleen_mobile/features/home/presentation/home_page.dart';
@@ -63,7 +64,13 @@ void main() {
     await _settleData(tester);
 
     expect(find.text('LAU/20261021/0001'), findsOneWidget);
-    expect(find.text('Dicuci'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(StatusChip),
+        matching: find.text('Dicuci'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('15 poin'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Cuci Kering'), 200);
     expect(find.text('Cuci Kering'), findsOneWidget);

@@ -37,7 +37,7 @@ class DetailPesananPage extends ConsumerWidget {
 
     return AppBackdrop(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Detail Pesanan')),
+        appBar: AppBar(title: const Text('Detail pesanan')),
         body: AsyncValueView<TransaksiDetail>(
           value: async,
           onRetry: () => ref.invalidate(transaksiDetailProvider(id)),
@@ -53,7 +53,7 @@ class DetailPesananPage extends ConsumerWidget {
               children: [
                 _HeaderCard(detail: detail),
                 _SectionCard(
-                  title: 'Status Pesanan',
+                  title: 'Perjalanan cucian',
                   child: TimelineStatus(steps: detail.timeline),
                 ),
                 _ItemsCard(items: detail.items),
@@ -84,45 +84,16 @@ class _HeaderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Icon(
-                Icons.receipt_long_outlined,
-                color: colors.primary,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'NOMOR NOTA',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        letterSpacing: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      detail.noNota,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: colors.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              StatusChip(status: detail.status, label: detail.statusLabel),
+              Text(detail.noNota, style: theme.textTheme.bodySmall),
             ],
           ),
-          const SizedBox(height: 12),
-          StatusChip(status: detail.status, label: detail.statusLabel),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: TicketDivider(),
-          ),
+          const SizedBox(height: 20),
           if (detail.tglEstimasi != null) ...[
             Text(
               'Estimasi selesai',
@@ -132,10 +103,10 @@ class _HeaderCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              formatTanggal(detail.tglEstimasi!),
+              formatEstimasi(detail.tglEstimasi!),
               style: theme.textTheme.headlineSmall?.copyWith(
-                color: colors.primary,
-                fontWeight: FontWeight.w700,
+                color: colors.onSurface,
+                fontWeight: FontWeight.w600,
                 letterSpacing: -0.6,
               ),
             ),
@@ -286,7 +257,7 @@ class _ItemRow extends StatelessWidget {
                 item.namaLayanan,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colors.onSurface,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
@@ -306,7 +277,7 @@ class _ItemRow extends StatelessWidget {
             textAlign: TextAlign.right,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colors.onSurface,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -354,7 +325,7 @@ class _PaymentCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: colors.primaryContainer.withValues(alpha: 0.4),
+              color: colors.primaryContainer,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: colors.outlineVariant),
             ),
@@ -371,7 +342,7 @@ class _PaymentCard extends StatelessWidget {
                   child: Text(
                     lunas ? 'Lunas' : 'Belum dibayar',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: colors.onSurface,
                     ),
                   ),
@@ -421,7 +392,7 @@ class _PaymentCard extends StatelessWidget {
                         textAlign: TextAlign.right,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.onSurface,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -455,7 +426,7 @@ class _SummaryRow extends StatelessWidget {
     final style =
         (bold ? theme.textTheme.titleSmall : theme.textTheme.bodySmall)
             ?.copyWith(
-              fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+              fontWeight: bold ? FontWeight.w600 : FontWeight.w500,
               color: bold ? colors.onSurface : colors.onSurfaceVariant,
             );
 
@@ -471,7 +442,7 @@ class _SummaryRow extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               style: style?.copyWith(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: valueColor ?? (bold ? colors.primary : colors.onSurface),
               ),
             ),
@@ -519,7 +490,7 @@ class _PinCard extends StatelessWidget {
                   Text(
                     value,
                     style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 6,
                       color: colors.primary,
                     ),
@@ -572,7 +543,7 @@ class _SectionCard extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleSmall
-                ?.copyWith(fontWeight: FontWeight.w800),
+                ?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           child,

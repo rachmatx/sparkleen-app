@@ -24,7 +24,7 @@ class AppShell extends StatelessWidget {
         minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
         child: AppCard(
           padding: EdgeInsets.zero,
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.88),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.98),
           child: NavigationBar(
             selectedIndex: navigationShell.currentIndex,
             onDestinationSelected: _goBranch,

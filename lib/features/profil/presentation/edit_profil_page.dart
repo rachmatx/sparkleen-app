@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../auth/application/auth_controller.dart';
@@ -98,14 +97,13 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
                 ],
                 AppCard(
                   padding: const EdgeInsets.all(18),
-                  shadow: AppColors.softShadow,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
                         'Informasi akun',
                         style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -150,10 +148,10 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.info_outline_rounded,
                             size: 15,
-                            color: AppColors.soft,
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 6),
                           Expanded(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_assets.dart';
@@ -11,6 +10,7 @@ import '../../../core/widgets/app_button.dart';
 import '../application/auth_controller.dart';
 import 'validators.dart';
 import 'widgets/auth_scaffold.dart';
+import 'widgets/pin_form_field.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -37,6 +37,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _submit() async {
+    if (ref.read(authControllerProvider).isLoading) return;
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _serverError = null);
     if (!_formKey.currentState!.validate()) return;
@@ -88,6 +89,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ],
             TextFormField(
               controller: _phone,
+              enabled: !isLoading,
+              autofillHints: const [AutofillHints.telephoneNumber],
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
@@ -100,20 +103,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               onChanged: (_) => _clearServerError(),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            PinFormField(
               controller: _pin,
-              obscureText: true,
-              keyboardType: TextInputType.number,
+              enabled: !isLoading,
+              label: 'PIN',
+              hint: '6 digit angka',
               textInputAction: TextInputAction.done,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ],
-              decoration: const InputDecoration(
-                labelText: 'PIN',
-                hintText: '6 digit angka',
-                prefixIcon: Icon(Icons.lock_outline_rounded),
-              ),
               validator: (value) =>
                   _serverError?.fieldError('pin') ?? validatePin(value),
               onChanged: (_) => _clearServerError(),

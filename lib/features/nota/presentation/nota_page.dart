@@ -36,7 +36,7 @@ class NotaPage extends ConsumerWidget {
 
     return AppBackdrop(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Nota Digital')),
+        appBar: AppBar(title: const Text('Nota digital')),
         body: AsyncValueView<NotaData>(
           value: async,
           onRetry: () => ref.invalidate(notaProvider(id)),
@@ -81,7 +81,7 @@ class _NotaReceipt extends StatelessWidget {
             child: Text(
               'Sparkleen',
               style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: colors.primary,
                 letterSpacing: -0.5,
               ),
@@ -94,7 +94,7 @@ class _NotaReceipt extends StatelessWidget {
                 nota.outlet.nama,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: colors.onSurface,
                 ),
               ),
@@ -137,7 +137,7 @@ class _NotaReceipt extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: colors.primaryContainer.withValues(alpha: 0.4),
+              color: colors.primaryContainer,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: colors.outlineVariant),
             ),
@@ -183,7 +183,7 @@ class _NotaReceipt extends StatelessWidget {
                       lunas ? 'Lunas' : 'Belum dibayar',
                       textAlign: TextAlign.right,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: colors.primary,
                       ),
                     ),
@@ -207,7 +207,7 @@ class _NotaReceipt extends StatelessWidget {
             child: Text(
               'Terima kasih',
               style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -253,7 +253,7 @@ class _NotaRow extends StatelessWidget {
             value,
             textAlign: TextAlign.right,
             style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: colors.onSurface,
             ),
           ),
@@ -284,7 +284,7 @@ class _NotaItem extends StatelessWidget {
                 item.namaLayanan,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colors.onSurface,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
@@ -304,7 +304,7 @@ class _NotaItem extends StatelessWidget {
             textAlign: TextAlign.right,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colors.onSurface,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -333,7 +333,7 @@ class _AmountRow extends StatelessWidget {
     final labelStyle =
         (bold ? theme.textTheme.titleSmall : theme.textTheme.bodySmall)
             ?.copyWith(
-              fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
+              fontWeight: bold ? FontWeight.w600 : FontWeight.w500,
               color: bold ? colors.onSurface : colors.onSurfaceVariant,
             );
 
@@ -353,7 +353,7 @@ class _AmountRow extends StatelessWidget {
                           ? theme.textTheme.titleSmall
                           : theme.textTheme.bodySmall)
                       ?.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color:
                             color ?? (bold ? colors.primary : colors.onSurface),
                       ),

@@ -30,7 +30,7 @@ class ProfilPage extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(22, 24, 22, 120),
             children: [
-              Text('Ruang pribadimu.', style: theme.textTheme.headlineMedium),
+              Text('Profil', style: theme.textTheme.headlineMedium),
               const SizedBox(height: 6),
               Text(
                 'Detail akun, poin, dan informasi kontak.',
@@ -101,9 +101,11 @@ class ProfilPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'SPARKLEEN / DIRAWAT DENGAN HATI',
+                  'Sparkleen Laundry',
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
               ],
             ],

@@ -29,7 +29,7 @@ class SparkleenApp extends ConsumerWidget {
       darkTheme: buildAppTheme(brightness: Brightness.dark),
       builder: (context, child) => ColoredBox(
         color: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF071523)
+            ? AppColors.backgroundDark
             : AppColors.background,
         child: Center(
           child: ConstrainedBox(

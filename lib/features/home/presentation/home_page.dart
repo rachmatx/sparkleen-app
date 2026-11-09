@@ -4,17 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_assets.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/status_chip.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../pesanan/data/transaksi_ringkas.dart';
+import '../../pesanan/presentation/widgets/order_stages.dart';
 import '../application/home_providers.dart';
 import '../data/layanan.dart';
+import '../data/outlet_info.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -30,18 +30,12 @@ class HomePage extends ConsumerWidget {
         ref.read(pesananAktifProvider.future),
       ]);
     } on Object {
-      // Each section displays its own retry state.
+      // Each section retains its own error and retry action.
     }
   }
 
-  Future<void> _copyWhatsapp(BuildContext context, WidgetRef ref) async {
-    final outlet = ref.read(outletProvider).value;
-    if (outlet == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Info outlet belum tersedia.')),
-      );
-      return;
-    }
+  Future<void> _copyWhatsapp(BuildContext context, OutletInfo outlet) async {
+    if (outlet.noWa.trim().isEmpty) return;
     await Clipboard.setData(ClipboardData(text: outlet.noWa));
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -66,56 +60,68 @@ class HomePage extends ConsumerWidget {
             onRefresh: () => _refresh(ref),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
               children: [
-                Row(
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    const BrandMark(size: 44),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'sparkleen',
-                        style: theme.textTheme.titleLarge,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const BrandMark(size: 36),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            'sparkleen',
+                            style: theme.textTheme.titleLarge,
+                          ),
+                        ),
+                      ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                    TextButton.icon(
+                      onPressed: () => context.go('/profil'),
+                      style: TextButton.styleFrom(
+                        backgroundColor: colors.surface,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        side: BorderSide(color: colors.outlineVariant),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: colors.surface.withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: colors.outlineVariant),
+                      icon: const AppArtwork(
+                        asset: AppAssets.points,
+                        width: 22,
+                        height: 22,
+                        fallbackIcon: Icons.auto_awesome_outlined,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const AppArtwork(
-                            asset: AppAssets.points,
-                            width: 24,
-                            height: 24,
-                            fallbackIcon: Icons.auto_awesome_outlined,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${pelanggan?.poin ?? 0} poin',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: colors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
+                      label: Text('${pelanggan?.poin ?? 0} poin'),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                _WelcomeCard(nama: nama),
                 const SizedBox(height: 24),
+                _WelcomeHeader(nama: nama),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Pesanan aktif',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go('/pesanan'),
+                      child: const Text('Semua'),
+                    ),
+                  ],
+                ),
                 AsyncValueView<TransaksiRingkas?>(
                   value: ref.watch(pesananAktifProvider),
                   loadingBuilder: (context) =>
-                      const LoadingList(itemCount: 1, itemHeight: 200),
+                      const LoadingList(itemCount: 1, itemHeight: 210),
                   onRetry: () => ref.invalidate(pesananAktifProvider),
                   isEmpty: (transaksi) => transaksi == null,
                   emptyBuilder: (context) => EmptyState(
@@ -130,77 +136,111 @@ class HomePage extends ConsumerWidget {
                     onTap: () => context.push('/pesanan/${transaksi.id}'),
                   ),
                 ),
-                const SizedBox(height: 16),
-                AppButton(
-                  label: 'Lihat semua pesanan',
-                  icon: Icons.receipt_long_outlined,
-                  onPressed: () => context.go('/pesanan'),
-                ),
-                const SizedBox(height: 28),
-                Text('Layanan & harga', style: theme.textTheme.titleMedium),
-                const SizedBox(height: 4),
-                Text(
-                  'Pilih perawatan yang pas untuk cucianmu.',
-                  style: theme.textTheme.bodySmall,
-                ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 24),
+                Text('Layanan laundry', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 12),
                 AsyncValueView<List<Layanan>>(
                   value: ref.watch(layananProvider),
                   loadingBuilder: (context) =>
-                      const LoadingList(itemCount: 2, itemHeight: 74),
+                      const LoadingList(itemCount: 2, itemHeight: 100),
                   onRetry: () => ref.invalidate(layananProvider),
                   isEmpty: (layanan) => layanan.isEmpty,
                   emptyBuilder: (context) => const EmptyState(
                     message: 'Belum ada layanan tersedia.',
                     icon: Icons.local_laundry_service_outlined,
                   ),
-                  builder: (context, layanan) => AppCard(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
+                  builder: (context, layanan) => LayoutBuilder(
+                    builder: (context, constraints) {
+                      final twoColumns =
+                          constraints.maxWidth >= 330 &&
+                          MediaQuery.textScalerOf(context).scale(14) <= 18;
+                      return Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          for (final item in layanan)
+                            SizedBox(
+                              width: twoColumns
+                                  ? (constraints.maxWidth - 10) / 2
+                                  : constraints.maxWidth,
+                              child: _ServiceCard(layanan: item),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Biaya mengikuti berat dan layanan yang tercatat di nota.',
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: 24),
+                AsyncValueView<OutletInfo>(
+                  value: ref.watch(outletProvider),
+                  onRetry: () => ref.invalidate(outletProvider),
+                  loadingBuilder: (_) =>
+                      const LoadingList(itemCount: 1, itemHeight: 84),
+                  builder: (context, outlet) => AppCard(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        for (
-                          var index = 0;
-                          index < layanan.length;
-                          index++
-                        ) ...[
-                          _LayananTile(layanan: layanan[index]),
-                          if (index < layanan.length - 1) const TicketDivider(),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.storefront_outlined,
+                              color: colors.primary,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    outlet.nama.isEmpty
+                                        ? 'Outlet Sparkleen'
+                                        : outlet.nama,
+                                    style: theme.textTheme.titleSmall,
+                                  ),
+                                  if (outlet.alamat.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      outlet.alamat,
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                  ],
+                                  if (outlet.jamBuka.isNotEmpty &&
+                                      outlet.jamTutup.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Jam operasional ${outlet.jamBuka}–${outlet.jamTutup}',
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (outlet.noWa.trim().isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          TextButton.icon(
+                            onPressed: () => _copyWhatsapp(context, outlet),
+                            icon: const Icon(Icons.copy_outlined, size: 18),
+                            label: const Text('Salin nomor WhatsApp outlet'),
+                          ),
                         ],
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
                 Text(
-                  'Biaya cucian dihitung dari berat dan layanan yang tercatat di nota.',
+                  '${pelanggan?.totalTransaksi ?? 0} transaksi',
+                  textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.receipt_long_outlined,
-                      size: 18,
-                      color: colors.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${pelanggan?.totalTransaksi ?? 0} transaksi',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ),
-                    Text('Bersama Sparkleen', style: theme.textTheme.bodySmall),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                OutlinedButton.icon(
-                  onPressed: () => _copyWhatsapp(context, ref),
-                  icon: const Icon(Icons.copy_outlined, size: 18),
-                  label: const Text('Salin nomor WhatsApp outlet'),
                 ),
               ],
             ),
@@ -211,70 +251,37 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class _WelcomeCard extends StatelessWidget {
-  const _WelcomeCard({required this.nama});
-
+class _WelcomeHeader extends StatelessWidget {
+  const _WelcomeHeader({required this.nama});
   final String nama;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return AppCard(
-      color: AppColors.primarySoft,
-      padding: const EdgeInsets.all(18),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final imageWidth = constraints.maxWidth < 300 ? 104.0 : 144.0;
-          final stackArtwork = MediaQuery.textScalerOf(context).scale(16) > 22;
-          final greeting = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Selamat datang,',
-                style: textTheme.bodySmall?.copyWith(color: AppColors.muted),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                nama,
-                style: textTheme.headlineSmall?.copyWith(color: AppColors.text),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Urusan cucian, lebih ringan.',
-                style: textTheme.bodySmall?.copyWith(color: AppColors.muted),
-              ),
-            ],
-          );
-          if (stackArtwork) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                greeting,
-                const SizedBox(height: 12),
-                const Align(
-                  alignment: Alignment.centerRight,
-                  child: AppArtwork(
-                    asset: AppAssets.home,
-                    width: 180,
-                    height: 90,
-                  ),
-                ),
-              ],
-            );
-          }
-          return Row(
-            children: [
-              Expanded(child: greeting),
-              const SizedBox(width: 10),
-              AppArtwork(
-                asset: AppAssets.home,
-                width: imageWidth,
-                height: imageWidth / 1.65,
-              ),
-            ],
-          );
-        },
-      ),
+    final text = Theme.of(context).textTheme;
+    final greeting = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Selamat datang,', style: text.bodySmall),
+        const SizedBox(height: 4),
+        Text(nama, style: text.headlineMedium),
+      ],
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (MediaQuery.textScalerOf(context).scale(16) > 22) return greeting;
+        return Row(
+          children: [
+            Expanded(child: greeting),
+            const SizedBox(width: 8),
+            const IllustrationPanel(
+              asset: AppAssets.home,
+              width: 82,
+              height: 62,
+              padding: EdgeInsets.all(4),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -287,106 +294,67 @@ class _ActiveOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
     return AppCard(
       onTap: onTap,
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(height: 4, color: AppColors.primary),
-          Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      'CUCIAN AKTIF',
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              StatusChip(
+                status: transaksi.status,
+                label: transaksi.statusLabel,
+              ),
+              Text(transaksi.noNota, style: theme.textTheme.bodySmall),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Text('Estimasi selesai', style: theme.textTheme.bodySmall),
+          const SizedBox(height: 4),
+          Text(
+            transaksi.tglEstimasi == null
+                ? 'Menunggu estimasi'
+                : formatEstimasi(transaksi.tglEstimasi!),
+            style: theme.textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 20),
+          OrderStages(status: transaksi.status),
+          const SizedBox(height: 18),
+          const Divider(),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                '${formatBerat(transaksi.totalBerat)} · ${formatRupiah(transaksi.grandTotal)}',
+                style: theme.textTheme.bodyMedium,
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      'Detail pesanan',
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: colors.primary,
-                        letterSpacing: 1.4,
+                        color: theme.colorScheme.primary,
                       ),
                     ),
-                    StatusChip(
-                      status: transaksi.status,
-                      label: transaksi.statusLabel,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Text(transaksi.noNota, style: theme.textTheme.titleMedium),
-                const SizedBox(height: 18),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.schedule_outlined,
-                      size: 22,
-                      color: colors.primary,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Estimasi selesai',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            transaksi.tglEstimasi == null
-                                ? 'Menunggu estimasi'
-                                : formatTanggal(transaksi.tglEstimasi!),
-                            style: theme.textTheme.titleSmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                const TicketDivider(),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        formatBerat(transaksi.totalBerat),
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ),
-                    Text(
-                      formatRupiah(transaksi.grandTotal),
-                      style: theme.textTheme.titleMedium,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Lihat perjalanan cucian',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: colors.primary,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 20,
-                      color: colors.primary,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 18,
+                    color: theme.colorScheme.primary,
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -394,67 +362,83 @@ class _ActiveOrderCard extends StatelessWidget {
   }
 }
 
-class _LayananTile extends StatelessWidget {
-  const _LayananTile({required this.layanan});
+class _ServiceCard extends StatelessWidget {
+  const _ServiceCard({required this.layanan});
   final Layanan layanan;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final artwork = AppAssets.serviceArtwork(
+    final asset = AppAssets.serviceArtwork(
       name: layanan.nama,
       assetKey: layanan.assetKey,
     );
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppColors.primarySoft,
-              borderRadius: BorderRadius.circular(13),
-            ),
-            child: artwork == null
-                ? Icon(
-                    Icons.local_laundry_service_outlined,
-                    size: 26,
-                    color: colors.primary,
-                  )
-                : Padding(
-                    padding: const EdgeInsets.all(3),
-                    child: AppArtwork(asset: artwork, width: 54, height: 54),
-                  ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(layanan.nama, style: theme.textTheme.titleSmall),
-                const SizedBox(height: 3),
+                if (asset != null) ...[
+                  IllustrationPanel(asset: asset, width: 100, height: 86),
+                  const SizedBox(height: 16),
+                ],
+                Text(layanan.nama, style: theme.textTheme.headlineSmall),
+                const SizedBox(height: 8),
                 Text(
-                  '± ${layanan.estimasiHari} hari',
-                  style: theme.textTheme.bodySmall,
+                  '${formatRupiah(layanan.hargaPerKg)} per kg · Estimasi ${layanan.estimasiHari} hari',
+                  style: theme.textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Total cucian mengikuti berat dan layanan yang tercatat pada nota.',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Tutup'),
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  formatRupiah(layanan.hargaPerKg),
-                  textAlign: TextAlign.right,
-                  style: theme.textTheme.titleSmall,
-                ),
-                Text('per kg', style: theme.textTheme.bodySmall),
-              ],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (asset != null)
+            IllustrationPanel(
+              asset: asset,
+              width: 66,
+              height: 58,
+              padding: const EdgeInsets.all(3),
+            )
+          else
+            Icon(
+              Icons.local_laundry_service_outlined,
+              size: 36,
+              color: theme.colorScheme.primary,
             ),
+          const SizedBox(height: 12),
+          Text(layanan.nama, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 6),
+          Text(
+            formatRupiah(layanan.hargaPerKg),
+            style: theme.textTheme.titleLarge,
+          ),
+          Text(
+            'per kg · ${layanan.estimasiHari} hari',
+            style: theme.textTheme.bodySmall,
           ),
         ],
       ),

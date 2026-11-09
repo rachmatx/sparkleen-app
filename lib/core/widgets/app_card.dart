@@ -33,14 +33,18 @@ class AppCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: radius,
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Material(
-            color: color ?? colors.surface.withValues(alpha: 0.72),
+            color:
+                color ??
+                colors.surface.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.dark
+                      ? 0.96
+                      : 0.95,
+                ),
             shape: RoundedRectangleBorder(
               borderRadius: radius,
-              side: BorderSide(
-                color: colors.outlineVariant.withValues(alpha: 0.65),
-              ),
+              side: BorderSide(color: colors.outlineVariant),
             ),
             clipBehavior: Clip.antiAlias,
             child: onTap == null
@@ -67,53 +71,16 @@ class AppBackdrop extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: ColoredBox(
-        color: dark ? const Color(0xFF071523) : AppColors.background,
-        child: CustomPaint(
-          painter: _WeavePainter(dark: dark),
-          child: child,
+        color: dark ? AppColors.backgroundDark : AppColors.background,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: child,
+          ),
         ),
       ),
     );
   }
-}
-
-class _WeavePainter extends CustomPainter {
-  const _WeavePainter({required this.dark});
-
-  final bool dark;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.save();
-    canvas.clipRect(Offset.zero & size);
-    final cloth = Paint()
-      ..color = (dark ? const Color(0xFF123F6B) : const Color(0xFFB9D7F5))
-          .withValues(alpha: 0.38);
-    canvas.drawPath(
-      Path()
-        ..moveTo(size.width * 0.64, 0)
-        ..lineTo(size.width, 0)
-        ..lineTo(size.width, 270)
-        ..lineTo(size.width * 0.78, 225)
-        ..close(),
-      cloth,
-    );
-    final thread = Paint()
-      ..color = (dark ? Colors.white : AppColors.primary).withValues(
-        alpha: dark ? 0.025 : 0.035,
-      )
-      ..strokeWidth = 0.7;
-    for (double y = 0; y < size.height; y += 12) {
-      for (double x = 0; x < size.width; x += 12) {
-        canvas.drawLine(Offset(x, y), Offset(x + 5, y), thread);
-        canvas.drawLine(Offset(x, y + 3), Offset(x, y + 8), thread);
-      }
-    }
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(_WeavePainter oldDelegate) => dark != oldDelegate.dark;
 }
 
 class TicketDivider extends StatelessWidget {

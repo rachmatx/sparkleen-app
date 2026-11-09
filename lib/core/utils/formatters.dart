@@ -21,3 +21,6 @@ String formatBerat(double value) {
       : value.toStringAsFixed(1).replaceAll('.', ',');
   return '$text kg';
 }
+
+String formatEstimasi(DateTime value) =>
+    DateFormat('d MMMM · HH.mm', 'id_ID').format(value.toLocal());

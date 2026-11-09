@@ -16,7 +16,7 @@ class StatusChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: statusBackground(status, brightness: theme.brightness),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(9),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -32,7 +32,7 @@ class StatusChip extends StatelessWidget {
             style: theme.textTheme.labelMedium?.copyWith(
               color: color,
               fontSize: 12,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

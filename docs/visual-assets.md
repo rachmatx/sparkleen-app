@@ -20,7 +20,7 @@ Paket pertama berisi sembilan PNG master dengan gaya biru/putih dan objek laundr
 - `AppArtwork` membatasi ukuran decode berdasarkan ukuran tampilan dan DPR, mempertahankan rasio gambar, mengecualikan dekorasi dari pembaca layar, dan menampilkan ikon cadangan jika gambar gagal dimuat.
 - `IllustrationPanel` memakai permukaan pale blue yang sama di kedua tema. Master raster masih memiliki sedikit tepi putih; panel ini memberi kontras yang konsisten tanpa memodifikasi gambar sumber.
 - Hero beranda digabung dengan sapaan agar kartu pesanan tetap dekat bagian atas. Saat ukuran teks besar, susunannya berubah menjadi kolom.
-- Ilustrasi login hanya muncul pada viewport setinggi minimal 700 logical pixel dan disembunyikan ketika keyboard terbuka. Form daftar dan aktivasi memakai logo yang sama tanpa menambah hero.
+- Ilustrasi login menjadi aksen 76 × 84 di samping intro; disembunyikan ketika keyboard terbuka atau teks diperbesar melewati ambang layout. Form daftar dan aktivasi memakai logo yang sama tanpa menambah hero. Ilustrasi beranda menjadi aksen ringkas, bukan kartu hero tersendiri.
 - Ilustrasi koneksi hanya muncul pada error jaringan. Error validasi/server tetap menampilkan pesan aslinya dan ikon error.
 - Ikon navigasi dan kontrol tetap menggunakan Material Icons.
 

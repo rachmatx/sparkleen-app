@@ -63,11 +63,9 @@ class _TimelineTile extends StatelessWidget {
                 if (!isLast)
                   Expanded(
                     child: Container(
-                      width: 1,
+                      width: 2,
                       margin: const EdgeInsets.symmetric(vertical: 4),
-                      color: isDone
-                          ? colors.primary.withValues(alpha: 0.5)
-                          : colors.outlineVariant,
+                      color: isDone ? colors.primary : colors.outline,
                     ),
                   ),
               ],
@@ -84,7 +82,7 @@ class _TimelineTile extends StatelessWidget {
                     step.label,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: isCurrent
-                          ? FontWeight.w800
+                          ? FontWeight.w600
                           : isDone
                           ? FontWeight.w600
                           : FontWeight.w500,

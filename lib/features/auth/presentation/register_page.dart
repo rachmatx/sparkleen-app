@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,6 +7,7 @@ import '../../../core/widgets/app_button.dart';
 import '../application/auth_controller.dart';
 import 'validators.dart';
 import 'widgets/auth_scaffold.dart';
+import 'widgets/pin_form_field.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -40,6 +40,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   Future<void> _submit() async {
+    if (ref.read(authControllerProvider).isLoading) return;
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _serverError = null);
     if (!_formKey.currentState!.validate()) return;
@@ -100,6 +101,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _phone,
+              enabled: !isLoading,
+              autofillHints: const [AutofillHints.telephoneNumber],
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
@@ -128,39 +131,23 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               onChanged: (_) => _clearServerError(),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            PinFormField(
               controller: _pin,
-              obscureText: true,
-              keyboardType: TextInputType.number,
+              enabled: !isLoading,
+              label: 'PIN',
+              hint: '6 digit angka',
               textInputAction: TextInputAction.next,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ],
-              decoration: const InputDecoration(
-                labelText: 'PIN',
-                hintText: '6 digit angka',
-                prefixIcon: Icon(Icons.lock_outline_rounded),
-              ),
               validator: (value) =>
                   _serverError?.fieldError('pin') ?? validatePin(value),
               onChanged: (_) => _clearServerError(),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            PinFormField(
               controller: _pinConfirmation,
-              obscureText: true,
-              keyboardType: TextInputType.number,
+              enabled: !isLoading,
+              label: 'Ulangi PIN',
+              hint: 'Ketik ulang PIN',
               textInputAction: TextInputAction.done,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ],
-              decoration: const InputDecoration(
-                labelText: 'Ulangi PIN',
-                hintText: 'Ketik ulang PIN',
-                prefixIcon: Icon(Icons.lock_reset_rounded),
-              ),
               validator: (value) => validatePinConfirmation(value, _pin.text),
               onFieldSubmitted: (_) => _submit(),
             ),

@@ -5,7 +5,7 @@ Aplikasi pelanggan Sparkleen Laundry. Dibangun dengan Flutter dan terhubung ke R
 
 | Beranda | Masuk | Beranda (mode gelap) |
 | --- | --- | --- |
-| ![Beranda](docs/screenshots/beranda-aset.png) | ![Masuk](docs/screenshots/login-aset.png) | ![Beranda mode gelap](docs/screenshots/beranda-aset-gelap.png) |
+| ![Beranda](docs/screenshots/redesign/beranda-aset.png) | ![Masuk](docs/screenshots/redesign/login-aset.png) | ![Beranda mode gelap](docs/screenshots/redesign/beranda-aset-gelap.png) |
 
 > Tangkapan layar memakai data demo, bukan data pelanggan sungguhan.
 
@@ -17,8 +17,9 @@ Aplikasi pelanggan Sparkleen Laundry. Dibangun dengan Flutter dan terhubung ke R
 - Detail pesanan: timeline status, rincian layanan, pembayaran, dan PIN pengambilan.
 - Nota digital yang tidak memuat PIN pengambilan.
 - Profil, ubah nama/alamat, dan keluar akun.
-- Tema Blue Weave: mode terang dan gelap, kartu kaca, tekstur tenun halus, pemisah
-  bergaya struk — tanpa gradasi warna.
+- Tema terang/gelap dengan background solid, kaca padat, kontras teks dan batas
+  input yang jelas, serta layout yang mengikuti pembesaran teks — tanpa gradasi.
+- Kontrol visibilitas PIN, ringkasan layanan, dan tautan poin menuju profil.
 - Sembilan aset visual Sparkleen: logo bersama, ilustrasi beranda/login, gambar
   layanan, kondisi pesanan kosong, gangguan koneksi, dan badge poin.
 - Ikon launcher Android/adaptive icon, splash native Android, serta ikon PWA
@@ -133,11 +134,11 @@ lib/
     splash/   layar awal
 ```
 
-## Desain Blue Weave
+## Desain UI
 
-- Palet solid: royal blue `#0D63D8`, navy `#0A1B30`, pale blue `#DCEBFC`; tanpa gradasi.
+- Palet solid: royal blue `#0D63D8`, teks `#102A43`, tint `#E4EDFA`, canvas terang `#EFF3F8` dan gelap `#101C2C`; tanpa gradasi.
 - `AppCard` memakai `BackdropFilter` + border tipis untuk efek kaca.
-- `AppBackdrop` menggambar tekstur tenun lewat `CustomPainter`, bukan gambar raster.
+- `AppBackdrop` memakai satu warna solid per tema; `AppCard` memakai opacity 95–96% dan dock 98%.
 - `TicketDivider` memberi pemisah bergaya struk laundry.
 - Tipografi Plus Jakarta Sans (judul) dan Manrope (isi).
 - Warna, radius, dan shadow terpusat di `lib/core/theme/`.
@@ -157,6 +158,7 @@ lib/
 ## Dokumen
 
 - Integrasi aset: [`docs/visual-assets.md`](docs/visual-assets.md)
+- Redesign UI/UX dan hasil verifikasi: [`docs/ui-ux-implementation.md`](docs/ui-ux-implementation.md)
 - Spesifikasi: [`docs/superpowers/specs/2026-10-23-sparkleen-mobile-api-design.md`](docs/superpowers/specs/2026-10-23-sparkleen-mobile-api-design.md)
 - Plan Flutter fase 1: [`docs/superpowers/plans/2026-10-24-sparkleen-mobile-flutter-phase1.md`](docs/superpowers/plans/2026-10-24-sparkleen-mobile-flutter-phase1.md)
 - Plan backend fase 1: [`docs/superpowers/plans/2026-10-23-sparkleen-mobile-api-backend.md`](docs/superpowers/plans/2026-10-23-sparkleen-mobile-api-backend.md)
@@ -165,6 +167,6 @@ lib/
 
 ## Status
 
-Fase 1 selesai, tema Blue Weave dan paket aset Sparkleen sudah diterapkan pada
+Fase 1 selesai, redesign UI/UX dengan background solid, kaca padat, dan paket aset Sparkleen sudah diterapkan pada
 layar terkait. Seluruh layar utama terhubung ke API, `flutter analyze` bersih,
-dan `flutter test` hijau (50 test).
+dan `flutter test` hijau (78 test). Hasil render dan batas verifikasi ada di dokumen redesign.
