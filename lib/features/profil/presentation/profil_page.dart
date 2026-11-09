@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
@@ -21,71 +19,93 @@ class ProfilPage extends ConsumerWidget {
       AuthAuthenticated(:final pelanggan) => pelanggan,
       _ => null,
     };
-
-    if (pelanggan == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Profil')),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: auth.isLoading
-              ? const LoadingList()
-              : ErrorState(
-                  error:
-                      auth.error ??
-                      const ApiException(
-                        code: 'NO_SESSION',
-                        message: 'Sesi tidak ditemukan. Silakan masuk kembali.',
-                      ),
-                  onRetry: () => ref.invalidate(authControllerProvider),
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return AppBackdrop(
+      child: Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(22, 24, 22, 120),
+            children: [
+              Text('Ruang pribadimu.', style: theme.textTheme.headlineMedium),
+              const SizedBox(height: 6),
+              Text(
+                'Detail akun, poin, dan informasi kontak.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
                 ),
-        ),
-      );
-    }
-
-    final textTheme = Theme.of(context).textTheme;
-
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 116),
-          children: [
-            Text('Profil', style: textTheme.headlineMedium),
-            const SizedBox(height: 2),
-            Text(
-              'Kelola data akun dan pengaturan kamu.',
-              style: textTheme.bodySmall,
-            ),
-            const SizedBox(height: 18),
-            _ProfileHeader(pelanggan: pelanggan),
-            const SizedBox(height: 18),
-            Text('Detail akun', style: textTheme.titleSmall),
-            const SizedBox(height: 10),
-            _DetailCard(pelanggan: pelanggan),
-            const SizedBox(height: 20),
-            AppGradientButton(
-              label: 'Ubah Profil',
-              icon: Icons.edit_outlined,
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const EditProfilPage(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: () => _confirmLogout(context, ref),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.danger,
-                backgroundColor: AppColors.dangerSoft,
-                side: const BorderSide(color: Color(0xFFFAD2DD)),
               ),
-              icon: const Icon(Icons.logout_rounded, size: 18),
-              label: const Text('Keluar Akun'),
-            ),
-          ],
+              const SizedBox(height: 24),
+              if (pelanggan == null)
+                auth.isLoading
+                    ? const LoadingList()
+                    : ErrorState(
+                        error:
+                            auth.error ??
+                            const ApiException(
+                              code: 'NO_SESSION',
+                              message: 'Sesi tidak ditemukan. Silakan masuk kembali.',
+                            ),
+                        onRetry: () => ref.invalidate(authControllerProvider),
+                      )
+              else ...[
+                _ProfileHeader(pelanggan: pelanggan),
+                const SizedBox(height: 26),
+                Text('Informasi akun', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 12),
+                AppCard(
+                  child: Column(
+                    children: [
+                      _DetailRow(
+                        icon: Icons.phone_android_rounded,
+                        label: 'Nomor telepon',
+                        value: pelanggan.noTelp,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 18),
+                        child: TicketDivider(),
+                      ),
+                      _DetailRow(
+                        icon: Icons.location_on_outlined,
+                        label: 'Alamat',
+                        value: pelanggan.alamat.isEmpty
+                            ? 'Belum ada alamat'
+                            : pelanggan.alamat,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                AppButton(
+                  label: 'Ubah Profil',
+                  icon: Icons.edit_outlined,
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => const EditProfilPage(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                OutlinedButton.icon(
+                  onPressed: () => _confirmLogout(context, ref),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colors.error,
+                  ),
+                  icon: const Icon(Icons.logout_rounded, size: 18),
+                  label: const Text('Keluar Akun'),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'SPARKLEEN / DIRAWAT DENGAN HATI',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -111,7 +131,6 @@ class ProfilPage extends ConsumerWidget {
         ],
       ),
     );
-
     if (confirmed != true) return;
     await ref.read(authControllerProvider.notifier).logout();
   }
@@ -119,75 +138,47 @@ class ProfilPage extends ConsumerWidget {
 
 class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({required this.pelanggan});
-
   final Pelanggan pelanggan;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final nama = pelanggan.nama.trim();
-    final initial = nama.isEmpty ? '?' : nama.substring(0, 1).toUpperCase();
-    final whiteMuted = theme.textTheme.labelSmall?.copyWith(
-      color: Colors.white.withValues(alpha: 0.68),
-    );
-
     return AppCard(
       padding: const EdgeInsets.all(20),
-      gradient: AppColors.heroGradient,
-      shadow: AppColors.elevatedShadow,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 58,
-                height: 58,
+                width: 60,
+                height: 60,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                  ),
+                  color: colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  initial,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
+                  nama.isEmpty ? '?' : nama.characters.first.toUpperCase(),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: colors.primary,
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(pelanggan.nama, style: theme.textTheme.titleLarge),
+                    const SizedBox(height: 5),
                     Text(
-                      pelanggan.nama,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 9,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        pelanggan.kode,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      pelanggan.kode,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: colors.primary,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ],
@@ -195,85 +186,42 @@ class _ProfileHeader extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.16),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 22),
+            child: TicketDivider(),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${pelanggan.poin}',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: colors.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text('Poin terkumpul', style: theme.textTheme.bodySmall),
+                  ],
+                ),
               ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Poin', style: whiteMuted),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${pelanggan.poin}',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${pelanggan.totalTransaksi} transaksi',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 3),
+                    Text('Bersama Sparkleen', style: theme.textTheme.bodySmall),
+                  ],
                 ),
-                Container(
-                  width: 1,
-                  height: 30,
-                  margin: const EdgeInsets.symmetric(horizontal: 14),
-                  color: Colors.white.withValues(alpha: 0.18),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Total transaksi', style: whiteMuted),
-                      const SizedBox(height: 2),
-                      Text(
-                        formatRupiah(pelanggan.totalTransaksi),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DetailCard extends StatelessWidget {
-  const _DetailCard({required this.pelanggan});
-
-  final Pelanggan pelanggan;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.all(18),
-      shadow: AppColors.softShadow,
-      child: Column(
-        children: [
-          _DetailRow(
-            icon: Icons.phone_android_rounded,
-            label: 'Nomor telepon',
-            value: pelanggan.noTelp,
-          ),
-          const Divider(height: 24, color: AppColors.border),
-          _DetailRow(
-            icon: Icons.location_on_outlined,
-            label: 'Alamat',
-            value: pelanggan.alamat.isEmpty ? '-' : pelanggan.alamat,
+              ),
+            ],
           ),
         ],
       ),
@@ -287,7 +235,6 @@ class _DetailRow extends StatelessWidget {
     required this.label,
     required this.value,
   });
-
   final IconData icon;
   final String label;
   final String value;
@@ -298,22 +245,14 @@ class _DetailRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceMuted,
-            borderRadius: BorderRadius.circular(11),
-          ),
-          child: Icon(icon, size: 18, color: AppColors.primary),
-        ),
-        const SizedBox(width: 12),
+        Icon(icon, size: 22, color: theme.colorScheme.primary),
+        const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: theme.textTheme.labelSmall),
-              const SizedBox(height: 2),
+              Text(label, style: theme.textTheme.bodySmall),
+              const SizedBox(height: 4),
               Text(
                 value,
                 style: theme.textTheme.bodyMedium?.copyWith(

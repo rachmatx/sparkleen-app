@@ -12,8 +12,8 @@ import '../application/pesanan_controller.dart';
 import '../data/transaksi_detail.dart';
 import 'widgets/timeline_status.dart';
 
-final transaksiDetailProvider =
-    FutureProvider.autoDispose.family<TransaksiDetail, int>((ref, id) {
+final transaksiDetailProvider = FutureProvider.autoDispose
+    .family<TransaksiDetail, int>((ref, id) {
       return ref.watch(transaksiRepositoryProvider).detail(id);
     });
 
@@ -35,30 +35,32 @@ class DetailPesananPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(transaksiDetailProvider(id));
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Detail Pesanan')),
-      body: AsyncValueView<TransaksiDetail>(
-        value: async,
-        onRetry: () => ref.invalidate(transaksiDetailProvider(id)),
-        loadingBuilder: (context) => const Padding(
-          padding: EdgeInsets.all(20),
-          child: LoadingList(itemCount: 3, itemHeight: 120),
-        ),
-        builder: (context, detail) => RefreshIndicator(
-          onRefresh: () => _refresh(ref),
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-            children: [
-              _HeaderCard(detail: detail),
-              _ItemsCard(items: detail.items),
-              _PaymentCard(detail: detail),
-              _PinCard(pin: detail.pinPengambilan),
-              _SectionCard(
-                title: 'Status Pesanan',
-                child: TimelineStatus(steps: detail.timeline),
-              ),
-            ],
+    return AppBackdrop(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Detail Pesanan')),
+        body: AsyncValueView<TransaksiDetail>(
+          value: async,
+          onRetry: () => ref.invalidate(transaksiDetailProvider(id)),
+          loadingBuilder: (context) => const Padding(
+            padding: EdgeInsets.all(20),
+            child: LoadingList(itemCount: 3, itemHeight: 120),
+          ),
+          builder: (context, detail) => RefreshIndicator(
+            onRefresh: () => _refresh(ref),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+              children: [
+                _HeaderCard(detail: detail),
+                _SectionCard(
+                  title: 'Status Pesanan',
+                  child: TimelineStatus(steps: detail.timeline),
+                ),
+                _ItemsCard(items: detail.items),
+                _PaymentCard(detail: detail),
+                _PinCard(pin: detail.pinPengambilan),
+              ],
+            ),
           ),
         ),
       ),
@@ -74,83 +76,97 @@ class _HeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final whiteMuted = theme.textTheme.bodySmall?.copyWith(
-      color: Colors.white.withValues(alpha: 0.72),
-    );
+    final colors = theme.colorScheme;
 
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
-      gradient: AppColors.heroGradient,
-      shadow: AppColors.elevatedShadow,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Nomor nota', style: whiteMuted),
-          const SizedBox(height: 4),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                color: colors.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  detail.noNota,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'NOMOR NOTA',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        letterSpacing: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      detail.noNota,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 8),
-              StatusChip(status: detail.status, label: detail.statusLabel),
             ],
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                _HeroInfoLine(
-                  icon: Icons.login_rounded,
-                  label: 'Masuk',
-                  value: formatTanggal(detail.tglMasuk),
-                ),
-                if (detail.tglEstimasi != null)
-                  _HeroInfoLine(
-                    icon: Icons.event_available_outlined,
-                    label: 'Estimasi selesai',
-                    value: formatTanggal(detail.tglEstimasi!),
-                  ),
-                if (detail.tglAktual != null)
-                  _HeroInfoLine(
-                    icon: Icons.task_alt_rounded,
-                    label: 'Selesai',
-                    value: formatTanggal(detail.tglAktual!),
-                  ),
-                _HeroInfoLine(
-                  icon: Icons.scale_outlined,
-                  label: 'Total berat',
-                  value: formatBerat(detail.totalBerat),
-                  isLast: true,
-                ),
-              ],
-            ),
+          const SizedBox(height: 12),
+          StatusChip(status: detail.status, label: detail.statusLabel),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: TicketDivider(),
           ),
-          const SizedBox(height: 14),
+          if (detail.tglEstimasi != null) ...[
+            Text(
+              'Estimasi selesai',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              formatTanggal(detail.tglEstimasi!),
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: colors.primary,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.6,
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+          _TicketInfoLine(
+            icon: Icons.login_rounded,
+            label: 'Masuk',
+            value: formatTanggal(detail.tglMasuk),
+          ),
+          if (detail.tglAktual != null)
+            _TicketInfoLine(
+              icon: Icons.task_alt_rounded,
+              label: 'Selesai',
+              value: formatTanggal(detail.tglAktual!),
+            ),
+          _TicketInfoLine(
+            icon: Icons.scale_outlined,
+            label: 'Total berat',
+            value: formatBerat(detail.totalBerat),
+            isLast: true,
+          ),
+          const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
+            child: FilledButton.icon(
               onPressed: () => context.push('/pesanan/${detail.id}/nota'),
-              style: OutlinedButton.styleFrom(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                backgroundColor: Colors.white.withValues(alpha: 0.14),
-                side: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.26),
-                ),
+                minimumSize: const Size(0, 48),
               ),
               icon: const Icon(Icons.receipt_long_outlined, size: 18),
               label: const Text('Lihat Nota'),
@@ -162,8 +178,8 @@ class _HeaderCard extends StatelessWidget {
   }
 }
 
-class _HeroInfoLine extends StatelessWidget {
-  const _HeroInfoLine({
+class _TicketInfoLine extends StatelessWidget {
+  const _TicketInfoLine({
     required this.icon,
     required this.label,
     required this.value,
@@ -178,26 +194,32 @@ class _HeroInfoLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 15, color: Colors.white.withValues(alpha: 0.7)),
+          Icon(icon, size: 16, color: colors.primary),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               label,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.72),
+                color: colors.onSurfaceVariant,
               ),
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            value,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
+          Expanded(
+            flex: 2,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -223,7 +245,10 @@ class _ItemsCard extends StatelessWidget {
               children: [
                 for (var index = 0; index < items.length; index++) ...[
                   if (index > 0)
-                    const Divider(height: 22, color: AppColors.border),
+                    Divider(
+                      height: 28,
+                      color: theme.colorScheme.outlineVariant,
+                    ),
                   _ItemRow(item: items[index]),
                 ],
               ],
@@ -241,46 +266,48 @@ class _ItemRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final colors = theme.colorScheme;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: AppColors.primarySoft,
-            borderRadius: BorderRadius.circular(11),
-          ),
-          child: const Icon(
-            Icons.local_laundry_service_outlined,
-            size: 18,
-            color: AppColors.primary,
-          ),
+        Icon(
+          Icons.local_laundry_service_outlined,
+          size: 22,
+          color: colors.primary,
         ),
         const SizedBox(width: 12),
         Expanded(
+          flex: 2,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 item.namaLayanan,
                 style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               Text(
                 '${formatBerat(item.berat)} × ${formatRupiah(item.hargaSatuan)}/kg',
-                style: theme.textTheme.bodySmall,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
               ),
             ],
           ),
         ),
         const SizedBox(width: 12),
-        Text(
-          formatRupiah(item.subtotal),
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w800,
+        Flexible(
+          child: Text(
+            formatRupiah(item.subtotal),
+            textAlign: TextAlign.right,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colors.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -296,73 +323,106 @@ class _PaymentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final lunas = detail.sudahLunas;
 
     return _SectionCard(
       title: 'Pembayaran',
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _SummaryRow(label: 'Total biaya', value: formatRupiah(detail.totalBiaya)),
+          _SummaryRow(
+            label: 'Total biaya',
+            value: formatRupiah(detail.totalBiaya),
+          ),
           if (detail.diskon > 0)
             _SummaryRow(
               label: 'Diskon',
               value: '-${formatRupiah(detail.diskon)}',
-              valueColor: AppColors.success,
+              valueColor: colors.primary,
             ),
-          const Divider(height: 22, color: AppColors.border),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: TicketDivider(),
+          ),
           _SummaryRow(
             label: 'Grand total',
             value: formatRupiah(detail.grandTotal),
             bold: true,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: lunas ? AppColors.mintSoft : AppColors.warningSoft,
-              borderRadius: BorderRadius.circular(14),
+              color: colors.primaryContainer.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colors.outlineVariant),
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  lunas ? Icons.verified_rounded : Icons.error_outline_rounded,
-                  size: 17,
-                  color: lunas ? AppColors.success : AppColors.warning,
+                  lunas ? Icons.verified_outlined : Icons.info_outline_rounded,
+                  size: 18,
+                  color: colors.primary,
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  lunas ? 'Lunas' : 'Belum dibayar',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: lunas ? AppColors.success : AppColors.warning,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    lunas ? 'Lunas' : 'Belum dibayar',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: colors.onSurface,
+                    ),
                   ),
                 ),
-                const Spacer(),
                 if (detail.metodePembayaran != null &&
-                    detail.metodePembayaran!.isNotEmpty)
-                  Text(detail.metodePembayaran!, style: theme.textTheme.bodySmall),
+                    detail.metodePembayaran!.isNotEmpty) ...[
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      detail.metodePembayaran!,
+                      textAlign: TextAlign.right,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
           if (detail.pembayaran.isNotEmpty) ...[
-            const Divider(height: 24, color: AppColors.border),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: TicketDivider(),
+            ),
             for (final pembayaran in detail.pembayaran)
               Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
+                      flex: 2,
                       child: Text(
                         pembayaran.tglBayar == null
                             ? pembayaran.metode
                             : '${formatTanggalSingkat(pembayaran.tglBayar!)} · ${pembayaran.metode}',
-                        style: theme.textTheme.bodySmall,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
                       ),
                     ),
-                    Text(
-                      formatRupiah(pembayaran.nominalBayar),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        formatRupiah(pembayaran.nominalBayar),
+                        textAlign: TextAlign.right,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
@@ -391,26 +451,30 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final style = (bold ? theme.textTheme.titleSmall : theme.textTheme.bodySmall)
-        ?.copyWith(
-          fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
-          color: valueColor ?? (bold ? AppColors.text : AppColors.muted),
-        );
+    final colors = theme.colorScheme;
+    final style =
+        (bold ? theme.textTheme.titleSmall : theme.textTheme.bodySmall)
+            ?.copyWith(
+              fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+              color: bold ? colors.onSurface : colors.onSurfaceVariant,
+            );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: style),
-          const Spacer(),
-          Text(
-            value,
-            style: bold
-                ? style
-                : theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: valueColor ?? AppColors.text,
-                  ),
+          Expanded(child: Text(label, style: style)),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: style?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: valueColor ?? (bold ? colors.primary : colors.onSurface),
+              ),
+            ),
           ),
         ],
       ),
@@ -429,17 +493,15 @@ class _PinCard extends StatelessWidget {
     if (value == null || value.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(18),
-      shadow: AppColors.softShadow,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
       child: Container(
         padding: const EdgeInsets.only(left: 14),
-        decoration: const BoxDecoration(
-          border: Border(
-            left: BorderSide(color: AppColors.primary, width: 3),
-          ),
+        decoration: BoxDecoration(
+          border: Border(left: BorderSide(color: colors.primary, width: 2)),
         ),
         child: Row(
           children: [
@@ -450,7 +512,7 @@ class _PinCard extends StatelessWidget {
                   Text(
                     'PIN Pengambilan',
                     style: theme.textTheme.labelMedium?.copyWith(
-                      color: AppColors.soft,
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -459,7 +521,7 @@ class _PinCard extends StatelessWidget {
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w800,
                       letterSpacing: 6,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -474,15 +536,16 @@ class _PinCard extends StatelessWidget {
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: value));
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('PIN disalin.')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('PIN disalin.')));
               },
               style: IconButton.styleFrom(
-                backgroundColor: AppColors.primarySoft,
-                foregroundColor: AppColors.primary,
+                minimumSize: const Size(48, 48),
+                backgroundColor: colors.primaryContainer,
+                foregroundColor: colors.primary,
               ),
-              icon: const Icon(Icons.copy_rounded, size: 19),
+              icon: const Icon(Icons.copy_outlined, size: 20),
               tooltip: 'Salin PIN',
             ),
           ],
@@ -501,17 +564,15 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(18),
-      shadow: AppColors.softShadow,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 12),
           child,

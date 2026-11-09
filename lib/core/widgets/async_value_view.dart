@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../api/api_exception.dart';
-import '../theme/app_colors.dart';
+import 'app_card.dart';
 
 class AsyncValueView<T> extends StatelessWidget {
   const AsyncValueView({
@@ -47,23 +46,34 @@ class LoadingList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Column(
-      children: List.generate(itemCount, (index) {
-        return Padding(
-          padding: EdgeInsets.only(bottom: index == itemCount - 1 ? 0 : 10),
-          child: Shimmer.fromColors(
-            baseColor: AppColors.surfaceMuted,
-            highlightColor: Colors.white,
-            child: Container(
-              height: itemHeight,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceMuted,
-                borderRadius: BorderRadius.circular(AppColors.radiusCard),
-              ),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: colors.primary,
+              semanticsLabel: 'Memuat data',
             ),
           ),
-        );
-      }),
+        ),
+        ...List.generate(itemCount, (index) {
+          return ExcludeSemantics(
+            child: AppCard(
+              padding: EdgeInsets.zero,
+              margin: EdgeInsets.only(bottom: index == itemCount - 1 ? 0 : 10),
+              color: colors.surfaceContainerHigh,
+              shadow: const [],
+              child: SizedBox(width: double.infinity, height: itemHeight),
+            ),
+          );
+        }),
+      ],
     );
   }
 }
@@ -76,50 +86,50 @@ class ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final message = error is ApiException
         ? (error as ApiException).message
         : 'Terjadi kesalahan. Silakan coba lagi.';
 
-    return Container(
-      width: double.infinity,
+    return AppCard(
       padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        boxShadow: AppColors.softShadow,
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(14),
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: colors.errorContainer,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                Icons.cloud_off_rounded,
+                size: 22,
+                color: colors.onErrorContainer,
+              ),
             ),
-            child: const Icon(
-              Icons.cloud_off_rounded,
-              size: 22,
-              color: AppColors.soft,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.muted),
-          ),
-          if (onRetry != null) ...[
             const SizedBox(height: 12),
-            TextButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Coba lagi'),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
             ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Coba lagi'),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -141,30 +151,30 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        boxShadow: AppColors.softShadow,
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 30, color: AppColors.soft),
-          const SizedBox(height: 12),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.muted),
-          ),
-          if (actionLabel != null && onAction != null) ...[
-            const SizedBox(height: 8),
-            TextButton(onPressed: onAction, child: Text(actionLabel!)),
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 30, color: colors.onSurfaceVariant),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 8),
+              TextButton(onPressed: onAction, child: Text(actionLabel!)),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

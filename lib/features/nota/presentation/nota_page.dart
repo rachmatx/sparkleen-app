@@ -9,7 +9,10 @@ import '../../pesanan/application/pesanan_controller.dart';
 import '../../pesanan/data/transaksi_detail.dart';
 import '../data/nota_data.dart';
 
-final notaProvider = FutureProvider.autoDispose.family<NotaData, int>((ref, id) {
+final notaProvider = FutureProvider.autoDispose.family<NotaData, int>((
+  ref,
+  id,
+) {
   return ref.watch(transaksiRepositoryProvider).nota(id);
 });
 
@@ -31,21 +34,23 @@ class NotaPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(notaProvider(id));
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nota Digital')),
-      body: AsyncValueView<NotaData>(
-        value: async,
-        onRetry: () => ref.invalidate(notaProvider(id)),
-        loadingBuilder: (context) => const Padding(
-          padding: EdgeInsets.all(20),
-          child: LoadingList(itemCount: 2, itemHeight: 160),
-        ),
-        builder: (context, nota) => RefreshIndicator(
-          onRefresh: () => _refresh(ref),
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-            children: [_NotaReceipt(nota: nota)],
+    return AppBackdrop(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Nota Digital')),
+        body: AsyncValueView<NotaData>(
+          value: async,
+          onRetry: () => ref.invalidate(notaProvider(id)),
+          loadingBuilder: (context) => const Padding(
+            padding: EdgeInsets.all(20),
+            child: LoadingList(itemCount: 2, itemHeight: 160),
+          ),
+          builder: (context, nota) => RefreshIndicator(
+            onRefresh: () => _refresh(ref),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+              children: [_NotaReceipt(nota: nota)],
+            ),
           ),
         ),
       ),
@@ -61,12 +66,12 @@ class _NotaReceipt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final lunas = nota.statusPembayaran == 'lunas';
     final metode = nota.metode;
 
     return AppCard(
       padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
-      shadow: AppColors.cardShadow,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -75,12 +80,11 @@ class _NotaReceipt extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                gradient: AppColors.buttonGradient,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: AppColors.softShadow,
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(
-                Icons.local_laundry_service_rounded,
+                Icons.local_laundry_service_outlined,
                 color: Colors.white,
                 size: 23,
               ),
@@ -92,8 +96,8 @@ class _NotaReceipt extends StatelessWidget {
               'Sparkleen',
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: AppColors.primary,
-                letterSpacing: -0.3,
+                color: colors.primary,
+                letterSpacing: -0.5,
               ),
             ),
           ),
@@ -105,7 +109,7 @@ class _NotaReceipt extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.text,
+                  color: colors.onSurface,
                 ),
               ),
             ),
@@ -119,12 +123,20 @@ class _NotaReceipt extends StatelessWidget {
               ),
             ),
           if (nota.outlet.noWa.isNotEmpty)
-            Center(child: Text(nota.outlet.noWa, style: theme.textTheme.bodySmall)),
-          const Divider(height: 30, color: AppColors.border),
+            Center(
+              child: Text(nota.outlet.noWa, style: theme.textTheme.bodySmall),
+            ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: TicketDivider(),
+          ),
           _NotaRow(label: 'No. Nota', value: nota.noNota),
           const SizedBox(height: 6),
           _NotaRow(label: 'Tanggal', value: formatTanggal(nota.tanggal)),
-          const Divider(height: 30, color: AppColors.border),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: TicketDivider(),
+          ),
           if (nota.items.isEmpty)
             Text('Tidak ada rincian layanan.', style: theme.textTheme.bodySmall)
           else
@@ -132,21 +144,28 @@ class _NotaReceipt extends StatelessWidget {
               if (index > 0) const SizedBox(height: 12),
               _NotaItem(item: nota.items[index]),
             ],
-          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: TicketDivider(),
+          ),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(16),
+              color: colors.primaryContainer.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colors.outlineVariant),
             ),
             child: Column(
               children: [
-                _AmountRow(label: 'Subtotal', value: formatRupiah(nota.subtotal)),
+                _AmountRow(
+                  label: 'Subtotal',
+                  value: formatRupiah(nota.subtotal),
+                ),
                 if (nota.diskon > 0)
                   _AmountRow(
                     label: 'Diskon',
                     value: '-${formatRupiah(nota.diskon)}',
-                    color: AppColors.success,
+                    color: colors.primary,
                   ),
                 const SizedBox(height: 4),
                 _AmountRow(
@@ -157,22 +176,44 @@ class _NotaReceipt extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Pembayaran', style: theme.textTheme.bodySmall),
-              const Spacer(),
-              Text(
-                lunas ? 'Lunas' : 'Belum dibayar',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: lunas ? AppColors.success : AppColors.warning,
+              Expanded(
+                child: Text(
+                  'Pembayaran',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
               ),
-              if (metode != null && metode.isNotEmpty) ...[
-                const SizedBox(width: 6),
-                Text('· $metode', style: theme.textTheme.bodySmall),
-              ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      lunas ? 'Lunas' : 'Belum dibayar',
+                      textAlign: TextAlign.right,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.primary,
+                      ),
+                    ),
+                    if (metode != null && metode.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        metode,
+                        textAlign: TextAlign.right,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -207,18 +248,27 @@ class _NotaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: theme.textTheme.bodySmall),
+        Expanded(
+          child: Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+        ),
         const SizedBox(width: 16),
         Expanded(
+          flex: 2,
           child: Text(
             value,
             textAlign: TextAlign.right,
             style: theme.textTheme.bodySmall?.copyWith(
               fontWeight: FontWeight.w700,
-              color: AppColors.text,
+              color: colors.onSurface,
             ),
           ),
         ),
@@ -235,31 +285,41 @@ class _NotaItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
+          flex: 2,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 item.namaLayanan,
                 style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              const SizedBox(height: 4),
               Text(
                 '${formatBerat(item.berat)} × ${formatRupiah(item.hargaSatuan)}/kg',
-                style: theme.textTheme.bodySmall,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
               ),
             ],
           ),
         ),
         const SizedBox(width: 12),
-        Text(
-          formatRupiah(item.subtotal),
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w700,
+        Flexible(
+          child: Text(
+            formatRupiah(item.subtotal),
+            textAlign: TextAlign.right,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colors.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -283,27 +343,35 @@ class _AmountRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final labelStyle = (bold
-            ? theme.textTheme.titleSmall
-            : theme.textTheme.bodySmall)
-        ?.copyWith(
-          fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
-          color: bold ? AppColors.text : AppColors.muted,
-        );
+    final colors = theme.colorScheme;
+    final labelStyle =
+        (bold ? theme.textTheme.titleSmall : theme.textTheme.bodySmall)
+            ?.copyWith(
+              fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
+              color: bold ? colors.onSurface : colors.onSurfaceVariant,
+            );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: labelStyle),
-          const Spacer(),
-          Text(
-            value,
-            style: (bold ? theme.textTheme.titleSmall : theme.textTheme.bodySmall)
-                ?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: color ?? AppColors.text,
-                ),
+          Expanded(child: Text(label, style: labelStyle)),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style:
+                  (bold
+                          ? theme.textTheme.titleSmall
+                          : theme.textTheme.bodySmall)
+                      ?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color:
+                            color ?? (bold ? colors.primary : colors.onSurface),
+                      ),
+            ),
           ),
         ],
       ),

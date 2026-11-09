@@ -60,9 +60,13 @@ void main() {
 
     expect(find.text('LAU/20261021/0001'), findsOneWidget);
     expect(find.text('Dicuci'), findsOneWidget);
+    expect(find.text('15 poin'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Cuci Kering'), 200);
     expect(find.text('Cuci Kering'), findsOneWidget);
     expect(find.textContaining('7.000'), findsOneWidget);
-    expect(find.text('15 poin'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('4 transaksi'), 200);
+    expect(find.text('4 transaksi'), findsOneWidget);
+    expect(find.text('Rp 4'), findsNothing);
   });
 
   testWidgets('beranda menampilkan error dan tombol coba lagi', (tester) async {

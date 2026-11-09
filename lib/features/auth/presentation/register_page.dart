@@ -70,6 +70,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       showBack: true,
       title: 'Buat akun baru',
       subtitle: 'Satu akun untuk semua riwayat laundry-mu.',
+      footer: AuthLinkPrompt(
+        question: 'Sudah punya akun?',
+        actionLabel: 'Masuk',
+        onPressed: () => context.go('/login'),
+      ),
       child: Form(
         key: _formKey,
         child: Column(
@@ -92,7 +97,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   _serverError?.fieldError('nama') ?? validateNama(value),
               onChanged: (_) => _clearServerError(),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _phone,
               keyboardType: TextInputType.phone,
@@ -106,7 +111,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   _serverError?.fieldError('no_telp') ?? validatePhone(value),
               onChanged: (_) => _clearServerError(),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _alamat,
               textInputAction: TextInputAction.next,
@@ -122,7 +127,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   _serverError?.fieldError('alamat') ?? validateAlamat(value),
               onChanged: (_) => _clearServerError(),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _pin,
               obscureText: true,
@@ -141,7 +146,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   _serverError?.fieldError('pin') ?? validatePin(value),
               onChanged: (_) => _clearServerError(),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _pinConfirmation,
               obscureText: true,
@@ -160,17 +165,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 24),
-            AppGradientButton(
-              label: 'Daftar',
-              loading: isLoading,
-              onPressed: _submit,
-            ),
-            const SizedBox(height: 18),
-            AuthLinkPrompt(
-              question: 'Sudah punya akun?',
-              actionLabel: 'Masuk',
-              onPressed: () => context.go('/login'),
-            ),
+            AppButton(label: 'Daftar', loading: isLoading, onPressed: _submit),
           ],
         ),
       ),

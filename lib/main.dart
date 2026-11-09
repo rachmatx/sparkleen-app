@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/router/app_router.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
@@ -25,6 +26,18 @@ class SparkleenApp extends ConsumerWidget {
       title: 'Sparkleen',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
+      darkTheme: buildAppTheme(brightness: Brightness.dark),
+      builder: (context, child) => ColoredBox(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF071523)
+            : AppColors.background,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: ClipRect(child: child!),
+          ),
+        ),
+      ),
       routerConfig: ref.watch(routerProvider),
     );
   }

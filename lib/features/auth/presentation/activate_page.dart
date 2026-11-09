@@ -64,8 +64,12 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
     return AuthScaffold(
       showBack: true,
       title: 'Aktivasi PIN',
-      subtitle:
-          'Pelanggan lama cukup masukkan nomor nota terakhir untuk membuat PIN.',
+      subtitle: 'Pelanggan lama cukup masukkan nomor nota terakhir untuk membuat PIN.',
+      footer: AuthLinkPrompt(
+        question: 'Sudah punya PIN?',
+        actionLabel: 'Masuk',
+        onPressed: () => context.go('/login'),
+      ),
       child: Form(
         key: _formKey,
         child: Column(
@@ -88,7 +92,7 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
                   _serverError?.fieldError('no_telp') ?? validatePhone(value),
               onChanged: (_) => _clearServerError(),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _noNota,
               textInputAction: TextInputAction.next,
@@ -102,7 +106,7 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
                   _serverError?.fieldError('no_nota') ?? validateNoNota(value),
               onChanged: (_) => _clearServerError(),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _pin,
               obscureText: true,
@@ -123,16 +127,10 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
               onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 24),
-            AppGradientButton(
+            AppButton(
               label: 'Aktifkan',
               loading: isLoading,
               onPressed: _submit,
-            ),
-            const SizedBox(height: 18),
-            AuthLinkPrompt(
-              question: 'Sudah punya PIN?',
-              actionLabel: 'Masuk',
-              onPressed: () => context.go('/login'),
             ),
           ],
         ),

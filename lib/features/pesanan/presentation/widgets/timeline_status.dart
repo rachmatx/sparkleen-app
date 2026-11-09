@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/transaksi_detail.dart';
 
@@ -14,19 +13,15 @@ class TimelineStatus extends StatelessWidget {
     if (steps.isEmpty) {
       return Text(
         'Belum ada riwayat status.',
-        style: Theme.of(
-          context,
-        ).textTheme.bodySmall?.copyWith(color: AppColors.muted),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
       );
     }
 
     return Column(
       children: [
         for (var index = 0; index < steps.length; index++)
-          _TimelineTile(
-            step: steps[index],
-            isLast: index == steps.length - 1,
-          ),
+          _TimelineTile(step: steps[index], isLast: index == steps.length - 1),
       ],
     );
   }
@@ -41,13 +36,12 @@ class _TimelineTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final isDone = step.state == TimelineState.done;
     final isCurrent = step.state == TimelineState.current;
-    final color = isDone
-        ? AppColors.success
-        : isCurrent
-        ? AppColors.primary
-        : AppColors.border;
+    final color = isDone || isCurrent
+        ? colors.primary
+        : colors.onSurfaceVariant;
 
     return IntrinsicHeight(
       child: Row(
@@ -69,9 +63,11 @@ class _TimelineTile extends StatelessWidget {
                 if (!isLast)
                   Expanded(
                     child: Container(
-                      width: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 2),
-                      color: isDone ? AppColors.success : AppColors.border,
+                      width: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      color: isDone
+                          ? colors.primary.withValues(alpha: 0.5)
+                          : colors.outlineVariant,
                     ),
                   ),
               ],
@@ -80,7 +76,7 @@ class _TimelineTile extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : 18),
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 22),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -92,16 +88,18 @@ class _TimelineTile extends StatelessWidget {
                           : isDone
                           ? FontWeight.w600
                           : FontWeight.w500,
-                      color: step.state == TimelineState.pending
-                          ? AppColors.muted
-                          : AppColors.text,
+                      color: isCurrent
+                          ? colors.primary
+                          : isDone
+                          ? colors.onSurface
+                          : colors.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     step.at == null ? 'Menunggu' : formatTanggal(step.at!),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.muted,
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
                 ],

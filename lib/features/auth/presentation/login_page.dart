@@ -56,8 +56,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
 
     return AuthScaffold(
-      title: 'Masuk ke akunmu',
+      title: 'Selamat datang kembali.',
       subtitle: 'Pantau cucian dan riwayat pesanan dalam satu tempat.',
+      footer: Column(
+        children: [
+          AuthLinkPrompt(
+            question: 'Belum punya akun?',
+            actionLabel: 'Daftar',
+            onPressed: () => context.go('/register'),
+          ),
+          const SizedBox(height: 8),
+          AuthLinkPrompt(
+            question: 'Pelanggan lama?',
+            actionLabel: 'Aktivasi PIN',
+            onPressed: () => context.go('/activate'),
+          ),
+        ],
+      ),
       child: Form(
         key: _formKey,
         child: Column(
@@ -80,7 +95,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   _serverError?.fieldError('no_telp') ?? validatePhone(value),
               onChanged: (_) => _clearServerError(),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _pin,
               obscureText: true,
@@ -101,22 +116,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 24),
-            AppGradientButton(
-              label: 'Masuk',
-              loading: isLoading,
-              onPressed: _submit,
-            ),
-            const SizedBox(height: 18),
-            AuthLinkPrompt(
-              question: 'Belum punya akun?',
-              actionLabel: 'Daftar',
-              onPressed: () => context.go('/register'),
-            ),
-            AuthLinkPrompt(
-              question: 'Pelanggan lama?',
-              actionLabel: 'Aktivasi PIN',
-              onPressed: () => context.go('/activate'),
-            ),
+            AppButton(label: 'Masuk', loading: isLoading, onPressed: _submit),
           ],
         ),
       ),

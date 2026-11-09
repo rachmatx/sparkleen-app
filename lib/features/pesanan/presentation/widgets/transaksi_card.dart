@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/status_chip.dart';
@@ -15,27 +14,31 @@ class TransaksiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return AppCard(
       onTap: onTap,
-      shadow: AppColors.softShadow,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
+                  color: colors.primaryContainer.withValues(alpha: 0.45),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: colors.primary.withValues(alpha: 0.15),
+                  ),
                 ),
-                child: const Icon(
-                  Icons.receipt_long_rounded,
-                  size: 19,
-                  color: AppColors.primary,
+                child: Icon(
+                  Icons.local_laundry_service_outlined,
+                  size: 22,
+                  color: colors.primary,
                 ),
               ),
               const SizedBox(width: 12),
@@ -44,59 +47,78 @@ class TransaksiCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      'NOTA LAUNDRY',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
                       transaksi.noNota,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w700,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formatTanggalSingkat(transaksi.tglMasuk),
-                      style: theme.textTheme.bodySmall,
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              StatusChip(
-                status: transaksi.status,
-                label: transaksi.statusLabel,
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: colors.primary,
               ),
             ],
           ),
           const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.only(top: 12),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: AppColors.border)),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.scale_outlined,
-                  size: 15,
-                  color: AppColors.soft,
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              StatusChip(
+                status: transaksi.status,
+                label: transaksi.statusLabel,
+              ),
+              Text(
+                formatTanggalSingkat(transaksi.tglMasuk),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
                 ),
-                const SizedBox(width: 6),
-                Text(formatBerat(transaksi.totalBerat), style: theme.textTheme.bodySmall),
-                const Spacer(),
-                Text(
-                  formatRupiah(transaksi.grandTotal),
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.text,
+              ),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: TicketDivider(),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.scale_outlined, size: 17, color: colors.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  formatBerat(transaksi.totalBerat),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(width: 2),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  size: 20,
-                  color: AppColors.soft,
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  formatRupiah(transaksi.grandTotal),
+                  textAlign: TextAlign.right,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: colors.onSurface,
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
