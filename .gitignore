@@ -46,3 +46,13 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Local environment and signing secrets
+.env
+.env.*
+*.env
+android/key.properties
+*.jks
+*.keystore
+*.p12
+*.pem
