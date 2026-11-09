@@ -3,9 +3,9 @@
 Aplikasi pelanggan Sparkleen Laundry. Dibangun dengan Flutter dan terhubung ke REST API
 `/api/v1` milik backend CodeIgniter 4 Sparkleen (repo terpisah).
 
-| Beranda | Detail pesanan | Nota (mode gelap) |
+| Beranda | Masuk | Beranda (mode gelap) |
 | --- | --- | --- |
-| ![Beranda](docs/screenshots/beranda.png) | ![Detail pesanan](docs/screenshots/detail-pesanan.png) | ![Nota mode gelap](docs/screenshots/nota-gelap.png) |
+| ![Beranda](docs/screenshots/beranda-aset.png) | ![Masuk](docs/screenshots/login-aset.png) | ![Beranda mode gelap](docs/screenshots/beranda-aset-gelap.png) |
 
 > Tangkapan layar memakai data demo, bukan data pelanggan sungguhan.
 
@@ -19,10 +19,14 @@ Aplikasi pelanggan Sparkleen Laundry. Dibangun dengan Flutter dan terhubung ke R
 - Profil, ubah nama/alamat, dan keluar akun.
 - Tema Blue Weave: mode terang dan gelap, kartu kaca, tekstur tenun halus, pemisah
   bergaya struk — tanpa gradasi warna.
+- Sembilan aset visual Sparkleen: logo bersama, ilustrasi beranda/login, gambar
+  layanan, kondisi pesanan kosong, gangguan koneksi, dan badge poin.
+- Ikon launcher Android/adaptive icon, splash native Android, serta ikon PWA
+  dan favicon memakai identitas Sparkleen.
 
 ## Kebutuhan
 
-- Flutter 3.13.5+ dengan Dart 3.13+.
+- Flutter dengan Dart 3.13.5+ (diverifikasi pada Flutter 3.47.9 / Dart 3.13.7).
 - Android SDK untuk build APK.
 - Backend Sparkleen `/api/v1` yang berjalan.
 - Chrome opsional untuk menjalankan target web.
@@ -111,7 +115,9 @@ flutter analyze
 flutter test
 ```
 
-Saat ini `flutter analyze` bersih dan 40 test lulus.
+Saat ini `flutter analyze` bersih dan 50 test lulus. Build web release juga
+diverifikasi. Build dan tampilan pada perangkat Android tetap perlu diuji
+sebelum distribusi APK.
 
 ## Struktur
 
@@ -135,6 +141,10 @@ lib/
 - `TicketDivider` memberi pemisah bergaya struk laundry.
 - Tipografi Plus Jakarta Sans (judul) dan Manrope (isi).
 - Warna, radius, dan shadow terpusat di `lib/core/theme/`.
+- Artwork transparan memakai panel pale blue pada area ilustrasi agar tampil
+  konsisten di kedua tema; gambar sumber tidak dimodifikasi.
+- Detail pemetaan layanan, fallback, dan regenerasi ikon tersedia di
+  [`docs/visual-assets.md`](docs/visual-assets.md).
 
 ## Keamanan
 
@@ -146,6 +156,7 @@ lib/
 
 ## Dokumen
 
+- Integrasi aset: [`docs/visual-assets.md`](docs/visual-assets.md)
 - Spesifikasi: [`docs/superpowers/specs/2026-10-23-sparkleen-mobile-api-design.md`](docs/superpowers/specs/2026-10-23-sparkleen-mobile-api-design.md)
 - Plan Flutter fase 1: [`docs/superpowers/plans/2026-10-24-sparkleen-mobile-flutter-phase1.md`](docs/superpowers/plans/2026-10-24-sparkleen-mobile-flutter-phase1.md)
 - Plan backend fase 1: [`docs/superpowers/plans/2026-10-23-sparkleen-mobile-api-backend.md`](docs/superpowers/plans/2026-10-23-sparkleen-mobile-api-backend.md)
@@ -154,5 +165,6 @@ lib/
 
 ## Status
 
-Fase 1 selesai dan tema Blue Weave sudah diterapkan di seluruh layar. Seluruh layar
-utama terhubung ke API, `flutter analyze` bersih, dan `flutter test` hijau (40 test).
+Fase 1 selesai, tema Blue Weave dan paket aset Sparkleen sudah diterapkan pada
+layar terkait. Seluruh layar utama terhubung ke API, `flutter analyze` bersih,
+dan `flutter test` hijau (50 test).

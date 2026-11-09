@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_assets.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../application/pesanan_controller.dart';
@@ -149,6 +150,9 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                           const SizedBox(height: 12),
                           EmptyState(
                             icon: Icons.receipt_long_outlined,
+                            illustrationAsset: activeScope == PesananScope.aktif
+                                ? AppAssets.emptyActiveOrder
+                                : AppAssets.emptyOrderHistory,
                             message: _emptyMessage(activeScope),
                           ),
                         ],

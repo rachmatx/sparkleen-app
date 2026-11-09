@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/theme/app_assets.dart';
+import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
@@ -197,11 +199,24 @@ class _ProfileHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '${pelanggan.poin}',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        color: colors.primary,
-                      ),
+                    Row(
+                      children: [
+                        const AppArtwork(
+                          asset: AppAssets.points,
+                          width: 32,
+                          height: 32,
+                          fallbackIcon: Icons.auto_awesome_outlined,
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            '${pelanggan.poin}',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: colors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 3),
                     Text('Poin terkumpul', style: theme.textTheme.bodySmall),

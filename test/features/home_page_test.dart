@@ -45,6 +45,10 @@ void main() {
 
     expect(find.text('Budi Santoso'), findsOneWidget);
     expect(find.text('Belum ada pesanan aktif.'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Belum ada layanan tersedia.'),
+      200,
+    );
     expect(find.text('Belum ada layanan tersedia.'), findsOneWidget);
   });
 
@@ -79,6 +83,7 @@ void main() {
     await tester.pumpWidget(_buildPage(repository));
     await _settleData(tester);
 
+    await tester.scrollUntilVisible(find.text('Gagal memuat layanan.'), 200);
     expect(find.text('Gagal memuat layanan.'), findsOneWidget);
     expect(find.text('Coba lagi'), findsOneWidget);
   });

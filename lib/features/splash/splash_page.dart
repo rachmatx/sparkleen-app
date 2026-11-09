@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/app_artwork.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
@@ -25,13 +26,7 @@ class SplashPage extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const ExcludeSemantics(
-                    child: Icon(
-                      Icons.local_laundry_service_rounded,
-                      size: 64,
-                      color: Colors.white,
-                    ),
-                  ),
+                  const BrandMark(size: 112),
                   const SizedBox(height: 24),
                   Text(
                     'SPARKLEEN',

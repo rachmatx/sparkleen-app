@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../pesanan/application/pesanan_controller.dart';
 import '../../pesanan/data/transaksi_detail.dart';
@@ -75,21 +75,7 @@ class _NotaReceipt extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                Icons.local_laundry_service_outlined,
-                color: Colors.white,
-                size: 23,
-              ),
-            ),
-          ),
+          const Center(child: BrandMark(size: 56)),
           const SizedBox(height: 10),
           Center(
             child: Text(

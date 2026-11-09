@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_artwork.dart';
 import '../../../../core/widgets/app_card.dart';
 
 class AuthScaffold extends StatelessWidget {
@@ -12,6 +13,7 @@ class AuthScaffold extends StatelessWidget {
     required this.child,
     this.footer,
     this.showBack = false,
+    this.illustrationAsset,
   });
 
   final String title;
@@ -19,6 +21,7 @@ class AuthScaffold extends StatelessWidget {
   final Widget child;
   final Widget? footer;
   final bool showBack;
+  final String? illustrationAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +42,17 @@ class AuthScaffold extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _AuthHeader(showBack: showBack),
+                    if (!keyboardVisible &&
+                        MediaQuery.sizeOf(context).height >= 700 &&
+                        illustrationAsset != null) ...[
+                      const SizedBox(height: 20),
+                      IllustrationPanel(
+                        asset: illustrationAsset!,
+                        width: double.infinity,
+                        height: 124,
+                        padding: const EdgeInsets.all(12),
+                      ),
+                    ],
                     SizedBox(height: keyboardVisible ? 16 : 28),
                     Semantics(
                       header: true,
@@ -112,21 +126,7 @@ class _AuthHeader extends StatelessWidget {
           ),
           const SizedBox(width: 12),
         ],
-        ExcludeSemantics(
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.local_laundry_service_rounded,
-              size: 28,
-              color: Colors.white,
-            ),
-          ),
-        ),
+        const BrandMark(size: 48),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

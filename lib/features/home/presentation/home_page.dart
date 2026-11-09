@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_assets.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/status_chip.dart';
@@ -68,19 +70,7 @@ class HomePage extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.local_laundry_service_outlined,
-                        color: Colors.white,
-                        size: 23,
-                      ),
-                    ),
+                    const BrandMark(size: 44),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -98,31 +88,29 @@ class HomePage extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: colors.outlineVariant),
                       ),
-                      child: Text(
-                        '${pelanggan?.poin ?? 0} poin',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: colors.primary,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const AppArtwork(
+                            asset: AppAssets.points,
+                            width: 24,
+                            height: 24,
+                            fallbackIcon: Icons.auto_awesome_outlined,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${pelanggan?.poin ?? 0} poin',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: colors.primary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  'Selamat datang,',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(nama, style: theme.textTheme.headlineMedium),
-                const SizedBox(height: 6),
-                Text(
-                  'Urusan cucian, lebih ringan.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
+                const SizedBox(height: 20),
+                _WelcomeCard(nama: nama),
                 const SizedBox(height: 24),
                 AsyncValueView<TransaksiRingkas?>(
                   value: ref.watch(pesananAktifProvider),
@@ -133,6 +121,7 @@ class HomePage extends ConsumerWidget {
                   emptyBuilder: (context) => EmptyState(
                     message: 'Belum ada pesanan aktif.',
                     icon: Icons.local_laundry_service_outlined,
+                    illustrationAsset: AppAssets.emptyActiveOrder,
                     actionLabel: 'Lihat riwayat',
                     onAction: () => context.go('/pesanan'),
                   ),
@@ -217,6 +206,74 @@ class HomePage extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _WelcomeCard extends StatelessWidget {
+  const _WelcomeCard({required this.nama});
+
+  final String nama;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return AppCard(
+      color: AppColors.primarySoft,
+      padding: const EdgeInsets.all(18),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final imageWidth = constraints.maxWidth < 300 ? 104.0 : 144.0;
+          final stackArtwork = MediaQuery.textScalerOf(context).scale(16) > 22;
+          final greeting = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Selamat datang,',
+                style: textTheme.bodySmall?.copyWith(color: AppColors.muted),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                nama,
+                style: textTheme.headlineSmall?.copyWith(color: AppColors.text),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Urusan cucian, lebih ringan.',
+                style: textTheme.bodySmall?.copyWith(color: AppColors.muted),
+              ),
+            ],
+          );
+          if (stackArtwork) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                greeting,
+                const SizedBox(height: 12),
+                const Align(
+                  alignment: Alignment.centerRight,
+                  child: AppArtwork(
+                    asset: AppAssets.home,
+                    width: 180,
+                    height: 90,
+                  ),
+                ),
+              ],
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: greeting),
+              const SizedBox(width: 10),
+              AppArtwork(
+                asset: AppAssets.home,
+                width: imageWidth,
+                height: imageWidth / 1.65,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -345,22 +402,31 @@ class _LayananTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final artwork = AppAssets.serviceArtwork(
+      name: layanan.nama,
+      assetKey: layanan.assetKey,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
           Container(
-            width: 42,
-            height: 46,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
-              color: colors.primaryContainer,
+              color: AppColors.primarySoft,
               borderRadius: BorderRadius.circular(13),
             ),
-            child: Icon(
-              Icons.local_laundry_service_outlined,
-              size: 22,
-              color: colors.primary,
-            ),
+            child: artwork == null
+                ? Icon(
+                    Icons.local_laundry_service_outlined,
+                    size: 26,
+                    color: colors.primary,
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(3),
+                    child: AppArtwork(asset: artwork, width: 54, height: 54),
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -377,15 +443,18 @@ class _LayananTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                formatRupiah(layanan.hargaPerKg),
-                style: theme.textTheme.titleSmall,
-              ),
-              Text('per kg', style: theme.textTheme.bodySmall),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  formatRupiah(layanan.hargaPerKg),
+                  textAlign: TextAlign.right,
+                  style: theme.textTheme.titleSmall,
+                ),
+                Text('per kg', style: theme.textTheme.bodySmall),
+              ],
+            ),
           ),
         ],
       ),

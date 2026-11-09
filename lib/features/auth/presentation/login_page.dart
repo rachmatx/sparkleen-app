@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/theme/app_assets.dart';
+
 import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_exception.dart';
@@ -56,6 +59,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
 
     return AuthScaffold(
+      illustrationAsset: AppAssets.login,
       title: 'Selamat datang kembali.',
       subtitle: 'Pantau cucian dan riwayat pesanan dalam satu tempat.',
       footer: Column(
