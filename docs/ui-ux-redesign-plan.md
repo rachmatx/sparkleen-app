@@ -49,6 +49,16 @@ Temuan berasal dari kode dan screenshot demo yang sudah dirender. Belum ada wawa
 - Nominal dan tanggal memakai perataan yang konsisten; angka uang dapat menggunakan tabular figures.
 - Target sentuh minimal 48 × 48 logical pixel. Jangan mengecilkan area interaksi agar tampak minimalis.
 
+### Revisi keterbacaan mode terang
+
+- Warna isi utama `#102A43`, isi pendukung `#40536A`, dan tautan/ikon aktif `#0B56C2`. Tombol utama tetap royal blue Sparkleen dengan teks putih.
+- Tetapkan warna foreground secara eksplisit pada judul, label field, nominal, nama layanan, dan identitas. Pada konsep web, isolasi pewarisan warna dari tema host agar judul/label tidak berubah putih ketika permukaan aplikasi sedang terang.
+- Keterangan bermakna minimal 12; label navigasi dan tindakan 13; nama layanan 14. Placeholder memakai opacity penuh. Pembesaran teks tidak boleh memotong informasi; baris boleh mengalir.
+- Batas input memakai `#74869C` terhadap bidang `#F5F7FB`; garis tahap menunggu `#8193A8`, tahap selesai `#537FB9` dengan opacity penuh. Label tahap tetap ditampilkan.
+- Ikon kontrol memakai ketebalan yang konsisten, sekitar 2 pada konsep. Status tidak dibedakan hanya melalui ikon/warna.
+- Pasangan token dihitung memakai luminans relatif: teks utama pada putih 14,64:1; teks pendukung pada putih 7,88:1 dan pada canvas 7,08:1; biru pada tint `#E4EDFA` 5,69:1; batas input terhadap bidang 3,48:1. Angka ini pemeriksaan pasangan warna, belum audit piksel hasil render ataupun bukti seluruh UI memenuhi WCAG.
+- Konsep revisi dibuka pada mode terang agar masalah yang sedang ditinjau langsung terlihat; tombol tema tetap tersedia. Ketentuan ini tidak mengubah preferensi tema pengguna pada aplikasi Flutter.
+
 ### Pemakaian aset
 
 - Sembilan aset yang sudah dibuat tetap menjadi sumber visual; tidak menambah stok gambar acak.
@@ -128,6 +138,7 @@ Perencanaan memakai audit source dan konsep interaksi. Eksekusi memakai implemen
 - Layout diperiksa pada lebar 320, 360, 390, dan 412 logical pixel serta layar lebih lebar yang dibatasi aplikasi.
 - Pembesaran teks 1,0 / 1,5 / 2,0 tidak menyebabkan overflow; konten dapat mengalir dan digulir.
 - Kontras teks utama/pendukung ditargetkan sekurang-kurangnya 4,5:1 terhadap latar efektif, termasuk pada area kaca yang bertumpuk.
+- Batas kontrol dan indikator proses yang dibutuhkan untuk memahami state ditargetkan minimal 3:1 terhadap permukaan sekitar. Periksa juga halaman profil, masuk, filter pesanan, dan sheet detail/edit pada mode terang.
 - Tindakan penting dapat digunakan dengan pembaca layar dan memiliki nama yang jelas. Status memakai label, bukan warna saja.
 - Target sentuh minimal 48 × 48; tombol aktif tidak mempunyai callback kosong.
 - Tidak ada ilustrasi, label, nomor nota, harga, atau indikator yang terpotong dock navigasi.
