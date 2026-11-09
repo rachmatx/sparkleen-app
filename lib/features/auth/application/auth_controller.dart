@@ -27,8 +27,9 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   );
 });
 
-final authControllerProvider =
-    AsyncNotifierProvider<AuthController, AuthState>(AuthController.new);
+final authControllerProvider = AsyncNotifierProvider<AuthController, AuthState>(
+  AuthController.new,
+);
 
 class AuthController extends AsyncNotifier<AuthState> {
   AuthRepository get _repository => ref.read(authRepositoryProvider);
@@ -79,11 +80,7 @@ class AuthController extends AsyncNotifier<AuthState> {
     required String pin,
   }) {
     return _run(
-      () => _repository.activate(
-        noTelp: noTelp,
-        noNota: noNota,
-        pin: pin,
-      ),
+      () => _repository.activate(noTelp: noTelp, noNota: noNota, pin: pin),
     );
   }
 
@@ -99,12 +96,27 @@ class AuthController extends AsyncNotifier<AuthState> {
 
   Future<void> _updatePelanggan(Future<Pelanggan> Function() action) async {
     final previous = state;
+    final revision = ref.read(customerSessionRevisionProvider);
     state = const AsyncLoading<AuthState>();
     try {
       final pelanggan = await action();
-      if (ref.mounted) state = AsyncData(AuthAuthenticated(pelanggan));
-    } catch (_) {
-      if (ref.mounted) state = previous;
+      if (ref.mounted &&
+          ref.read(customerSessionRevisionProvider) == revision) {
+        state = AsyncData(AuthAuthenticated(pelanggan));
+      }
+    } catch (error) {
+      if (ref.mounted &&
+          ref.read(customerSessionRevisionProvider) == revision) {
+        if (error is ApiException && error.isUnauthorized) {
+          await _storage.clear();
+          if (ref.mounted) {
+            state = const AsyncData(AuthUnauthenticated());
+            ref.read(customerSessionRevisionProvider.notifier).advance();
+          }
+        } else {
+          state = previous;
+        }
+      }
       rethrow;
     }
   }
@@ -113,7 +125,10 @@ class AuthController extends AsyncNotifier<AuthState> {
     try {
       await _repository.logout();
     } finally {
-      if (ref.mounted) state = const AsyncData(AuthUnauthenticated());
+      if (ref.mounted) {
+        state = const AsyncData(AuthUnauthenticated());
+        ref.read(customerSessionRevisionProvider.notifier).advance();
+      }
     }
   }
 
@@ -121,7 +136,10 @@ class AuthController extends AsyncNotifier<AuthState> {
     state = const AsyncLoading<AuthState>();
     try {
       final pelanggan = await action();
-      if (ref.mounted) state = AsyncData(AuthAuthenticated(pelanggan));
+      if (ref.mounted) {
+        ref.read(customerSessionRevisionProvider.notifier).advance();
+        state = AsyncData(AuthAuthenticated(pelanggan));
+      }
     } catch (error, stackTrace) {
       if (ref.mounted) state = AsyncError<AuthState>(error, stackTrace);
       rethrow;
@@ -131,8 +149,9 @@ class AuthController extends AsyncNotifier<AuthState> {
   Future<void> _handleUnauthorized() async {
     await _storage.clear();
     if (!ref.mounted) return;
-    if (state is AsyncData<AuthState>) {
+    if (state.value is! AuthUnauthenticated) {
       state = const AsyncData(AuthUnauthenticated());
+      ref.read(customerSessionRevisionProvider.notifier).advance();
     }
   }
 }

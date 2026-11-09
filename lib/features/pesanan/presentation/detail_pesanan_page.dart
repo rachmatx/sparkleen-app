@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/providers.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/status_chip.dart';
@@ -14,6 +15,7 @@ import 'widgets/timeline_status.dart';
 
 final transaksiDetailProvider = FutureProvider.autoDispose
     .family<TransaksiDetail, int>((ref, id) {
+      ref.watch(customerSessionRevisionProvider);
       return ref.watch(transaksiRepositoryProvider).detail(id);
     });
 

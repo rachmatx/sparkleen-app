@@ -65,13 +65,16 @@ final pesananControllerProvider =
 class PesananController extends AsyncNotifier<PesananState> {
   TransaksiRepository get _repository => ref.read(transaksiRepositoryProvider);
 
-  @override
-  Future<PesananState> build() => _fetch(PesananScope.aktif, page: 1);
+  int _requestEpoch = 0;
 
-  Future<PesananState> _fetch(
-    PesananScope scope, {
-    required int page,
-  }) async {
+  @override
+  Future<PesananState> build() {
+    ref.watch(customerSessionRevisionProvider);
+    _requestEpoch++;
+    return _fetch(PesananScope.aktif, page: 1);
+  }
+
+  Future<PesananState> _fetch(PesananScope scope, {required int page}) async {
     final result = await _repository.list(
       status: scope.apiValue,
       page: page,
@@ -88,17 +91,18 @@ class PesananController extends AsyncNotifier<PesananState> {
   }
 
   Future<void> load(PesananScope scope) async {
+    final epoch = ++_requestEpoch;
     state = const AsyncLoading<PesananState>();
-    state = await AsyncValue.guard(() => _fetch(scope, page: 1));
+    final next = await AsyncValue.guard(() => _fetch(scope, page: 1));
+    if (ref.mounted && epoch == _requestEpoch) state = next;
   }
 
   Future<void> loadMore() async {
+    final epoch = _requestEpoch;
     final current = state.value;
     if (current == null || current.isLoadingMore || !current.hasMore) return;
 
-    state = AsyncData(
-      current.copyWith(isLoadingMore: true, clearError: true),
-    );
+    state = AsyncData(current.copyWith(isLoadingMore: true, clearError: true));
 
     try {
       final result = await _repository.list(
@@ -106,7 +110,7 @@ class PesananController extends AsyncNotifier<PesananState> {
         page: current.page + 1,
         perPage: 20,
       );
-      if (!ref.mounted) return;
+      if (!ref.mounted || epoch != _requestEpoch) return;
 
       final latest = state.value ?? current;
       final seen = latest.items.map((item) => item.id).toSet();
@@ -124,18 +128,17 @@ class PesananController extends AsyncNotifier<PesananState> {
         ),
       );
     } catch (error) {
-      if (!ref.mounted) return;
+      if (!ref.mounted || epoch != _requestEpoch) return;
       state = AsyncData(
-        (state.value ?? current).copyWith(
-          isLoadingMore: false,
-          error: error,
-        ),
+        (state.value ?? current).copyWith(isLoadingMore: false, error: error),
       );
     }
   }
 
   Future<void> refresh() async {
     final scope = state.value?.scope ?? PesananScope.aktif;
-    state = await AsyncValue.guard(() => _fetch(scope, page: 1));
+    final epoch = ++_requestEpoch;
+    final next = await AsyncValue.guard(() => _fetch(scope, page: 1));
+    if (ref.mounted && epoch == _requestEpoch) state = next;
   }
 }

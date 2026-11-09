@@ -1,5 +1,7 @@
 # Sparkleen Mobile API v1
 
+> Status implementasi 9 November 2026: fondasi 11 endpoint akun/profil/katalog/outlet/transaksi/nota diterapkan pada branch backend `feat/customer-api-foundation` dari `524f554`. Bagian `/permintaan` dan `/transaksi/{id}/pembayaran` di dokumen ini adalah rencana berikutnya, **belum tersedia** pada implementasi fondasi tersebut. Contoh dan catatan fase pembayaran di bawah tidak boleh dianggap sebagai hasil uji backend yang sedang berjalan. Lihat `docs/integration-foundation-results.md` untuk bukti dan batas verifikasi.
+
 REST API untuk aplikasi mobile pelanggan Sparkleen Laundry. Hanya berisi kebutuhan
 pelanggan (auth, profil, katalog, transaksi, nota, permintaan jemput, pembayaran online,
 info outlet). Data karyawan, inventaris, dan laporan tetap di web kasir.
@@ -22,7 +24,7 @@ Authorization: Bearer <token>
 
 - Token berlaku 30 hari dan diperpanjang otomatis setiap kali dipakai.
 - Logout me-revoke token yang sedang dipakai.
-- PIN, token, dan hash tidak pernah dikembalikan oleh API maupun ditulis ke log.
+- PIN login dan hash tidak dikembalikan API. Token hanya dikirim saat autentikasi; PIN/token/hash tidak boleh ditulis ke log. PIN pengambilan hanya tersedia di detail transaksi milik pelanggan.
 
 ## Format response
 
@@ -101,7 +103,7 @@ Response `201`:
 {
   "data": {
     "token": "<64 karakter hex>",
-    "expires_at": "2026-11-22 10:00:00",
+    "expires_at": "2026-11-22T10:00:00+07:00",
     "pelanggan": {
       "id_pelanggan": 12,
       "kode_pelanggan": "PLG012",
@@ -117,7 +119,7 @@ Response `201`:
 
 ### POST /auth/activate
 
-Untuk pelanggan lama yang belum punya PIN. `no_nota` harus milik nomor telepon tersebut.
+Untuk pelanggan lama yang belum punya PIN. `no_nota` harus merupakan nota terakhir yang belum dihapus milik nomor telepon tersebut.
 
 ```json
 {
@@ -190,7 +192,7 @@ Hanya layanan dengan `is_aktif = 1`, diurutkan berdasarkan nama.
 }
 ```
 
-Nilai diambil dari `Config\Outlet`, dapat dioverride lewat `.env` (`outlet.nama`, dst).
+Nilai diambil dari `Config\Outlet`, dapat dioverride lewat `.env` (`outlet.nama`, `outlet.noWa`, `outlet.alamat`, `outlet.jamBuka`, `outlet.jamTutup`).
 
 ### GET /transaksi
 

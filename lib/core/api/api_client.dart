@@ -25,8 +25,7 @@ class ApiResponse {
 }
 
 class ApiClient {
-  ApiClient({required this.tokenStorage, Dio? dio})
-    : _dio = dio ?? Dio() {
+  ApiClient({required this.tokenStorage, Dio? dio}) : _dio = dio ?? Dio() {
     _dio.options
       ..baseUrl = ApiConfig.apiBase
       ..connectTimeout = const Duration(seconds: 15)
@@ -50,7 +49,14 @@ class ApiClient {
         onError: (error, handler) async {
           final isAuthEndpoint = error.requestOptions.path.startsWith('/auth/');
           if (error.response?.statusCode == 401 && !isAuthEndpoint) {
-            await onUnauthorized?.call();
+            final currentToken = await tokenStorage.read();
+            final sentAuthorization =
+                error.requestOptions.headers['Authorization'];
+            // A late 401 from account A must not log account B out.
+            if (currentToken != null &&
+                sentAuthorization == 'Bearer $currentToken') {
+              await onUnauthorized?.call();
+            }
           }
           handler.next(error);
         },

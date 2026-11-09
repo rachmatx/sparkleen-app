@@ -251,7 +251,7 @@
       "name": "Permintaan",
       "item": [
         {
-          "name": "Buat Permintaan",
+          "name": "[PLANNED] Buat Permintaan",
           "request": {
             "method": "POST",
             "header": [
@@ -281,7 +281,7 @@
           ]
         },
         {
-          "name": "Daftar Permintaan",
+          "name": "[PLANNED] Daftar Permintaan",
           "request": {
             "method": "GET",
             "url": {
@@ -297,7 +297,7 @@
           }
         },
         {
-          "name": "Detail Permintaan",
+          "name": "[PLANNED] Detail Permintaan",
           "request": {
             "method": "GET",
             "url": {
@@ -308,7 +308,7 @@
           }
         },
         {
-          "name": "Batal Permintaan",
+          "name": "[PLANNED] Batal Permintaan",
           "request": {
             "method": "POST",
             "url": {
@@ -324,7 +324,7 @@
       "name": "Pembayaran",
       "item": [
         {
-          "name": "Buat Intent Pembayaran",
+          "name": "[PLANNED] Buat Intent Pembayaran",
           "request": {
             "method": "POST",
             "header": [
@@ -342,7 +342,7 @@
           }
         },
         {
-          "name": "Buat Intent Transfer",
+          "name": "[PLANNED] Buat Intent Transfer",
           "request": {
             "method": "POST",
             "header": [
@@ -360,7 +360,7 @@
           }
         },
         {
-          "name": "Status Pembayaran",
+          "name": "[PLANNED] Status Pembayaran",
           "request": {
             "method": "GET",
             "url": {
@@ -371,7 +371,7 @@
           }
         },
         {
-          "name": "Batal Intent Pembayaran",
+          "name": "[PLANNED] Batal Intent Pembayaran",
           "request": {
             "method": "POST",
             "url": {

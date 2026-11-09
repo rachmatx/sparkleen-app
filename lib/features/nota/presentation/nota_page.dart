@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/formatters.dart';
+import '../../../core/providers.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/async_value_view.dart';
@@ -13,6 +14,7 @@ final notaProvider = FutureProvider.autoDispose.family<NotaData, int>((
   ref,
   id,
 ) {
+  ref.watch(customerSessionRevisionProvider);
   return ref.watch(transaksiRepositoryProvider).nota(id);
 });
 

@@ -169,4 +169,21 @@ lib/
 
 Fase 1 selesai, redesign UI/UX dengan background solid, kaca padat, dan paket aset Sparkleen sudah diterapkan pada
 layar terkait. Seluruh layar utama terhubung ke API, `flutter analyze` bersih,
-dan `flutter test` hijau (78 test). Hasil render dan batas verifikasi ada di dokumen redesign.
+dan `flutter test` hijau (84 test). Hasil render dan batas verifikasi ada di dokumen redesign.
+
+## Integrasi backend pelanggan
+
+API pelanggan membutuhkan branch backend `feat/customer-api-foundation` atau versi
+yang sudah memuat 11 endpoint inti `/api/v1`. Hasil pengujian lokal dan batas
+penerapannya dicatat di [integration-foundation-results](docs/integration-foundation-results.md).
+Endpoint jemput/pembayaran dalam dokumen API masih merupakan rencana tahap berikutnya.
+
+Uji eksplisit dengan backend dan database test lokal:
+
+```sh
+CI=true flutter test tool/customer_api_integration_test.dart --dart-define=API_BASE_URL=http://127.0.0.1:42525
+```
+
+Siapkan fixture backend terlebih dahulu dan set `LAUNDRY_TEST_ROOT` serta
+`TEST_PHP_BIN` sesuai petunjuk backend. Uji ini memakai HTTP sungguhan dan
+database `laundry_db_test`; suite widget biasa tetap memakai isolasi HTTP.
