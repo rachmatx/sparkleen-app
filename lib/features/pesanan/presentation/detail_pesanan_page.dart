@@ -288,13 +288,13 @@ class _ItemRow extends StatelessWidget {
   }
 }
 
-class _PaymentCard extends StatelessWidget {
+class _PaymentCard extends ConsumerWidget {
   const _PaymentCard({required this.detail});
 
   final TransaksiDetail detail;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final lunas = detail.sudahLunas;
@@ -365,6 +365,19 @@ class _PaymentCard extends StatelessWidget {
               ],
             ),
           ),
+          if (!lunas) ...[
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: () async {
+                await context.push('/pesanan/${detail.id}/pembayaran');
+                if (context.mounted) {
+                  ref.invalidate(transaksiDetailProvider(detail.id));
+                }
+              },
+              icon: const Icon(Icons.payments_outlined),
+              label: const Text('Lihat pilihan pembayaran'),
+            ),
+          ],
           if (detail.pembayaran.isNotEmpty) ...[
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),

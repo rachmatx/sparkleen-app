@@ -10,6 +10,7 @@ import '../../features/home/presentation/home_page.dart';
 import '../../features/jemput/presentation/pickup_page.dart';
 import '../../features/jemput/presentation/pickup_form_page.dart';
 import '../../features/nota/presentation/nota_page.dart';
+import '../../features/pembayaran/presentation/payment_page.dart';
 import '../../features/pesanan/presentation/detail_pesanan_page.dart';
 import '../../features/pesanan/presentation/pesanan_page.dart';
 import '../../features/profil/presentation/profil_page.dart';
@@ -54,6 +55,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/pesanan/:id/nota',
         builder: (context, state) =>
             NotaPage(id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0),
+      ),
+      GoRoute(
+        path: '/pesanan/:id/pembayaran',
+        builder: (context, state) => PaymentPage(
+          id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+        ),
       ),
       GoRoute(path: '/jemput', builder: (context, state) => const PickupPage()),
       GoRoute(

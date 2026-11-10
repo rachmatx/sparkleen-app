@@ -331,7 +331,7 @@
       "name": "Pembayaran",
       "item": [
         {
-          "name": "[PLANNED] Buat Intent Pembayaran",
+          "name": "Buat Intent Pembayaran",
           "request": {
             "method": "POST",
             "header": [
@@ -349,7 +349,7 @@
           }
         },
         {
-          "name": "[PLANNED] Buat Intent Transfer",
+          "name": "Buat Intent Transfer",
           "request": {
             "method": "POST",
             "header": [
@@ -367,7 +367,7 @@
           }
         },
         {
-          "name": "[PLANNED] Status Pembayaran",
+          "name": "Status Pembayaran",
           "request": {
             "method": "GET",
             "url": {
@@ -378,13 +378,24 @@
           }
         },
         {
-          "name": "[PLANNED] Batal Intent Pembayaran",
+          "name": "Batal Intent Pembayaran",
           "request": {
             "method": "POST",
             "url": {
               "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/pembayaran/batal",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "pembayaran", "batal"]
+            }
+          }
+        },
+        {
+          "name": "Sinkronisasi pembayaran",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/pembayaran/sinkronisasi",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "pembayaran", "sinkronisasi"]
             }
           }
         }
