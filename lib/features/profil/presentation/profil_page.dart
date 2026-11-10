@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
@@ -53,6 +54,12 @@ class ProfilPage extends ConsumerWidget {
                       )
               else ...[
                 _ProfileHeader(pelanggan: pelanggan),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () => context.push('/poin'),
+                  icon: const Icon(Icons.stars_outlined),
+                  label: const Text('Tukar dan riwayat poin'),
+                ),
                 const SizedBox(height: 26),
                 Text('Informasi akun', style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),

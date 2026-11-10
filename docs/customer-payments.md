@@ -1,7 +1,7 @@
 # Tahap 3 — pembayaran pelanggan
 
 Implementasi lokal `feat/customer-payments`, 10 November 2026. Belum push/deploy.
-Tahap 4 (notifikasi dan penukaran poin) **belum dikerjakan**.
+Tahap 4 dilanjutkan pada `feat/notifications-loyalty`; lihat `docs/notifications-and-points.md`. Push OS belum tersedia.
 
 ## Pengalaman pelanggan
 

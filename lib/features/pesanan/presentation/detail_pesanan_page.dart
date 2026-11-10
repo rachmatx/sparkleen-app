@@ -377,6 +377,17 @@ class _PaymentCard extends ConsumerWidget {
               icon: const Icon(Icons.payments_outlined),
               label: const Text('Lihat pilihan pembayaran'),
             ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () async {
+                await context.push('/pesanan/${detail.id}/poin');
+                if (context.mounted) {
+                  ref.invalidate(transaksiDetailProvider(detail.id));
+                }
+              },
+              icon: const Icon(Icons.stars_outlined),
+              label: const Text('Gunakan poin'),
+            ),
           ],
           if (detail.pembayaran.isNotEmpty) ...[
             const Padding(

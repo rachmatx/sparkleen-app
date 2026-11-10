@@ -1,6 +1,6 @@
 # Sparkleen Mobile API v1
 
-> Status implementasi 10 November 2026: API pelanggan, permintaan jemput/antrean kasir, dan pembayaran pelanggan tersedia lokal pada `feat/customer-payments`. Pembayaran tetap SIMULATION, pembuatan default nonaktif. Belum push/deploy. Lihat `docs/customer-payments.md`.
+> Status implementasi 10 November 2026: API pelanggan, permintaan jemput/antrean kasir, dan pembayaran pelanggan tersedia lokal pada `feat/customer-payments`. Pembayaran tetap SIMULATION, pembuatan default nonaktif. Notifikasi in-app dan penukaran poin dilanjutkan pada `feat/notifications-loyalty`; push OS belum tersedia. Belum push/deploy. Lihat `docs/customer-payments.md` dan `docs/notifications-and-points.md`.
 
 REST API untuk aplikasi mobile pelanggan Sparkleen Laundry. Hanya berisi kebutuhan
 pelanggan (auth, profil, katalog, transaksi, nota, permintaan jemput, pembayaran online,
@@ -80,6 +80,32 @@ Aturan data:
 | GET | `/transaksi/{id}/pembayaran` | Bearer | Status tagihan online (polling) |
 | POST | `/transaksi/{id}/pembayaran/sinkronisasi` | Bearer | Periksa gateway dan rekonsiliasi status bertanda tangan |
 | POST | `/transaksi/{id}/pembayaran/batal` | Bearer | Batalkan intent pembayaran online |
+
+### Notifikasi dan loyalitas (tahap 4)
+
+Semua endpoint memerlukan bearer pelanggan. Data difilter berdasarkan akun token.
+
+| Method | Path | Hasil/body |
+|---|---|---|
+| GET | `/notifikasi` | List + meta page/last_page/unread_count/latest_id |
+| GET | `/notifikasi/ringkasan` | unread_count/latest_id |
+| POST | `/notifikasi/{id}/baca` | Tanpa body; idempotent |
+| POST | `/notifikasi/baca-semua` | `{"through_id":123}`; hanya sampai cutoff |
+| GET | `/loyalitas` | balance, point_value, history; pagination meta |
+| GET | `/transaksi/{id}/poin` | Preview order_id/no_nota/balance/grand_total/earned_points/max_points/can_redeem/reason/redemption |
+| POST | `/transaksi/{id}/poin` | `{"points":20,"expected_grand_total":35000,"request_id":"client-random-key-16-to-64"}`; response preview 200 |
+
+Nilai poin Rp300, final dihitung server. Penukaran sekali/order, sebelum pembayaran
+pertama, belum diambil, tanpa referensi/attempt online. Total yang berubah 409
+ORDER_CHANGED; saldo/syarat berubah 409 POINTS_UNAVAILABLE; reuse key dengan isi
+berbeda 409 IDEMPOTENCY_CONFLICT. Retry identik tidak mengurangi poin kedua kali.
+Penyesuaian earned akibat grand total turun ditampilkan pada konfirmasi/riwayat.
+
+Notifikasi adalah inbox tersimpan, bukan push OS. Item: id, category, title, body,
+target_type (order/pickup/loyalty), target_id nullable, read_at, created_at. Tidak
+memuat PIN atau URL bebas. Riwayat poin berisi id, order_id, no_nota, delta,
+balance_after, reason, created_at; hanya event sejak fitur diaktifkan. Lihat
+`docs/notifications-and-points.md` untuk pengalaman pengguna dan batas pengujian.
 
 ### POST /auth/register
 

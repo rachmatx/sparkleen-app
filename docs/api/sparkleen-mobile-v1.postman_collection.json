@@ -15,6 +15,8 @@
     ]
   },
   "variable": [
+    {"key":"id_notifikasi","value":"1","type":"string"},
+    {"key":"point_request_id","value":"set-a-new-request-key-for-each-redemption","type":"string"},
     {
       "key": "base_url",
       "value": "http://localhost:8080",
@@ -37,6 +39,18 @@
     }
   ],
   "item": [
+    {
+      "name": "Notifikasi dan loyalitas",
+      "item": [
+        {"name":"Kotak masuk", "request":{"method":"GET","url":"{{base_url}}/api/v1/notifikasi"}},
+        {"name":"Belum dibaca", "request":{"method":"GET","url":"{{base_url}}/api/v1/notifikasi/ringkasan"}},
+        {"name":"Baca satu notifikasi", "request":{"method":"POST","url":"{{base_url}}/api/v1/notifikasi/{{id_notifikasi}}/baca"}},
+        {"name":"Baca sampai batas yang ditampilkan", "request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"through_id\": {{id_notifikasi}}}"},"url":"{{base_url}}/api/v1/notifikasi/baca-semua"}},
+        {"name":"Saldo dan riwayat poin", "request":{"method":"GET","url":"{{base_url}}/api/v1/loyalitas"}},
+        {"name":"Preview poin pesanan", "request":{"method":"GET","url":"{{base_url}}/api/v1/transaksi/{{id_transaksi}}/poin"}},
+        {"name":"Tukar poin (request ID unik, pertahankan untuk retry)", "request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"points\":20,\"expected_grand_total\":35000,\"request_id\":\"{{point_request_id}}\"}"},"url":"{{base_url}}/api/v1/transaksi/{{id_transaksi}}/poin"}}
+      ]
+    },
     {
       "name": "Auth",
       "item": [

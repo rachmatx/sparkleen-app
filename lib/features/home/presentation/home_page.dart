@@ -10,6 +10,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/status_chip.dart';
 import '../../auth/application/auth_controller.dart';
+import '../../notifikasi/presentation/notification_page.dart';
 import '../../pesanan/data/transaksi_ringkas.dart';
 import '../../pesanan/presentation/widgets/order_stages.dart';
 import '../application/home_providers.dart';
@@ -81,6 +82,7 @@ class HomePage extends ConsumerWidget {
                         ),
                       ],
                     ),
+                    const NotificationBell(),
                     TextButton.icon(
                       onPressed: () => context.go('/profil'),
                       style: TextButton.styleFrom(

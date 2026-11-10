@@ -150,3 +150,10 @@ Rehearsal backup/restore lokal dan 3 skenario startup lulus. Tahap Android fisik
 signing rilis, koneksi GitHub dan identitas/akses hosting masih diperlukan; tidak
 ada push atau deployment operasional. Lihat `docs/release/android-verification.md`
 dan laporan kesiapan rilis pada repo Laundry.
+
+## Pembaruan 10 November: tahap 4
+
+Inbox notifikasi pelanggan dan penukaran poin diimplementasikan lokal pada
+`feat/notifications-loyalty`. Push OS/FCM tetap belum tersedia. Lihat
+`docs/notifications-and-points.md` untuk kontrak, batas penukaran, koreksi earned,
+hasil test dan kebutuhan migrasi. Belum push/deploy atau uji Android fisik.
