@@ -52,7 +52,9 @@ class AuthController extends AsyncNotifier<AuthState> {
     final generation = _storage.generation;
     try {
       final token = await _storage.read();
-      if (!ref.mounted || epoch != _epoch || generation != _storage.generation) {
+      if (!ref.mounted ||
+          epoch != _epoch ||
+          generation != _storage.generation) {
         return const AuthUnauthenticated();
       }
       if (token == null || token.isEmpty) {
@@ -60,7 +62,9 @@ class AuthController extends AsyncNotifier<AuthState> {
         return const AuthUnauthenticated();
       }
       final settings = await ref.read(biometricServiceProvider).settings(token);
-      if (!ref.mounted || epoch != _epoch || generation != _storage.generation) {
+      if (!ref.mounted ||
+          epoch != _epoch ||
+          generation != _storage.generation) {
         return const AuthUnauthenticated();
       }
       if (settings.enabled && !_unlocked) {

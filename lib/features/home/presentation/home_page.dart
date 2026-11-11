@@ -11,7 +11,7 @@ import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/status_chip.dart';
 import '../../../core/sync/customer_refresh.dart';
 import '../../auth/application/auth_controller.dart';
-import '../../notifikasi/presentation/notification_page.dart';
+import 'widgets/customer_header.dart';
 import '../../pesanan/data/transaksi_ringkas.dart';
 import '../../pesanan/presentation/widgets/order_stages.dart';
 import '../application/home_providers.dart';
@@ -50,58 +50,9 @@ class HomePage extends ConsumerWidget {
             onRefresh: () => _refresh(ref),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
               children: [
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final brand = Row(
-                      children: [
-                        const BrandMark(size: 32),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'sparkleen',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleLarge,
-                          ),
-                        ),
-                      ],
-                    );
-                    final points = TextButton.icon(
-                      onPressed: () => context.push('/poin'),
-                      icon: const AppArtwork(
-                        asset: AppAssets.points,
-                        width: 20,
-                        height: 20,
-                      ),
-                      label: Text('${pelanggan?.poin ?? 0} poin'),
-                    );
-                    if (MediaQuery.textScalerOf(context).scale(14) > 20) {
-                      return Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(child: brand),
-                              const NotificationBell(),
-                            ],
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: points,
-                          ),
-                        ],
-                      );
-                    }
-                    return Row(
-                      children: [
-                        Expanded(child: brand),
-                        points,
-                        const NotificationBell(),
-                      ],
-                    );
-                  },
-                ),
+                const CustomerHeader(),
                 if (ref.watch(customerRefreshProvider).failed)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
@@ -110,12 +61,13 @@ class HomePage extends ConsumerWidget {
                       style: TextStyle(color: colors.error),
                     ),
                   ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
                 _WelcomeHeader(nama: nama),
                 const SizedBox(height: 16),
                 AppCard(
-                  color: colors.primaryContainer.withValues(alpha: 0.87),
+                  color: colors.primaryContainer,
                   onTap: () => context.push('/jemput'),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
                   child: Row(
                     children: [
                       Expanded(
@@ -123,15 +75,24 @@ class HomePage extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Laundry tanpa repot.',
-                              style: theme.textTheme.titleLarge,
+                              'Laundry\ntanpa repot.',
+                              style: theme.textTheme.titleMedium,
                             ),
                             const SizedBox(height: 6),
-                            const Text('Kami jemput dari rumahmu.'),
+                            Text(
+                              'Kami jemput dari rumahmu.',
+                              style: theme.textTheme.bodySmall,
+                            ),
                             const SizedBox(height: 12),
                             FilledButton(
+                              style: FilledButton.styleFrom(
+                                minimumSize: const Size(48, 42),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                              ),
                               onPressed: () => context.push('/jemput'),
-                              child: const Text('Jemput laundry'),
+                              child: const Text('Jadwalkan jemput'),
                             ),
                           ],
                         ),
@@ -139,9 +100,9 @@ class HomePage extends ConsumerWidget {
                       const SizedBox(width: 8),
                       if (MediaQuery.textScalerOf(context).scale(14) < 20)
                         const AppArtwork(
-                          asset: AppAssets.home,
-                          width: 100,
-                          height: 108,
+                          asset: AppAssets.pickup,
+                          width: 144,
+                          height: 116,
                         ),
                     ],
                   ),
@@ -179,8 +140,8 @@ class HomePage extends ConsumerWidget {
                     onTap: () => context.push('/pesanan/${transaksi.id}'),
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text('Layanan laundry', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 14),
+                Text('Layanan', style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),
                 AsyncValueView<List<Layanan>>(
                   value: ref.watch(layananProvider),
@@ -322,7 +283,7 @@ class _ActiveOrderCard extends StatelessWidget {
     final theme = Theme.of(context);
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -338,20 +299,20 @@ class _ActiveOrderCard extends StatelessWidget {
               Text(transaksi.noNota, style: theme.textTheme.bodySmall),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 8),
           Text('Estimasi selesai', style: theme.textTheme.bodySmall),
           const SizedBox(height: 4),
           Text(
             transaksi.tglEstimasi == null
                 ? 'Menunggu estimasi'
                 : formatEstimasi(transaksi.tglEstimasi!),
-            style: theme.textTheme.headlineSmall,
+            style: theme.textTheme.titleLarge,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           OrderStages(status: transaksi.status),
-          const SizedBox(height: 18),
+          const SizedBox(height: 8),
           const Divider(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 12,
             runSpacing: 8,
@@ -366,7 +327,7 @@ class _ActiveOrderCard extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      'Detail pesanan',
+                      'Detail',
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: theme.colorScheme.primary,
                       ),
@@ -400,7 +361,7 @@ class _ServiceCard extends StatelessWidget {
       assetKey: layanan.assetKey,
     );
     return AppCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       onTap: () => showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
@@ -445,7 +406,7 @@ class _ServiceCard extends StatelessWidget {
           if (asset != null)
             IllustrationPanel(
               asset: asset,
-              width: 120,
+              width: double.infinity,
               height: 96,
               padding: const EdgeInsets.all(3),
             )
@@ -455,12 +416,12 @@ class _ServiceCard extends StatelessWidget {
               size: 36,
               color: theme.colorScheme.primary,
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           Text(layanan.nama, style: theme.textTheme.titleSmall),
           const SizedBox(height: 6),
           Text(
             formatRupiah(layanan.hargaPerKg),
-            style: theme.textTheme.titleLarge,
+            style: theme.textTheme.bodyMedium,
           ),
           Text(
             'per kg · ${layanan.estimasiHari} hari',

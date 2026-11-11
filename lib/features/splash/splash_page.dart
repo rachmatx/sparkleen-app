@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme/app_assets.dart';
 import '../../core/widgets/app_artwork.dart';
 
-/// Only animates while startup is pending; never delays authentication routing.
+/// The startup router keeps this animation visible for at least two seconds.
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
   @override
@@ -15,7 +15,7 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _motion = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 2200),
+    duration: const Duration(milliseconds: 1800),
   );
   @override
   void didChangeDependencies() {

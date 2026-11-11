@@ -122,27 +122,48 @@ class NotificationPage extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Text(
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final section = Text(
                               'Hari ini',
                               style: theme.textTheme.titleMedium,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton.icon(
-                                  onPressed:
-                                      view.busy || view.result.unread == 0
-                                      ? null
-                                      : () => controller.mark(),
-                                  icon: const Icon(Icons.done_all, size: 18),
-                                  label: const Text('Tandai semua dibaca'),
-                                ),
+                            );
+                            final action = TextButton.icon(
+                              style: TextButton.styleFrom(
+                                textStyle: theme.textTheme.bodySmall,
                               ),
-                            ),
-                          ],
+                              onPressed: view.busy || view.result.unread == 0
+                                  ? null
+                                  : () => controller.mark(),
+                              icon: const Icon(Icons.done_all, size: 18),
+                              label: const Text('Tandai semua dibaca'),
+                            );
+                            if (MediaQuery.textScalerOf(context).scale(14) >
+                                20) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  section,
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: action,
+                                  ),
+                                ],
+                              );
+                            }
+                            return Row(
+                              children: [
+                                section,
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: action,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                         if (view.error != null)
                           Padding(

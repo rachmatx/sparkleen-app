@@ -40,13 +40,9 @@ void main() {
   setUpAll(() async {
     await initializeDateFormatting('id_ID');
     if (const bool.fromEnvironment('CAPTURE_UI')) {
-      for (final family in ['Manrope', 'PlusJakartaSans']) {
+      for (final family in ['Inter']) {
         final loader = FontLoader(family);
-        loader.addFont(
-          rootBundle.load(
-            'assets/fonts/$family-${family == 'Manrope' ? 400 : 600}.ttf',
-          ),
-        );
+        loader.addFont(rootBundle.load('assets/fonts/$family-400.ttf'));
         await loader.load();
       }
       final icons = FontLoader('MaterialIcons')

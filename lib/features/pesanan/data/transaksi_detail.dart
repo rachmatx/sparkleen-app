@@ -150,10 +150,7 @@ class TransaksiDetail {
   }
 }
 
-List<T> _parseList<T>(
-  Object? raw,
-  T Function(Map<String, dynamic>) parse,
-) {
+List<T> _parseList<T>(Object? raw, T Function(Map<String, dynamic>) parse) {
   if (raw is! List) return const [];
   return raw
       .whereType<Map>()

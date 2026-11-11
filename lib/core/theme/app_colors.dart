@@ -5,12 +5,12 @@ abstract final class AppColors {
   static const link = Color(0xFF0B56C2);
   static const backgroundDark = Color(0xFF0B1220);
   static const primaryDark = Color(0xFF084FAF);
-  static const primarySoft = Color(0xFFE4EDFA);
-  static const background = Color(0xFFEDF3FA);
+  static const primarySoft = Color(0xFFDCE9FF);
+  static const background = Color(0xFFF0F5FC);
   static const surface = Color(0xFFFFFFFF);
   static const surfaceMuted = Color(0xFFE1EBF5);
   static const border = Color(0xFFC6D2E0);
-  static const text = Color(0xFF102A43);
+  static const text = Color(0xFF0C1B33);
   static const muted = Color(0xFF40536A);
   static const soft = Color(0xFF74869C);
   static const success = Color(0xFF08745D);

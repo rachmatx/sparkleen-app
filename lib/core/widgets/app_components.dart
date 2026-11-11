@@ -14,7 +14,7 @@ class AppInfoBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return AppCard(
-      color: colors.primaryContainer,
+      color: colors.primaryContainer.withValues(alpha: .75),
       padding: const EdgeInsets.all(14),
       shadow: const [],
       child: Row(

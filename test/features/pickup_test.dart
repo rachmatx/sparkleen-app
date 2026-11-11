@@ -146,7 +146,11 @@ Future<void> fillForm(WidgetTester tester) async {
   await tester.enterText(find.byKey(const Key('pickup-weight')), '4,5');
   FocusManager.instance.primaryFocus?.unfocus();
   await tester.pumpAndSettle();
-  await tester.ensureVisible(find.text('Kirim permintaan jemput'));
+  await tester.scrollUntilVisible(
+    find.text('Kirim permintaan jemput'),
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
   await tester.pumpAndSettle();
 }
 
@@ -158,6 +162,23 @@ void main() {
     expect(item.canCancel, false);
     expect(item.statusLabel, 'Status belum tersedia');
   });
+  testWidgets(
+    'required pickup fields stay validated after scrolling to submit',
+    (tester) async {
+      final repo = FakePickupRepository();
+      await openForm(tester, repo);
+      await tester.scrollUntilVisible(
+        find.text('Kirim permintaan jemput'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Kirim permintaan jemput'));
+      await tester.pumpAndSettle();
+      expect(repo.creates, 0);
+      expect(find.text('Pilih layanan.'), findsOneWidget);
+      expect(find.text('Masukkan berat 0,1–100 kg.'), findsOneWidget);
+    },
+  );
   testWidgets(
     'form submits selected service, comma weight and profile address once',
     (tester) async {
@@ -224,10 +245,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Batalkan permintaan'), findsNothing);
       await tester.scrollUntilVisible(
-        find.text('Alasan: Di luar area penjemputan'),
+        find.text('Permintaan ditolak'),
         150,
         scrollable: find.byType(Scrollable).first,
       );
+      await tester.tap(find.text('Permintaan ditolak'));
+      await tester.pumpAndSettle();
       expect(find.text('Alasan: Di luar area penjemputan'), findsOneWidget);
     },
   );
@@ -281,7 +304,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         await tester.scrollUntilVisible(
-          find.text('Lihat pesanan & biaya akhir'),
+          find.text('Lihat pesanan'),
           180,
           scrollable: find.byType(Scrollable).first,
         );
@@ -298,7 +321,11 @@ void main() {
         await tester.pumpAndSettle();
         FocusManager.instance.primaryFocus?.unfocus();
         await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text('Kirim permintaan jemput'));
+        await tester.scrollUntilVisible(
+          find.text('Kirim permintaan jemput'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
         await tester.pump();
         expect(tester.takeException(), isNull);
       });

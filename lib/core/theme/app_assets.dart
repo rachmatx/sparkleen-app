@@ -3,13 +3,14 @@ abstract final class AppAssets {
   static const brandMark = 'assets/brand/sparkleen_mark.webp';
   static const points = 'assets/brand/badge_points.webp';
   static const home = 'assets/illustrations/splash_laundry.webp';
+  static const pickup = 'assets/illustrations/pickup_laundry.webp';
   static const splash = home;
   static const login = home;
   static const emptyActiveOrder =
       'assets/illustrations/empty_active_order.webp';
   static const emptyOrderHistory =
       'assets/illustrations/empty_order_history.webp';
-  static const connectionError = 'assets/illustrations/error_connection.webp';
+  static const connectionError = 'assets/illustrations/connection_router.webp';
   static const cuciKering = 'assets/services/service_cuci_kering.webp';
   static const cuciSetrika = 'assets/services/service_cuci_setrika.webp';
 

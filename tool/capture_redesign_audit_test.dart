@@ -58,8 +58,7 @@ void main() {
   setUpAll(() async {
     await initializeDateFormatting('id_ID');
     for (final entry in {
-      'Manrope': [400, 500, 700],
-      'PlusJakartaSans': [500, 600, 700, 800],
+      'Inter': [400, 500, 600, 700],
     }.entries) {
       final loader = FontLoader(entry.key);
       for (final weight in entry.value) {
@@ -103,8 +102,10 @@ void main() {
     testWidgets(
       'capture all ${brightness.name} routes and scroll long content',
       (tester) async {
-        tester.view.physicalSize = const Size(390, 844);
+        tester.view.physicalSize = const Size(390, 868);
         tester.view.devicePixelRatio = 1;
+        tester.view.padding = const FakeViewPadding(top: 32, bottom: 24);
+        addTearDown(tester.view.resetPadding);
         tester.binding.platformDispatcher.accessibilityFeaturesTestValue =
             const FakeAccessibilityFeatures(disableAnimations: true);
         addTearDown(tester.view.resetPhysicalSize);
@@ -161,6 +162,7 @@ void main() {
           final container = ProviderContainer(
             retry: (_, _) => null,
             overrides: [
+              startupReadyProvider.overrideWith((ref) async {}),
               initialThemeModeProvider.overrideWithValue(
                 brightness == Brightness.dark
                     ? ThemeMode.dark
@@ -238,6 +240,14 @@ void main() {
             container.invalidate(biometricSettingsProvider);
             await tester.pumpAndSettle();
           }
+          if (name == 'pickup-form') {
+            await tester.tap(find.byType(DropdownButtonFormField<int>));
+            await tester.pumpAndSettle();
+            await tester.tap(find.text('Cuci + Setrika').last);
+            await tester.enterText(find.byKey(const Key('pickup-weight')), '4');
+            FocusManager.instance.primaryFocus?.unfocus();
+            await tester.pumpAndSettle();
+          }
           if (name == 'redeem') {
             await tester.enterText(find.byType(TextField), '20');
             await tester.pumpAndSettle();
@@ -267,7 +277,7 @@ void main() {
                     .toImage();
             final png = await image.toByteData(format: ui.ImageByteFormat.png);
             final file = File(
-              '../.tooling/ui-qa-v003/${brightness.name}/$name.png',
+              '../.tooling/ui-qa-v004/${brightness.name}/$name.png',
             );
             await file.parent.create(recursive: true);
             await file.writeAsBytes(png!.buffer.asUint8List());

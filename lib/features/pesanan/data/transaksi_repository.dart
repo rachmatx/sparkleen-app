@@ -29,16 +29,14 @@ class TransaksiRepository {
   }) async {
     final response = await _client.get(
       '/transaksi',
-      queryParameters: {
-        'status': status,
-        'page': page,
-        'per_page': perPage,
-      },
+      queryParameters: {'status': status, 'page': page, 'per_page': perPage},
     );
 
     final items = response.asList
         .whereType<Map>()
-        .map((json) => TransaksiRingkas.fromJson(Map<String, dynamic>.from(json)))
+        .map(
+          (json) => TransaksiRingkas.fromJson(Map<String, dynamic>.from(json)),
+        )
         .toList();
 
     final meta = response.meta;

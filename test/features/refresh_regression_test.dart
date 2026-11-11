@@ -95,6 +95,12 @@ void main() {
       expect(find.text('Cucian siap diambil').evaluate().length, lessThan(20));
       await tester.tap(find.text('Tandai semua dibaca'));
       await tester.pumpAndSettle();
+      expect(
+        tester
+            .getRect(find.widgetWithText(TextButton, 'Tandai semua dibaca'))
+            .right,
+        closeTo(390 - 24, 1),
+      );
       expect(repo.cutoff, 100);
       expect(tester.takeException(), isNull);
     },

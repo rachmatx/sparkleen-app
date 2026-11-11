@@ -17,9 +17,8 @@ Future<void> main() async {
   await initializeDateFormatting('id_ID');
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks([
-      'Manrope',
-      'Plus Jakarta Sans',
-    ], await rootBundle.loadString('assets/fonts/OFL.txt'));
+      'Inter',
+    ], await rootBundle.loadString('assets/fonts/Inter-OFL.txt'));
   });
   final server = await const ServerSettings().load();
   final appearance = await const AppearanceSettings().load();

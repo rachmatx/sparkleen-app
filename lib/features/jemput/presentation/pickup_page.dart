@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme/app_assets.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_components.dart';
+import '../../../core/widgets/status_chip.dart';
 import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../application/pickup_controller.dart';
@@ -69,16 +70,20 @@ class _PickupPageState extends ConsumerState<PickupPage> {
 
   @override
   Widget build(BuildContext context) {
-    final requests = ref.watch(pickupControllerProvider);
     final theme = Theme.of(context);
     return AppBackdrop(
       child: Scaffold(
         appBar: AppBar(title: const Text('Jemput laundry')),
         body: AsyncValueView<PickupState>(
-          value: requests,
+          value: ref.watch(pickupControllerProvider),
           onRetry: () => ref.read(pickupControllerProvider.notifier).refresh(),
           builder: (context, data) {
-            final active = data.result.items.any((item) => item.isActive);
+            final active = data.result.items
+                .where((item) => item.isActive)
+                .toList();
+            final history = data.result.items
+                .where((item) => !item.isActive)
+                .toList();
             return RefreshIndicator(
               onRefresh: () =>
                   ref.read(pickupControllerProvider.notifier).refresh(),
@@ -86,102 +91,107 @@ class _PickupPageState extends ConsumerState<PickupPage> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                     sliver: SliverToBoxAdapter(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           AppCard(
                             color: theme.colorScheme.primaryContainer,
+                            padding: const EdgeInsets.fromLTRB(16, 8, 4, 8),
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Cucian dijemput, kamu tetap santai.',
-                                        style: theme.textTheme.titleLarge,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        active
-                                            ? 'Ada penjemputan yang sedang berjalan.'
-                                            : 'Pilih layanan, alamat, dan waktu yang cocok.',
-                                        style: theme.textTheme.bodySmall,
-                                      ),
-                                    ],
+                                  child: Text(
+                                    'Cucian dijemput,\nkamu tetap santai.',
+                                    style: theme.textTheme.titleLarge,
                                   ),
                                 ),
                                 if (MediaQuery.textScalerOf(context).scale(14) <
-                                    20) ...[
-                                  const SizedBox(width: 8),
+                                    20)
                                   const AppArtwork(
-                                    asset: AppAssets.home,
-                                    width: 100,
+                                    asset: AppAssets.pickup,
+                                    width: 140,
                                     height: 100,
                                   ),
-                                ],
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          FilledButton.icon(
-                            onPressed: active
-                                ? null
-                                : () => context.push('/jemput/baru'),
-                            icon: Icon(
-                              active ? Icons.schedule : Icons.add_rounded,
+                          const SizedBox(height: 10),
+                          if (active.isNotEmpty)
+                            AppInfoBanner(
+                              message: '${active.length} permintaan aktif',
+                            )
+                          else
+                            FilledButton.icon(
+                              onPressed: () => context.push('/jemput/baru'),
+                              icon: const Icon(Icons.add_rounded),
+                              label: const Text('Ajukan penjemputan'),
                             ),
-                            label: Text(
-                              active
-                                  ? 'Permintaan sedang berjalan'
-                                  : 'Ajukan penjemputan',
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'Riwayat penjemputan',
-                            style: theme.textTheme.titleMedium,
-                          ),
-                          if (data.result.items.isEmpty)
-                            const EmptyState(
-                              message: 'Belum ada permintaan jemput. Mulai dari jadwal yang cocok untukmu.',
-                              icon: Icons.local_shipping_outlined,
-                              illustrationAsset: AppAssets.emptyActiveOrder,
+                          const SizedBox(height: 18),
+                          if (active.isNotEmpty)
+                            Text(
+                              'Penjemputan aktif',
+                              style: theme.textTheme.titleLarge,
                             ),
                         ],
                       ),
                     ),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverList.separated(
-                      itemCount: data.result.items.length,
+                      itemCount: active.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final item = data.result.items[index];
-                        return _PickupCard(
-                          item: item,
-                          busy: _cancelling.contains(item.id),
-                          onCancel: () => _cancel(item),
-                        );
-                      },
+                      itemBuilder: (_, i) => _PickupCard(
+                        item: active[i],
+                        busy: _cancelling.contains(active[i].id),
+                        onCancel: () => _cancel(active[i]),
+                      ),
                     ),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                    sliver: SliverToBoxAdapter(
+                      child: Text(
+                        'Riwayat penjemputan',
+                        style: theme.textTheme.titleLarge,
+                      ),
+                    ),
+                  ),
+                  if (history.isEmpty)
+                    const SliverPadding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverToBoxAdapter(
+                        child: AppCard(
+                          child: Text('Belum ada riwayat penjemputan.'),
+                        ),
+                      ),
+                    ),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverList.separated(
+                      itemCount: history.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (_, i) => _PickupCard(
+                        item: history[i],
+                        busy: false,
+                        onCancel: () {},
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
                     sliver: SliverToBoxAdapter(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           if (data.error != null)
-                            ErrorState(
-                              error: data.error!,
-                              onRetry: () => ref
-                                  .read(pickupControllerProvider.notifier)
-                                  .loadMore(),
+                            Text(
+                              data.error is ApiException
+                                  ? (data.error as ApiException).message
+                                  : 'Riwayat belum dapat dimuat.',
+                              style: TextStyle(color: theme.colorScheme.error),
                             ),
                           if (data.result.page < data.result.lastPage)
                             OutlinedButton(
@@ -196,6 +206,31 @@ class _PickupPageState extends ConsumerState<PickupPage> {
                                     : data.result.page == 1
                                     ? 'Lihat semua riwayat'
                                     : 'Muat 20 berikutnya',
+                              ),
+                            ),
+                          if (active.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: .07,
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Permintaan sedang berjalan',
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.labelLarge,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Ajukan lagi setelah permintaan selesai.',
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
                               ),
                             ),
                         ],
@@ -224,62 +259,206 @@ class _PickupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    Widget line(IconData icon, String text) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 19),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text, style: theme.textTheme.bodyMedium)),
+        ],
+      ),
+    );
+    if (!item.isActive) {
+      return AppCard(
+        padding: const EdgeInsets.all(14),
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          builder: (sheetContext) => SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Rincian penjemputan #${item.id}',
+                    style: theme.textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(item.service, style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 12),
+                  line(
+                    Icons.calendar_today_outlined,
+                    '${formatTanggalSingkat(item.scheduledAt)} · ${item.slotLabel}',
+                  ),
+                  line(Icons.location_on_outlined, item.address),
+                  line(
+                    Icons.shopping_basket_outlined,
+                    'Perkiraan ${formatBerat(item.estimatedWeight)} · ${formatRupiah(item.estimatedPrice)}',
+                  ),
+                  if (item.note?.isNotEmpty == true) Text(item.note!),
+                  if (item.rejectionReason != null)
+                    Text(
+                      'Alasan: ${item.rejectionReason}',
+                      style: TextStyle(color: theme.colorScheme.error),
+                    ),
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    child: const Text('Tutup'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                StatusChip(
+                  status: item.status == 'dikonfirmasi' ? 'proses' : 'diambil',
+                  label: item.statusLabel,
+                ),
+                Text('#${item.id}', style: theme.textTheme.bodySmall),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.service, style: theme.textTheme.titleSmall),
+                      const SizedBox(height: 3),
+                      Text(
+                        formatTanggalSingkat(item.scheduledAt),
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                if (item.transactionId != null)
+                  Flexible(
+                    child: TextButton.icon(
+                      onPressed: () =>
+                          context.push('/pesanan/${item.transactionId}'),
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 17),
+                      label: const Text('Lihat pesanan'),
+                    ),
+                  )
+                else
+                  const Icon(Icons.chevron_right_rounded, size: 20),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Wrap(
             alignment: WrapAlignment.spaceBetween,
-            spacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
             runSpacing: 6,
             children: [
-              Text(
-                item.statusLabel,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: item.status == 'ditolak'
-                      ? theme.colorScheme.error
-                      : theme.colorScheme.primary,
-                ),
+              StatusChip(
+                status: item.status == 'menunggu'
+                    ? 'menunggu'
+                    : item.status == 'dikonfirmasi'
+                    ? 'proses'
+                    : item.status == 'ditolak'
+                    ? 'diambil'
+                    : 'proses',
+                label: item.statusLabel,
               ),
               Text('#${item.id}', style: theme.textTheme.bodySmall),
             ],
           ),
-          const SizedBox(height: 14),
-          Text(item.service, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 6),
-          // Schedule is a Jakarta calendar date, independent of the device time zone.
-          Text(
-            '${DateFormat('d MMM yyyy', 'id_ID').format(item.scheduledAt.toUtc().add(const Duration(hours: 7)))} · ${item.slotLabel}',
-          ),
-          const SizedBox(height: 8), Text(item.address),
-          if (item.note?.isNotEmpty == true) ...[
-            const SizedBox(height: 6),
-            Text(item.note!, style: theme.textTheme.bodySmall),
+          const SizedBox(height: 8),
+          Text(item.service, style: theme.textTheme.titleSmall),
+          if (item.isActive) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Divider(height: 1),
+            ),
+            line(
+              Icons.calendar_today_outlined,
+              '${formatTanggalSingkat(item.scheduledAt)} · ${item.slotLabel}',
+            ),
+            line(Icons.location_on_outlined, item.address),
+            line(
+              Icons.shopping_basket_outlined,
+              'Perkiraan ${formatBerat(item.estimatedWeight)}',
+            ),
+            if (item.note?.isNotEmpty == true)
+              line(Icons.notes_rounded, item.note!),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Divider(height: 1),
+            ),
+            AppSummaryRow(
+              label: 'Perkiraan biaya',
+              value: formatRupiah(item.estimatedPrice),
+              emphasized: true,
+            ),
+            Text(
+              'Jadwal akan dikonfirmasi outlet.',
+              style: theme.textTheme.bodySmall,
+            ),
+          ] else ...[
+            const SizedBox(height: 4),
+            Text(
+              formatTanggalSingkat(item.scheduledAt),
+              style: theme.textTheme.bodySmall,
+            ),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              title: Text(
+                'Rincian penjemputan',
+                style: theme.textTheme.bodySmall,
+              ),
+              children: [
+                line(Icons.location_on_outlined, item.address),
+                line(
+                  Icons.shopping_basket_outlined,
+                  '${formatBerat(item.estimatedWeight)} · ${formatRupiah(item.estimatedPrice)}',
+                ),
+                if (item.note?.isNotEmpty == true)
+                  Text(item.note!, style: theme.textTheme.bodySmall),
+              ],
+            ),
           ],
-          const SizedBox(height: 12),
-          const TicketDivider(),
-          const SizedBox(height: 12),
-          Text(
-            'Perkiraan ${item.estimatedWeight.toStringAsFixed(2).replaceAll('.', ',')} kg · ${formatRupiah(item.estimatedPrice)}',
-            style: theme.textTheme.bodyMedium,
-          ),
-          if (item.rejectionReason != null) ...[
-            const SizedBox(height: 10),
+          if (item.rejectionReason != null)
             Text(
               'Alasan: ${item.rejectionReason}',
               style: TextStyle(color: theme.colorScheme.error),
             ),
-          ],
-          if (item.transactionId != null) ...[
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: () => context.push('/pesanan/${item.transactionId}'),
-              icon: const Icon(Icons.receipt_long_outlined),
-              label: const Text('Lihat pesanan & biaya akhir'),
+          if (item.transactionId != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => context.push('/pesanan/${item.transactionId}'),
+                icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                label: const Text('Lihat pesanan & biaya akhir'),
+              ),
             ),
-          ],
-          if (item.canCancel) ...[
-            const SizedBox(height: 8),
+          if (item.canCancel)
             Align(
               alignment: Alignment.centerRight,
               child: TextButton.icon(
@@ -291,7 +470,6 @@ class _PickupCard extends StatelessWidget {
                 label: Text(busy ? 'Membatalkan…' : 'Batalkan permintaan'),
               ),
             ),
-          ],
         ],
       ),
     );

@@ -97,7 +97,7 @@ APK pratinjau release yang lebih kecil untuk HP Android ARM64 (termasuk Xiaomi 1
 
 ```bash
 flutter pub get
-flutter build apk --release --flavor preview --dart-define=APP_PREVIEW=true --target-platform=android-arm64 --split-per-abi --split-debug-info=build/symbols/0.0.3
+flutter build apk --release --flavor preview --dart-define=APP_PREVIEW=true --target-platform=android-arm64 --split-per-abi --split-debug-info=build/symbols/0.0.4
 ```
 
 Hasilnya `build/app/outputs/flutter-apk/app-arm64-v8a-preview-release.apk`.
@@ -128,7 +128,7 @@ flutter test
 ```
 
 Hasil verifikasi terbaru, perubahan UI, dan batas pengujian Android dicatat dalam
-[catatan 0.0.3](docs/redesign-v0.0.3.md). Jalankan pengujian di atas setelah mengubah kode.
+[catatan 0.0.4](docs/redesign-v0.0.4.md). Jalankan pengujian di atas setelah mengubah kode.
 
 ## Struktur
 
@@ -215,3 +215,10 @@ Tema terang/gelap, panel glass, aset WebP, Pengaturan, serta perbaikan navigasi 
 Notifikasi dengan “Hari ini” di kiri dan “Tandai semua dibaca” di kanan,
 form berlabel tetap, layar keamanan/koneksi, serta koreksi nominal pembayaran lunas:
 [catatan perubahan dan pengujian](docs/redesign-v0.0.3.md).
+
+
+### Penyelarasan preview 0.0.4
+
+Seluruh UI utama diselaraskan kembali dengan preview yang disetujui. Font Inter dibundel,
+semua panel glass memakai opacity 75%, halaman koneksi menggunakan ilustrasi router,
+dan splash minimal dua detik. [Rincian dan screenshot hasil kode](docs/redesign-v0.0.4.md).

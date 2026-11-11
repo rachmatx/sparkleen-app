@@ -1,4 +1,6 @@
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/app_artwork.dart';
+import '../../../core/theme/app_assets.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -127,144 +129,206 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final services = ref.watch(layananProvider);
-    final chosen = services.value
-        ?.where((item) => item.id == _serviceId)
-        .firstOrNull;
+    final items = services.value ?? <Layanan>[];
+    final matching = items.where((item) => item.id == _serviceId);
+    final chosen = matching.isEmpty ? null : matching.first;
     final weight = double.tryParse(_weight.text.replaceAll(',', '.'));
+    final estimate =
+        chosen != null &&
+            weight != null &&
+            weight.isFinite &&
+            weight >= .1 &&
+            weight <= 100
+        ? (chosen.hargaPerKg * weight).round()
+        : null;
+    Widget label(String text) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(text, style: theme.textTheme.labelLarge),
+    );
+    final dateField = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        label('Tanggal jemput'),
+        OutlinedButton.icon(
+          onPressed: _busy ? null : _chooseDate,
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          icon: const Icon(Icons.calendar_today_outlined, size: 17),
+          label: Text(
+            formatTanggalSingkat(_date),
+            style: theme.textTheme.bodySmall,
+          ),
+        ),
+        if (_error?.fieldError('tgl_jemput') case final String error)
+          Text(error, style: TextStyle(color: theme.colorScheme.error)),
+      ],
+    );
+    final slotField = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        label('Slot waktu'),
+        DropdownButtonFormField<String>(
+          style: theme.textTheme.bodyMedium,
+          initialValue: _slot,
+          isExpanded: true,
+          decoration: const InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+          ),
+          items: const [
+            DropdownMenuItem(value: 'pagi', child: Text('Pagi · 08.00')),
+            DropdownMenuItem(value: 'siang', child: Text('Siang · 12.00')),
+            DropdownMenuItem(value: 'sore', child: Text('Sore · 15.00')),
+          ],
+          onChanged: _busy
+              ? null
+              : (value) => setState(() {
+                  _slot = value!;
+                  _error = null;
+                }),
+        ),
+      ],
+    );
     return AppBackdrop(
       child: Scaffold(
         appBar: AppBar(title: const Text('Ajukan penjemputan')),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-          child: Form(
-            key: _form,
+        body: Form(
+          key: _form,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Jadwal yang cocok untukmu',
-                  style: theme.textTheme.headlineSmall,
+                  'Pilih jadwal yang cocok untukmu.',
+                  style: theme.textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Alamat dan nomor telepon akun akan digunakan outlet untuk mengatur penjemputan.',
-                ),
-                const SizedBox(height: 20),
-                if (_error != null) ...[
-                  Text(
-                    _error!.message,
-                    style: TextStyle(color: theme.colorScheme.error),
-                    key: const Key('pickup-error'),
-                  ),
-                  const SizedBox(height: 12),
-                ],
+                const SizedBox(height: 22),
+                Text('Cucianmu', style: theme.textTheme.titleLarge),
+                const SizedBox(height: 10),
                 AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        'Layanan & perkiraan cucian',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 14),
-                      AsyncValueView<List<Layanan>>(
-                        value: services,
-                        onRetry: () => ref.invalidate(layananProvider),
-                        isEmpty: (items) => items.isEmpty,
-                        emptyBuilder: (_) => const Text(
-                          'Layanan belum tersedia. Coba lagi nanti.',
-                        ),
-                        builder: (context, items) => DropdownButtonFormField<int>(
-                          key: ValueKey(
-                            'pickup-services-${items.map((item) => item.id).join('-')}',
-                          ),
-                          initialValue:
-                              _serviceId != null &&
-                                  items.any((item) => item.id == _serviceId)
-                              ? _serviceId
-                              : null,
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Layanan',
-                          ),
-                          items: items
-                              .map(
-                                (item) => DropdownMenuItem(
-                                  value: item.id,
-                                  child: Text(
-                                    item.nama,
-                                    overflow: TextOverflow.ellipsis,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            label('Layanan'),
+                            AsyncValueView<List<Layanan>>(
+                              value: services,
+                              onRetry: () => ref.invalidate(layananProvider),
+                              isEmpty: (items) => items.isEmpty,
+                              emptyBuilder: (_) => const Text(
+                                'Layanan belum tersedia. Coba lagi nanti.',
+                              ),
+                              builder: (context, items) =>
+                                  DropdownButtonFormField<int>(
+                                    style: theme.textTheme.bodyMedium,
+                                    key: ValueKey(
+                                      'pickup-services-${items.map((item) => item.id).join('-')}',
+                                    ),
+                                    initialValue:
+                                        items.any(
+                                          (item) => item.id == _serviceId,
+                                        )
+                                        ? _serviceId
+                                        : null,
+                                    isExpanded: true,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Pilih layanan',
+                                    ),
+                                    items: items
+                                        .map(
+                                          (item) => DropdownMenuItem(
+                                            value: item.id,
+                                            child: Text(
+                                              item.nama,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: _busy
+                                        ? null
+                                        : (value) => setState(() {
+                                            _serviceId = value;
+                                            _error = null;
+                                          }),
+                                    validator: (value) =>
+                                        _error?.fieldError('id_layanan') ??
+                                        (value == null
+                                            ? 'Pilih layanan.'
+                                            : null),
                                   ),
+                            ),
+                            const SizedBox(height: 14),
+                            AppTextFormField(
+                              key: const Key('pickup-weight'),
+                              controller: _weight,
+                              enabled: !_busy,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9,.]'),
                                 ),
-                              )
-                              .toList(),
-                          onChanged: _busy
-                              ? null
-                              : (value) => setState(() {
-                                  _serviceId = value;
-                                  _error = null;
-                                }),
-                          validator: (value) =>
-                              _error?.fieldError('id_layanan') ??
-                              (value == null
-                                  ? 'Pilih layanan terlebih dahulu.'
-                                  : null),
+                              ],
+                              decoration: const InputDecoration(
+                                labelText: 'Perkiraan berat',
+                                suffixText: 'kg',
+                                helperText: '0,1–100 kg',
+                              ),
+                              onChanged: (_) => _changed(),
+                              validator: (value) {
+                                final number = double.tryParse(
+                                  (value ?? '').replaceAll(',', '.'),
+                                );
+                                return _error?.fieldError('berat_perkiraan') ??
+                                    (number == null ||
+                                            !number.isFinite ||
+                                            number < .1 ||
+                                            number > 100
+                                        ? 'Masukkan berat 0,1–100 kg.'
+                                        : null);
+                              },
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 14),
-                      AppTextFormField(
-                        key: const Key('pickup-weight'),
-                        controller: _weight,
-                        enabled: !_busy,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
+                      if (MediaQuery.sizeOf(context).width >= 370 &&
+                          MediaQuery.textScalerOf(context).scale(14) <= 17) ...[
+                        const SizedBox(width: 8),
+                        AppArtwork(
+                          asset: chosen == null
+                              ? AppAssets.cuciSetrika
+                              : (AppAssets.serviceArtwork(name: chosen.nama) ??
+                                    AppAssets.home),
+                          width: 100,
+                          height: 100,
                         ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                        ],
-                        decoration: const InputDecoration(
-                          labelText: 'Perkiraan berat',
-                          suffixText: 'kg',
-                          helperText:
-                              '0,1–100 kg. Akan ditimbang ulang di outlet.',
-                        ),
-                        onChanged: (_) => _changed(),
-                        validator: (value) {
-                          final number = double.tryParse(
-                            (value ?? '').replaceAll(',', '.'),
-                          );
-                          return _error?.fieldError('berat_perkiraan') ??
-                              (number == null ||
-                                      !number.isFinite ||
-                                      number < .1 ||
-                                      number > 100
-                                  ? 'Masukkan berat 0,1–100 kg.'
-                                  : null);
-                        },
-                      ),
+                      ],
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
+                Text('Lokasi & jadwal', style: theme.textTheme.titleLarge),
+                const SizedBox(height: 10),
                 AppCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        'Alamat & waktu jemput',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 14),
                       AppTextFormField(
                         key: const Key('pickup-address'),
                         controller: _address,
                         enabled: !_busy,
-                        minLines: 2,
-                        maxLines: 4,
+                        maxLines: 3,
+                        minLines: 1,
                         maxLength: 500,
                         decoration: const InputDecoration(
                           labelText: 'Alamat lengkap',
-                          alignLabelWithHint: true,
                         ),
                         onChanged: (_) => _changed(),
                         validator: (value) =>
@@ -273,98 +337,111 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
                                 ? 'Lengkapi alamat, minimal 10 karakter.'
                                 : null),
                       ),
-                      OutlinedButton.icon(
-                        onPressed: _busy ? null : _chooseDate,
-                        icon: const Icon(
-                          Icons.calendar_today_outlined,
-                          size: 18,
-                        ),
-                        label: Text(formatTanggalSingkat(_date)),
+                      const SizedBox(height: 10),
+                      LayoutBuilder(
+                        builder: (context, constraints) =>
+                            constraints.maxWidth < 280 ||
+                                MediaQuery.textScalerOf(context).scale(14) > 18
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  dateField,
+                                  const SizedBox(height: 14),
+                                  slotField,
+                                ],
+                              )
+                            : Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(child: dateField),
+                                  const SizedBox(width: 10),
+                                  Expanded(child: slotField),
+                                ],
+                              ),
                       ),
-                      if (_error?.fieldError('tgl_jemput')
-                          case final String message)
-                        Text(
-                          message,
-                          style: TextStyle(color: theme.colorScheme.error),
-                        ),
-                      const SizedBox(height: 14),
-                      DropdownButtonFormField<String>(
-                        initialValue: _slot,
-                        decoration: const InputDecoration(
-                          labelText: 'Waktu jemput (WIB)',
-                        ),
-                        isExpanded: true,
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'pagi',
-                            child: Text('Pagi · mulai 08.00'),
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: theme.colorScheme.primary,
                           ),
-                          DropdownMenuItem(
-                            value: 'siang',
-                            child: Text('Siang · mulai 12.00'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'sore',
-                            child: Text('Sore · mulai 15.00'),
+                          const SizedBox(width: 7),
+                          Expanded(
+                            child: Text(
+                              'WIB · Waktu dikonfirmasi outlet.',
+                              style: theme.textTheme.bodySmall,
+                            ),
                           ),
                         ],
-                        onChanged: _busy
-                            ? null
-                            : (value) => setState(() {
-                                _slot = value!;
-                                _error = null;
-                              }),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Waktu ini adalah perkiraan. Outlet akan memastikan ketersediaan penjemputan.',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 14),
-                      AppTextFormField(
-                        key: const Key('pickup-note'),
-                        controller: _note,
-                        enabled: !_busy,
-                        maxLength: 255,
-                        maxLines: 2,
-                        decoration: const InputDecoration(
-                          labelText: 'Catatan (opsional)',
-                          alignLabelWithHint: true,
-                        ),
-                        onChanged: (_) => _changed(),
-                        validator: (_) => _error?.fieldError('catatan'),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                if (chosen != null &&
-                    weight != null &&
-                    weight.isFinite &&
-                    weight >= .1 &&
-                    weight <= 100) ...[
-                  Text(
-                    'Perkiraan ${formatRupiah((chosen.hargaPerKg * weight).round())}',
-                    style: theme.textTheme.titleLarge,
+                const SizedBox(height: 14),
+                AppCard(
+                  child: AppTextFormField(
+                    key: const Key('pickup-note'),
+                    controller: _note,
+                    enabled: !_busy,
+                    maxLength: 255,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Catatan (opsional)',
+                      hintText: 'Petunjuk lokasi atau detail cucian',
+                    ),
+                    onChanged: (_) => _changed(),
+                    validator: (_) => _error?.fieldError('catatan'),
                   ),
-                  const SizedBox(height: 6),
-                ],
-                Text(
-                  'Biaya akhir mengikuti berat aktual dan harga layanan saat cucian diterima di outlet.',
-                  style: theme.textTheme.bodySmall,
                 ),
+                const SizedBox(height: 16),
+                AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        spacing: 12,
+                        runSpacing: 4,
+                        children: [
+                          Text(
+                            'Perkiraan biaya',
+                            style: theme.textTheme.titleSmall,
+                          ),
+                          Text(
+                            estimate == null
+                                ? 'Belum dihitung'
+                                : formatRupiah(estimate),
+                            style: theme.textTheme.titleSmall,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Biaya akhir mengikuti berat aktual di outlet.',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                if (_error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 14),
+                    child: Text(
+                      _error!.message,
+                      key: const Key('pickup-error'),
+                      style: TextStyle(color: theme.colorScheme.error),
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 AppButton(
                   label: 'Kirim permintaan jemput',
-                  icon: Icons.local_shipping_outlined,
                   loading: _busy,
-                  onPressed:
-                      _busy ||
-                          services.isLoading ||
-                          services.hasError ||
-                          (services.value?.isEmpty ?? true)
-                      ? null
-                      : _submit,
+                  onPressed: services.hasValue && items.isNotEmpty
+                      ? _submit
+                      : null,
                 ),
               ],
             ),

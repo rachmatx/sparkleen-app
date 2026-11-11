@@ -30,7 +30,7 @@ class ProfilPage extends ConsumerWidget {
                 ref.read(customerRefreshProvider.notifier).refresh(),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
               children: [
                 Row(
                   children: [
@@ -47,15 +47,20 @@ class ProfilPage extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 if (pelanggan == null)
                   const LoadingList()
                 else ...[
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: theme.colorScheme.primaryContainer,
+                      Container(
+                        width: 64,
+                        height: 64,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(17),
+                        ),
                         child: Text(
                           pelanggan.nama.trim().isEmpty
                               ? '?'
@@ -64,7 +69,7 @@ class ProfilPage extends ConsumerWidget {
                                     .characters
                                     .first
                                     .toUpperCase(),
-                          style: theme.textTheme.headlineSmall?.copyWith(
+                          style: theme.textTheme.headlineLarge?.copyWith(
                             color: theme.colorScheme.primary,
                           ),
                         ),
@@ -79,11 +84,16 @@ class ProfilPage extends ConsumerWidget {
                               style: theme.textTheme.titleLarge,
                             ),
                             Text(
-                              pelanggan.kode,
+                              'Pelanggan Sparkleen · ${pelanggan.kode}',
                               style: theme.textTheme.bodySmall,
                             ),
                             TextButton(
                               onPressed: () => openEditProfile(context),
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(48, 32),
+                                alignment: Alignment.centerLeft,
+                              ),
                               child: const Text('Ubah profil'),
                             ),
                           ],
@@ -91,11 +101,9 @@ class ProfilPage extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   AppCard(
-                    color: theme.colorScheme.primaryContainer.withValues(
-                      alpha: 0.87,
-                    ),
+                    color: theme.colorScheme.primaryContainer,
                     onTap: () => context.push('/poin'),
                     child: Row(
                       children: [
@@ -104,7 +112,12 @@ class ProfilPage extends ConsumerWidget {
                           width: 44,
                           height: 44,
                         ),
-                        const SizedBox(width: 16),
+                        Container(
+                          width: 1,
+                          height: 44,
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          color: theme.colorScheme.outlineVariant,
+                        ),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,39 +134,53 @@ class ProfilPage extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Wrap(
-                    spacing: 28,
-                    runSpacing: 16,
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Total belanja',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                          Text(
-                            formatRupiah(pelanggan.totalTransaksi),
-                            style: theme.textTheme.titleLarge,
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Status akun', style: theme.textTheme.bodySmall),
-                          Text(
-                            'Aktif',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              color: theme.colorScheme.primary,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Total belanja',
+                              style: theme.textTheme.bodySmall,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(
+                              formatRupiah(pelanggan.totalTransaksi),
+                              style: theme.textTheme.titleLarge,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: 1,
+                        height: 44,
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        color: theme.colorScheme.outlineVariant,
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Status akun',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Aktif',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
                   Text('Informasi akun', style: theme.textTheme.titleMedium),
                   const SizedBox(height: 12),
                   AppCard(
@@ -161,6 +188,11 @@ class ProfilPage extends ConsumerWidget {
                     child: Column(
                       children: [
                         ListTile(
+                          dense: true,
+                          titleTextStyle: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          subtitleTextStyle: theme.textTheme.bodySmall,
                           leading: Icon(
                             Icons.phone_android_outlined,
                             color: theme.colorScheme.primary,
@@ -180,7 +212,7 @@ class ProfilPage extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   Text('Aktivitas', style: theme.textTheme.titleMedium),
                   const SizedBox(height: 12),
                   AppCard(

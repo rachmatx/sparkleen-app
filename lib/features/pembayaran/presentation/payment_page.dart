@@ -12,6 +12,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_components.dart';
+import '../../../core/widgets/status_chip.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../application/payment_controller.dart';
 
@@ -82,7 +83,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
   @override
   Widget build(BuildContext context) {
     final provider = paymentControllerProvider(widget.id);
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     return AppBackdrop(
       child: Scaffold(
         appBar: AppBar(title: const Text('Pembayaran')),
@@ -92,61 +94,65 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
           builder: (context, view) {
             final payment = view.snapshot;
             final actions = ref.read(provider.notifier);
+            final paid = payment.status == 'SUCCESS';
+            final pending = const [
+              'PENDING',
+              'PROCESSING',
+              'EXPIRED',
+            ].contains(payment.status);
+            final code = payment.detail['simulation_code'];
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Column(
-                    crossAxisAlignment: payment.status == 'SUCCESS'
-                        ? CrossAxisAlignment.center
-                        : CrossAxisAlignment.start,
-                    children: [
-                      if (payment.status == 'SUCCESS') ...[
-                        Icon(
-                          Icons.check_circle_outline_rounded,
-                          size: 48,
-                          color: colors.primary,
-                        ),
-                        const SizedBox(height: 18),
-                      ],
-                      Text(
-                        payment.status == 'SUCCESS'
-                            ? 'Pembayaran tercatat'
-                            : 'Sisa tagihan',
-                        style: Theme.of(context).textTheme.titleLarge,
+                if (paid) ...[
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: colors.primaryContainer.withValues(alpha: .75),
+                        borderRadius: BorderRadius.circular(22),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        formatRupiah(payment.displayAmount),
-                        style: Theme.of(context).textTheme.headlineLarge,
+                      child: Icon(
+                        Icons.check_rounded,
+                        size: 46,
+                        color: colors.primary,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        payment.status == 'SUCCESS'
-                            ? 'Pesananmu sudah lunas.'
-                            : 'Nominal mengikuti catatan pembayaran outlet.',
-                        textAlign: payment.status == 'SUCCESS'
-                            ? TextAlign.center
-                            : TextAlign.start,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                if (payment.status == 'SUCCESS')
+                  const SizedBox(height: 18),
+                  Text(
+                    'Pembayaran tercatat',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Pesananmu sudah lunas.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    formatRupiah(payment.displayAmount),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineLarge,
+                  ),
+                  const SizedBox(height: 24),
                   AppCard(
                     child: Column(
                       children: [
-                        const AppSummaryRow(
-                          label: 'Status',
-                          value: 'Lunas',
-                          emphasized: true,
-                        ),
-                        if (payment.method != null)
+                        AppSummaryRow(label: 'Pesanan', value: '#${widget.id}'),
+                        const Divider(height: 16),
+                        if (payment.method != null) ...[
                           AppSummaryRow(
                             label: 'Metode',
                             value: '${payment.method} simulasi',
                           ),
+                          const Divider(height: 16),
+                        ],
+                        const AppSummaryRow(label: 'Status', value: 'Lunas'),
+                        const Divider(height: 16),
                         const AppSummaryRow(
                           label: 'Bukti pembayaran',
                           value: 'Tersimpan pada nota',
@@ -154,12 +160,53 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                       ],
                     ),
                   ),
-                if (payment.status == 'SUCCESS') ...[
+                  const SizedBox(height: 20),
+                ] else ...[
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    runSpacing: 8,
+                    spacing: 12,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sisa tagihan',
+                            style: theme.textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            formatRupiah(payment.displayAmount),
+                            style: theme.textTheme.headlineLarge,
+                          ),
+                        ],
+                      ),
+                      if (pending)
+                        const StatusChip(
+                          status: 'menunggu',
+                          label: 'Menunggu pembayaran',
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: 16),
-                  FilledButton.icon(
+                ],
+                const AppInfoBanner(
+                  message: 'Mode simulasi · Untuk pengujian Smart Pay. Jangan transfer uang nyata.',
+                ),
+                const SizedBox(height: 16),
+                if (view.error != null) ...[
+                  AppInfoBanner(
+                    message: view.error is ApiException
+                        ? (view.error as ApiException).message
+                        : 'Status belum dapat diperiksa. Coba lagi; tagihan tetap tersimpan.',
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (paid) ...[
+                  FilledButton(
                     onPressed: () => context.push('/pesanan/${widget.id}/nota'),
-                    icon: const Icon(Icons.receipt_long_outlined),
-                    label: const Text('Lihat nota'),
+                    child: const Text('Lihat nota'),
                   ),
                   TextButton(
                     onPressed: () => context.canPop()
@@ -167,39 +214,10 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                         : context.go('/pesanan'),
                     child: const Text('Kembali ke pesanan'),
                   ),
-                ],
-                const SizedBox(height: 16),
-                const AppInfoBanner(
-                  message: 'Mode simulasi · Untuk pengujian Smart Pay. Jangan transfer uang nyata.',
-                ),
-                const SizedBox(height: 16),
-                TextButton.icon(
-                  onPressed: view.busy ? null : () => context.push('/keamanan'),
-                  icon: const Icon(Icons.fingerprint),
-                  label: Text(
-                    ref.watch(biometricSettingsProvider).value?.payments == true
-                        ? 'Konfirmasi biometrik aktif'
-                        : 'Atur keamanan pembayaran',
-                  ),
-                ),
-                if (view.error != null) ...[
-                  AppCard(
-                    color: colors.errorContainer,
-                    child: Text(
-                      view.error is ApiException
-                          ? (view.error as ApiException).message
-                          : 'Status belum dapat diperiksa. Coba lagi; tagihan tetap tersimpan.',
-                      style: TextStyle(color: colors.onErrorContainer),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                if (payment.status == 'NONE') ...[
+                ] else if (payment.status == 'NONE') ...[
                   if (!payment.enabled)
-                    const AppCard(
-                      child: Text(
-                        'Pembayaran dari aplikasi belum diaktifkan outlet. Silakan bayar melalui kasir.',
-                      ),
+                    const AppInfoBanner(
+                      message: 'Pembayaran dari aplikasi belum diaktifkan outlet. Silakan bayar melalui kasir.',
                     )
                   else
                     AppCard(
@@ -208,9 +226,9 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                         children: [
                           Text(
                             'Pilih metode simulasi',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: theme.textTheme.titleMedium,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
                           FilledButton.icon(
                             onPressed: view.busy
                                 ? null
@@ -218,7 +236,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                             icon: const Icon(Icons.qr_code_2),
                             label: const Text('Buat QR simulasi'),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
                           OutlinedButton.icon(
                             onPressed: view.busy
                                 ? null
@@ -229,31 +247,34 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                         ],
                       ),
                     ),
-                ] else if (payment.active) ...[
+                ] else if (pending) ...[
                   AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(switch (payment.status) {
-                          'PROCESSING' => 'Tagihan sedang disiapkan',
-                          'EXPIRED' => 'Waktu tagihan habis',
-                          _ => 'Menunggu pembayaran simulasi',
-                        }, style: Theme.of(context).textTheme.titleMedium),
-                        const SizedBox(height: 10),
-                        Text(switch (payment.status) {
-                          'PROCESSING' => 'Periksa status untuk melanjutkan tagihan yang sama. Anda tidak perlu membuat tagihan baru.',
-                          'EXPIRED' => 'Periksa status agar gateway mengonfirmasi kedaluwarsa sebelum membuat tagihan berikutnya.',
-                          _ => 'Gunakan Smart Pay untuk menguji tagihan ini. Status diperiksa otomatis selama halaman terbuka.',
-                        }),
-                        if (payment.expiresAt != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(
-                              'Batas waktu: ${formatTanggal(payment.expiresAt!)}',
-                            ),
+                        Center(
+                          child: Icon(
+                            payment.method == 'QRIS'
+                                ? Icons.qr_code_scanner_rounded
+                                : Icons.account_balance_outlined,
+                            size: 27,
+                            color: colors.primary,
                           ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          payment.status == 'PROCESSING'
+                              ? 'Tagihan sedang disiapkan'
+                              : payment.status == 'EXPIRED'
+                              ? 'Tagihan melewati batas waktu'
+                              : payment.method == 'QRIS'
+                              ? 'QR simulasi Smart Pay'
+                              : 'Transfer simulasi Smart Pay',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 16),
                         if (payment.status == 'PENDING') ...[
-                          const SizedBox(height: 20),
                           if (payment.method == 'QRIS')
                             _DemoQr(
                               data: payment.detail['qr_image']?.toString(),
@@ -261,66 +282,99 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                           else ...[
                             const Text(
                               'BANK SIMULASI',
+                              textAlign: TextAlign.center,
                               style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 8),
                             const Text(
                               'Rekening dummy • tidak menerima transfer uang',
+                              textAlign: TextAlign.center,
                             ),
                           ],
-                          const SizedBox(height: 12),
+                          if (payment.expiresAt != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text(
+                                'Berlaku hingga ${formatTanggal(payment.expiresAt!)} WIB',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ),
+                          const Divider(height: 28),
                           const Text('Kode simulasi Smart Pay'),
                           const SizedBox(height: 6),
                           SelectableText(
-                            payment.detail['simulation_code']?.toString() ??
-                                'Kode belum tersedia',
+                            code?.toString() ?? 'Kode belum tersedia',
+                            style: theme.textTheme.titleSmall,
                           ),
-                          TextButton.icon(
-                            onPressed:
-                                payment.detail['simulation_code'] is String
-                                ? () async {
-                                    await Clipboard.setData(
-                                      ClipboardData(
-                                        text:
-                                            payment.detail['simulation_code']
-                                                as String,
-                                      ),
-                                    );
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Kode simulasi disalin',
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton.icon(
+                              onPressed: code is String
+                                  ? () async {
+                                      await Clipboard.setData(
+                                        ClipboardData(text: code),
+                                      );
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Kode simulasi disalin',
+                                                ),
                                               ),
-                                            ),
-                                          );
+                                            );
+                                      }
                                     }
-                                  }
-                                : null,
-                            icon: const Icon(Icons.copy_outlined),
-                            label: const Text('Salin kode simulasi'),
+                                  : null,
+                              icon: const Icon(Icons.copy_outlined, size: 18),
+                              label: const Text('Salin kode simulasi'),
+                            ),
                           ),
-                        ],
-                        const SizedBox(height: 16),
-                        FilledButton.icon(
-                          onPressed: view.busy ? null : actions.sync,
-                          icon: const Icon(Icons.refresh_rounded),
-                          label: const Text('Periksa status'),
-                        ),
-                        TextButton(
-                          onPressed: view.busy ? null : _cancel,
-                          child: const Text('Batalkan tagihan'),
-                        ),
+                        ] else
+                          Text(
+                            payment.status == 'PROCESSING'
+                                ? 'Periksa status untuk melanjutkan tagihan yang sama. Anda tidak perlu membuat tagihan baru.'
+                                : 'Periksa status agar gateway mengonfirmasi kedaluwarsa sebelum membuat tagihan berikutnya.',
+                          ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 18),
+                  FilledButton(
+                    onPressed: view.busy ? null : actions.sync,
+                    child: const Text('Periksa status'),
+                  ),
+                  TextButton(
+                    onPressed: view.busy ? null : _cancel,
+                    style: TextButton.styleFrom(foregroundColor: colors.error),
+                    child: const Text('Batalkan tagihan'),
+                  ),
                 ] else if (payment.status == 'REVIEW')
-                  const AppCard(
-                    child: Text(
-                      'Tagihan perlu diperiksa outlet. Hubungi kasir sebelum melanjutkan pembayaran.',
+                  const AppInfoBanner(
+                    message: 'Tagihan perlu diperiksa outlet. Hubungi kasir sebelum melanjutkan pembayaran.',
+                  ),
+                if (!paid) ...[
+                  const SizedBox(height: 14),
+                  AppCard(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    child: TextButton.icon(
+                      onPressed: view.busy
+                          ? null
+                          : () => context.push('/keamanan'),
+                      icon: const Icon(Icons.fingerprint, size: 24),
+                      label: Text(
+                        ref.watch(biometricSettingsProvider).value?.payments ==
+                                true
+                            ? 'Konfirmasi biometrik aktif'
+                            : 'Atur keamanan pembayaran',
+                      ),
                     ),
                   ),
+                ],
                 if (view.busy)
                   const Padding(
                     padding: EdgeInsets.only(top: 16),
@@ -348,7 +402,7 @@ class _DemoQr extends StatelessWidget {
       }
       return Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 264),
+          constraints: const BoxConstraints(maxWidth: 236),
           child: ColoredBox(
             color: Colors.white,
             child: Padding(

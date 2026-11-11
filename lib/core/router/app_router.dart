@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -26,16 +28,26 @@ import '../settings/server_page.dart';
 import '../../features/auth/presentation/session_page.dart';
 import '../../features/profil/presentation/security_page.dart';
 
+// A single cold-start delay. Authentication work continues during the animation.
+final startupReadyProvider = FutureProvider<void>((ref) {
+  final ready = Completer<void>();
+  final timer = Timer(const Duration(seconds: 2), ready.complete);
+  ref.onDispose(timer.cancel);
+  return ready.future;
+});
+
 const _authRoutes = {'/login', '/register', '/activate'};
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final refresh = ValueNotifier<AsyncValue<AuthState>>(
-    const AsyncLoading<AuthState>(),
-  );
-
+  final refresh = ValueNotifier<int>(0);
   ref.listen<AsyncValue<AuthState>>(
     authControllerProvider,
-    (_, next) => refresh.value = next,
+    (_, next) => refresh.value++,
+    fireImmediately: true,
+  );
+  ref.listen<AsyncValue<void>>(
+    startupReadyProvider,
+    (_, next) => refresh.value++,
     fireImmediately: true,
   );
 
@@ -154,6 +166,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 String? _redirect(Ref ref, String location) {
+  if (!ref.read(startupReadyProvider).hasValue) {
+    return location == '/splash' ? null : '/splash';
+  }
   final auth = ref.read(authControllerProvider);
   final isAuthRoute = _authRoutes.contains(location);
   final isSplash = location == '/splash';

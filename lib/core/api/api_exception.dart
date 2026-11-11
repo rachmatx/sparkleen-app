@@ -57,7 +57,8 @@ class ApiException implements Exception {
       case DioExceptionType.connectionError:
         return const ApiException(
           code: 'NETWORK_ERROR',
-          message: 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+          message:
+              'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
         );
       case DioExceptionType.badResponse:
         final response = error.response;
@@ -79,7 +80,8 @@ class ApiException implements Exception {
       case DioExceptionType.unknown:
         return const ApiException(
           code: 'NETWORK_ERROR',
-          message: 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+          message:
+              'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
         );
     }
   }
@@ -89,7 +91,8 @@ class ApiException implements Exception {
     return {
       for (final entry in raw.entries)
         entry.key.toString(): switch (entry.value) {
-          List<dynamic> values => values.map((value) => value.toString()).toList(),
+          List<dynamic> values =>
+            values.map((value) => value.toString()).toList(),
           null => const <String>[],
           final value => [value.toString()],
         },

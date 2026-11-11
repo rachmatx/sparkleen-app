@@ -9,6 +9,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../application/pesanan_controller.dart';
 import 'widgets/transaksi_card.dart';
+import '../../home/presentation/widgets/customer_header.dart';
 
 class PesananPage extends ConsumerStatefulWidget {
   const PesananPage({super.key, this.fullHistory = false});
@@ -49,8 +50,13 @@ class _PesananPageState extends ConsumerState<PesananPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (!widget.fullHistory)
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  child: CustomerHeader(),
+                ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
+                padding: const EdgeInsets.fromLTRB(20, 6, 20, 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -60,7 +66,7 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Pantau cucian kamu dari masuk sampai siap diambil.',
+                      'Pantau perjalanan cucianmu.',
                       style: textTheme.bodySmall?.copyWith(
                         color: colors.onSurfaceVariant,
                       ),
@@ -69,7 +75,7 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
                 child: AppCard(
                   padding: const EdgeInsets.all(4),
                   child: LayoutBuilder(
@@ -125,6 +131,23 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                   ),
                 ),
               ),
+              if (!widget.fullHistory &&
+                  (async.value?.items.isNotEmpty ?? false))
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          '${async.value!.items.length.clamp(0, 20)} pesanan terbaru',
+                          style: textTheme.bodySmall,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(child: Divider(height: 1)),
+                    ],
+                  ),
+                ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),

@@ -281,9 +281,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Detail pesanan'));
+    await tester.ensureVisible(find.text('Detail'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Detail pesanan'));
+    await tester.tap(find.text('Detail'));
     await tester.pumpAndSettle();
     expect(find.byType(DetailPesananPage), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Lihat Nota'), 200);

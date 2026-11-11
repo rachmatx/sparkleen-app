@@ -20,9 +20,7 @@ void main() {
             ? AppColors.backgroundDark
             : AppColors.background;
         final card = Color.alphaBlend(
-          colors.surface.withValues(
-            alpha: .87,
-          ),
+          colors.surface.withValues(alpha: .75),
           canvas,
         );
         for (final surface in [canvas, card]) {

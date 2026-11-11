@@ -56,20 +56,28 @@ class DetailPesananPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
                 _HeaderCard(detail: detail),
-                _SectionCard(
-                  title: 'Perjalanan cucian',
-                  child: TimelineStatus(steps: detail.timeline),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'Perjalanan cucian',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 12, bottom: 20),
+                  child: TimelineStatus(
+                    steps: detail.timeline
+                        .where(
+                          (step) =>
+                              step.status != 'diambil' ||
+                              step.state != TimelineState.pending,
+                        )
+                        .toList(),
+                  ),
                 ),
                 _ItemsCard(items: detail.items),
                 _PaymentCard(detail: detail),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: () => context.push('/pesanan/${detail.id}/nota'),
-                    icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                    label: const Text('Lihat Nota'),
-                  ),
-                ),
+                const SizedBox(height: 16),
                 _PinCard(pin: detail.pinPengambilan),
               ],
             ),
@@ -82,51 +90,54 @@ class DetailPesananPage extends ConsumerWidget {
 
 class _HeaderCard extends StatelessWidget {
   const _HeaderCard({required this.detail});
-
   final TransaksiDetail detail;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 20),
-      color: colors.primaryContainer,
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.only(bottom: 18),
+      color: theme.colorScheme.primaryContainer,
+      padding: const EdgeInsets.all(14),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (MediaQuery.textScalerOf(context).scale(14) < 20) ...[
-            const AppArtwork(asset: AppAssets.home, width: 70, height: 70),
+            const AppArtwork(asset: AppAssets.home, width: 94, height: 92),
             const SizedBox(width: 12),
           ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(detail.noNota, style: theme.textTheme.titleSmall),
-                const SizedBox(height: 8),
-                StatusChip(status: detail.status, label: detail.statusLabel),
-                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      detail.noNota,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    StatusChip(
+                      status: detail.status,
+                      label: detail.statusLabel,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 7),
                 Text('Estimasi selesai', style: theme.textTheme.bodySmall),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   detail.tglEstimasi == null
                       ? 'Menunggu estimasi'
                       : formatEstimasi(detail.tglEstimasi!),
-                  style: theme.textTheme.titleLarge,
+                  style: theme.textTheme.titleMedium,
                 ),
-                const SizedBox(height: 8),
                 Text(
-                  '${formatBerat(detail.totalBerat)} · Masuk ${formatTanggal(detail.tglMasuk)}',
+                  formatBerat(detail.totalBerat),
                   style: theme.textTheme.bodySmall,
                 ),
-                if (detail.tglAktual != null)
-                  Text(
-                    'Selesai ${formatTanggal(detail.tglAktual!)}',
-                    style: theme.textTheme.bodySmall,
-                  ),
               ],
             ),
           ),
@@ -227,144 +238,101 @@ class _ItemRow extends StatelessWidget {
 
 class _PaymentCard extends ConsumerWidget {
   const _PaymentCard({required this.detail});
-
   final TransaksiDetail detail;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final lunas = detail.sudahLunas;
+    Future<void> open(String route) async {
+      await context.push(route);
+      if (context.mounted) ref.invalidate(transaksiDetailProvider(detail.id));
+    }
 
-    return _SectionCard(
-      title: 'Pembayaran',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _SummaryRow(
-            label: 'Total biaya',
-            value: formatRupiah(detail.totalBiaya),
-          ),
-          if (detail.diskon > 0)
-            _SummaryRow(
-              label: 'Diskon',
-              value: '-${formatRupiah(detail.diskon)}',
-              valueColor: colors.primary,
-            ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: TicketDivider(),
-          ),
-          _SummaryRow(
-            label: 'Grand total',
-            value: formatRupiah(detail.grandTotal),
-            bold: true,
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colors.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.outlineVariant),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  lunas ? Icons.verified_outlined : Icons.info_outline_rounded,
-                  size: 18,
-                  color: colors.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    lunas ? 'Lunas' : 'Belum dibayar',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: colors.onSurface,
-                    ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppCard(
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            runSpacing: 8,
+            spacing: 16,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Total tagihan', style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 4),
+                  Text(
+                    formatRupiah(detail.grandTotal),
+                    style: theme.textTheme.headlineSmall,
                   ),
-                ),
-                if (detail.metodePembayaran != null &&
-                    detail.metodePembayaran!.isNotEmpty) ...[
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      detail.metodePembayaran!,
-                      textAlign: TextAlign.right,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
+                  if (detail.diskon > 0)
+                    Text(
+                      'Diskon ${formatRupiah(detail.diskon)}',
+                      style: theme.textTheme.bodySmall,
                     ),
-                  ),
                 ],
-              ],
+              ),
+              StatusChip(
+                status: detail.sudahLunas ? 'selesai' : 'menunggu',
+                label: detail.sudahLunas ? 'Lunas' : 'Belum dibayar',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          alignment: WrapAlignment.spaceEvenly,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if (!detail.sudahLunas)
+              TextButton.icon(
+                onPressed: () => open('/pesanan/${detail.id}/poin'),
+                icon: const Icon(Icons.star_border_rounded, size: 20),
+                label: const Text('Gunakan poin'),
+              ),
+            TextButton.icon(
+              onPressed: () => context.push('/pesanan/${detail.id}/nota'),
+              icon: const Icon(Icons.receipt_long_outlined, size: 19),
+              label: const Text('Lihat Nota'),
+            ),
+          ],
+        ),
+        if (!detail.sudahLunas) ...[
+          const SizedBox(height: 8),
+          FilledButton(
+            onPressed: () => open('/pesanan/${detail.id}/pembayaran'),
+            child: const Text('Lihat pilihan pembayaran'),
+          ),
+        ],
+        if (detail.pembayaran.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: AppCard(
+              padding: EdgeInsets.zero,
+              child: ExpansionTile(
+                shape: const Border(),
+                collapsedShape: const Border(),
+                title: Text(
+                  'Riwayat pembayaran',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                children: [
+                  for (final p in detail.pembayaran)
+                    _SummaryRow(
+                      label: p.tglBayar == null
+                          ? p.metode
+                          : '${formatTanggalSingkat(p.tglBayar!)} · ${p.metode}',
+                      value: formatRupiah(p.nominalBayar),
+                      bold: true,
+                      valueColor: theme.colorScheme.onSurface,
+                    ),
+                ],
+              ),
             ),
           ),
-          if (!lunas) ...[
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () async {
-                await context.push('/pesanan/${detail.id}/pembayaran');
-                if (context.mounted) {
-                  ref.invalidate(transaksiDetailProvider(detail.id));
-                }
-              },
-              icon: const Icon(Icons.payments_outlined),
-              label: const Text('Lihat pilihan pembayaran'),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () async {
-                await context.push('/pesanan/${detail.id}/poin');
-                if (context.mounted) {
-                  ref.invalidate(transaksiDetailProvider(detail.id));
-                }
-              },
-              icon: const Icon(Icons.stars_outlined),
-              label: const Text('Gunakan poin'),
-            ),
-          ],
-          if (detail.pembayaran.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: TicketDivider(),
-            ),
-            for (final pembayaran in detail.pembayaran)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        pembayaran.tglBayar == null
-                            ? pembayaran.metode
-                            : '${formatTanggalSingkat(pembayaran.tglBayar!)} · ${pembayaran.metode}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        formatRupiah(pembayaran.nominalBayar),
-                        textAlign: TextAlign.right,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ],
-      ),
+      ],
     );
   }
 }
@@ -418,72 +386,58 @@ class _SummaryRow extends StatelessWidget {
 
 class _PinCard extends StatelessWidget {
   const _PinCard({required this.pin});
-
   final String? pin;
-
   @override
   Widget build(BuildContext context) {
     final value = pin;
     if (value == null || value.isEmpty) return const SizedBox.shrink();
-
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      child: Container(
-        padding: const EdgeInsets.only(left: 14),
-        decoration: BoxDecoration(
-          border: Border(left: BorderSide(color: colors.primary, width: 2)),
+      padding: EdgeInsets.zero,
+      child: ExpansionTile(
+        leading: Icon(
+          Icons.lock_outline_rounded,
+          color: theme.colorScheme.primary,
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'PIN Pengambilan',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 6,
-                      color: colors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Tunjukkan PIN ini saat mengambil cucian.',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: value));
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('PIN disalin.')));
-              },
-              style: IconButton.styleFrom(
-                minimumSize: const Size(48, 48),
-                backgroundColor: colors.primaryContainer,
-                foregroundColor: colors.primary,
-              ),
-              icon: const Icon(Icons.copy_outlined, size: 20),
-              tooltip: 'Salin PIN',
-            ),
-          ],
+        title: Text('PIN Pengambilan', style: theme.textTheme.titleSmall),
+        subtitle: Text(
+          'Buka saat mengambil cucian.',
+          style: theme.textTheme.bodySmall,
         ),
+        shape: const Border(),
+        collapsedShape: const Border(),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  value,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    letterSpacing: 6,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Salin PIN',
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: value));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('PIN disalin.')),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.copy_outlined),
+              ),
+            ],
+          ),
+          Text(
+            'Tunjukkan PIN ini saat mengambil cucian.',
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
       ),
     );
   }
@@ -491,27 +445,18 @@ class _PinCard extends StatelessWidget {
 
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.title, required this.child});
-
   final String title;
   final Widget child;
-
   @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall
-                ?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 10),
+        AppCard(child: child),
+      ],
+    ),
+  );
 }

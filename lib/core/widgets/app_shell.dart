@@ -21,10 +21,10 @@ class AppShell extends StatelessWidget {
       body: navigationShell,
       bottomNavigationBar: SafeArea(
         top: false,
-        minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+        minimum: const EdgeInsets.fromLTRB(12, 0, 12, 8),
         child: AppCard(
           padding: EdgeInsets.zero,
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.88),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.75),
           child: NavigationBar(
             selectedIndex: navigationShell.currentIndex,
             onDestinationSelected: _goBranch,

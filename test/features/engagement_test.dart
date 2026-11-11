@@ -222,7 +222,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), '20');
     await tester.pumpAndSettle();
-    expect(find.textContaining('disesuaikan turun 1 poin'), findsOneWidget);
+    expect(find.textContaining('penyesuaian 1 poin'), findsOneWidget);
     await tester.drag(find.byType(ListView), const Offset(0, -600));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tinjau penukaran'));

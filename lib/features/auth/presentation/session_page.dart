@@ -7,6 +7,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_artwork.dart';
 import '../../../core/theme/app_assets.dart';
+import '../../../core/settings/server_settings.dart';
 import 'widgets/auth_scaffold.dart';
 import '../application/auth_controller.dart';
 
@@ -46,6 +47,94 @@ class _SessionPageState extends ConsumerState<SessionPage> {
     final locked = value.value is AuthLocked;
     final controller = ref.read(authControllerProvider.notifier);
     final theme = Theme.of(context);
+    final local = ref.watch(serverAddressProvider).startsWith('http://');
+    if (!locked) {
+      return AppBackdrop(
+        child: Scaffold(
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const AuthBrandHeader(),
+                  const SizedBox(height: 26),
+                  const AppArtwork(
+                    asset: AppAssets.connectionError,
+                    height: 166,
+                    width: 230,
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Koneksi belum\ntersambung.',
+                    style: theme.textTheme.headlineLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Kami belum bisa memeriksa sesimu. Periksa internet atau alamat server, lalu coba lagi.',
+                  ),
+                  const SizedBox(height: 20),
+                  AppCard(
+                    child: Row(
+                      children: [
+                        Icon(
+                          local ? Icons.dns_outlined : Icons.public_rounded,
+                          size: 34,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                local ? 'Server lokal' : 'Server online',
+                                style: theme.textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                local
+                                    ? 'Pastikan HP dan laptop pada Wi-Fi yang sama.'
+                                    : 'Pastikan perangkat terhubung ke internet dan server dapat diakses.',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        _error!,
+                        style: TextStyle(color: theme.colorScheme.error),
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: _busy || value.isLoading
+                        ? null
+                        : () => _run(controller.retrySession),
+                    child: Text(_busy ? 'Memeriksa…' : 'Coba lagi'),
+                  ),
+                  if (ApiConfig.isPreview)
+                    TextButton(
+                      onPressed: _busy ? null : () => context.push('/server'),
+                      child: const Text('Periksa alamat server pengujian'),
+                    ),
+                  const Divider(height: 24),
+                  TextButton(
+                    onPressed: _busy ? null : () => _run(controller.logout),
+                    child: const Text('Masuk ulang dengan PIN akun'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return AppBackdrop(
       child: Scaffold(
         body: SafeArea(
