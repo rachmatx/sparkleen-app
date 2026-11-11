@@ -138,7 +138,12 @@ class PesananController extends AsyncNotifier<PesananState> {
   Future<void> refresh() async {
     final scope = state.value?.scope ?? PesananScope.aktif;
     final epoch = ++_requestEpoch;
+    final previous = state.value;
     final next = await AsyncValue.guard(() => _fetch(scope, page: 1));
-    if (ref.mounted && epoch == _requestEpoch) state = next;
+    if (ref.mounted && epoch == _requestEpoch) {
+      state = next.hasError && previous != null
+          ? AsyncData(previous.copyWith(error: next.error))
+          : next;
+    }
   }
 }

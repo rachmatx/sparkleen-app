@@ -9,6 +9,7 @@ import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/status_chip.dart';
+import '../../../core/sync/customer_refresh.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../notifikasi/presentation/notification_page.dart';
 import '../../pesanan/data/transaksi_ringkas.dart';
@@ -20,20 +21,8 @@ import '../data/outlet_info.dart';
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
-  Future<void> _refresh(WidgetRef ref) async {
-    ref.invalidate(layananProvider);
-    ref.invalidate(outletProvider);
-    ref.invalidate(pesananAktifProvider);
-    try {
-      await Future.wait([
-        ref.read(layananProvider.future),
-        ref.read(outletProvider.future),
-        ref.read(pesananAktifProvider.future),
-      ]);
-    } on Object {
-      // Each section retains its own error and retry action.
-    }
-  }
+  Future<void> _refresh(WidgetRef ref) =>
+      ref.read(customerRefreshProvider.notifier).refresh();
 
   Future<void> _copyWhatsapp(BuildContext context, OutletInfo outlet) async {
     if (outlet.noWa.trim().isEmpty) return;
@@ -103,6 +92,14 @@ class HomePage extends ConsumerWidget {
                     ),
                   ],
                 ),
+                if (ref.watch(customerRefreshProvider).failed)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      'Pembaruan belum lengkap. Data terakhir tetap ditampilkan; tarik untuk mencoba lagi.',
+                      style: TextStyle(color: colors.error),
+                    ),
+                  ),
                 const SizedBox(height: 24),
                 _WelcomeHeader(nama: nama),
                 const SizedBox(height: 16),

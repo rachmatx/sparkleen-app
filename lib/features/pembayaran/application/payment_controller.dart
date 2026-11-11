@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers.dart';
+import '../../../core/security/biometric_service.dart';
 import '../../home/application/home_providers.dart';
 import '../../nota/presentation/nota_page.dart';
 import '../../pesanan/application/pesanan_controller.dart';
@@ -34,18 +35,35 @@ class PaymentController extends AsyncNotifier<PaymentViewState> {
   }
 
   Future<void> start(String method) =>
-      _run((repository) => repository.start(id, method));
+      _run((repository) => repository.start(id, method), authorize: true);
   Future<void> sync() => _run((repository) => repository.sync(id));
   Future<void> cancel() => _run((repository) => repository.cancel(id));
   Future<void> _run(
-    Future<PaymentSnapshot> Function(PaymentRepository) action,
-  ) async {
+    Future<PaymentSnapshot> Function(PaymentRepository) action, {
+    bool authorize = false,
+  }) async {
     final current = state.value;
     if (current == null || current.busy) return;
     final epoch = _epoch;
     final revision = ref.read(customerSessionRevisionProvider);
     state = AsyncData(PaymentViewState(current.snapshot, busy: true));
     try {
+      if (authorize &&
+          !await ref
+              .read(biometricServiceProvider)
+              .confirmPayment('Konfirmasi pembuatan tagihan Sparkleen')) {
+        if (ref.mounted &&
+            epoch == _epoch &&
+            revision == ref.read(customerSessionRevisionProvider)) {
+          state = AsyncData(PaymentViewState(current.snapshot));
+        }
+        return;
+      }
+      if (!ref.mounted ||
+          epoch != _epoch ||
+          revision != ref.read(customerSessionRevisionProvider)) {
+        return;
+      }
       final result = await action(ref.read(paymentRepositoryProvider));
       if (!ref.mounted ||
           epoch != _epoch ||

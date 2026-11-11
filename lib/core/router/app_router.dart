@@ -19,6 +19,10 @@ import '../../features/pesanan/presentation/pesanan_page.dart';
 import '../../features/profil/presentation/profil_page.dart';
 import '../../features/splash/splash_page.dart';
 import '../widgets/app_shell.dart';
+import '../api/api_config.dart';
+import '../settings/server_page.dart';
+import '../../features/auth/presentation/session_page.dart';
+import '../../features/profil/presentation/security_page.dart';
 
 const _authRoutes = {'/login', '/register', '/activate'};
 
@@ -38,6 +42,19 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) => _redirect(ref, state.matchedLocation),
     routes: [
+      GoRoute(
+        path: '/session',
+        builder: (context, state) => const SessionPage(),
+      ),
+      GoRoute(
+        path: '/keamanan',
+        builder: (context, state) => const SecurityPage(),
+      ),
+      if (ApiConfig.isPreview)
+        GoRoute(
+          path: '/server',
+          builder: (context, state) => const ServerPage(),
+        ),
       GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       GoRoute(
@@ -127,6 +144,7 @@ String? _redirect(Ref ref, String location) {
   final isAuthRoute = _authRoutes.contains(location);
   final isSplash = location == '/splash';
 
+  if (ApiConfig.isPreview && location == '/server') return null;
   if (auth.isLoading) return null;
 
   if (auth.hasError) {
@@ -135,8 +153,14 @@ String? _redirect(Ref ref, String location) {
 
   final value = auth.value;
 
+  if (value is AuthLocked || value is AuthSessionUnavailable) {
+    return location == '/session' ? null : '/session';
+  }
+
   if (value is AuthAuthenticated) {
-    return isAuthRoute || isSplash ? '/beranda' : null;
+    return isAuthRoute || isSplash || location == '/session'
+        ? '/beranda'
+        : null;
   }
 
   if (value is AuthUnauthenticated) {

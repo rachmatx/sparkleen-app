@@ -65,4 +65,32 @@ void main() {
       expect(storage.token, isNull);
     },
   );
+  test(
+    'an old server client cannot send a token after a server change',
+    () async {
+      final storage = FakeTokenStorage('new-server-token');
+      var requests = 0;
+      final dio = Dio()
+        ..httpClientAdapter = _UnauthorizedAdapter(() => requests++);
+      final old = ApiClient(
+        tokenStorage: storage,
+        dio: dio,
+        baseUrl: 'https://old.example/api/v1',
+      );
+      ApiClient(tokenStorage: storage, baseUrl: 'https://new.example/api/v1');
+      await expectLater(old.get('/me'), throwsA(isA<ApiException>()));
+      expect(requests, 0);
+      expect(storage.token, 'new-server-token');
+    },
+  );
+  test('a locked session cannot send customer requests', () async {
+    final storage = FakeTokenStorage('session')..sessionLocked = true;
+    var requests = 0;
+    final dio = Dio()
+      ..httpClientAdapter = _UnauthorizedAdapter(() => requests++);
+    final client = ApiClient(tokenStorage: storage, dio: dio);
+    await expectLater(client.get('/me'), throwsA(isA<ApiException>()));
+    expect(requests, 0);
+    expect(storage.token, 'session');
+  });
 }

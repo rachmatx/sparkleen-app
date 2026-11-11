@@ -53,12 +53,13 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
+    final generation = _tokenStorage.generation;
     try {
       await _client.post('/auth/logout');
     } on ApiException {
       // Sesi lokal tetap harus berakhir walau token sudah tidak berlaku.
     } finally {
-      await _tokenStorage.clear();
+      if (_tokenStorage.generation == generation) await _tokenStorage.clear();
     }
   }
 
@@ -66,6 +67,7 @@ class AuthRepository {
     String path,
     Map<String, dynamic> body,
   ) async {
+    final generation = _tokenStorage.generation;
     final response = await _client.post(path, body: body);
     final data = response.asMap;
     final token = data['token'];
@@ -78,7 +80,7 @@ class AuthRepository {
       );
     }
 
-    await _tokenStorage.save(token);
+    await _tokenStorage.saveIfCurrent(token, generation);
     return Pelanggan.fromJson(Map<String, dynamic>.from(pelanggan));
   }
 }

@@ -19,7 +19,7 @@ android {
         applicationId = "com.sparkleen.sparkleen_mobile"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
@@ -29,10 +29,25 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("preview") {
+            dimension = "environment"
+            applicationIdSuffix = ".preview"
+            manifestPlaceholders["appLabel"] = "Sparkleen Preview"
+            manifestPlaceholders["allowCleartext"] = "true"
+        }
+        create("production") {
+            dimension = "environment"
+            manifestPlaceholders["appLabel"] = "Sparkleen"
+            manifestPlaceholders["allowCleartext"] = "false"
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // v0.0.1 is an explicitly debug-signed internal preview, not a store release.
+            // Production distribution needs an owner-managed release signing key.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -46,4 +61,13 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+// Internal preview signing must never silently become a production release.
+if (gradle.startParameter.taskNames.any { it.contains("Production", ignoreCase = true) && it.contains("Release", ignoreCase = true) }) {
+    throw GradleException("Configure owner-managed production signing before distributing a production build.")
+}
+
+dependencies {
+    implementation("androidx.biometric:biometric:1.1.0")
 }

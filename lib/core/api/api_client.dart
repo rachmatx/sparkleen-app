@@ -25,9 +25,12 @@ class ApiResponse {
 }
 
 class ApiClient {
-  ApiClient({required this.tokenStorage, Dio? dio}) : _dio = dio ?? Dio() {
+  ApiClient({required this.tokenStorage, Dio? dio, String? baseUrl})
+    : _dio = dio ?? Dio() {
+    _origin = baseUrl ?? ApiConfig.apiBase;
+    tokenStorage.requestOrigin = _origin;
     _dio.options
-      ..baseUrl = ApiConfig.apiBase
+      ..baseUrl = _origin
       ..connectTimeout = const Duration(seconds: 15)
       ..sendTimeout = const Duration(seconds: 15)
       ..receiveTimeout = const Duration(seconds: 15)
@@ -40,7 +43,33 @@ class ApiClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          final allowedWhenLocked = options.path.startsWith('/auth/');
+          if (tokenStorage.requestOrigin != _origin ||
+              (tokenStorage.sessionLocked && !allowedWhenLocked)) {
+            handler.reject(
+              DioException(
+                requestOptions: options,
+                error: const ApiException(
+                  code: 'SESSION_LOCKED',
+                  message: 'Buka sesi terlebih dahulu.',
+                ),
+              ),
+            );
+            return;
+          }
           final token = await tokenStorage.read();
+          if (tokenStorage.requestOrigin != _origin) {
+            handler.reject(
+              DioException(
+                requestOptions: options,
+                error: const ApiException(
+                  code: 'SERVER_CHANGED',
+                  message: 'Server berubah. Coba lagi.',
+                ),
+              ),
+            );
+            return;
+          }
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -48,7 +77,9 @@ class ApiClient {
         },
         onError: (error, handler) async {
           final isAuthEndpoint = error.requestOptions.path.startsWith('/auth/');
-          if (error.response?.statusCode == 401 && !isAuthEndpoint) {
+          if (error.response?.statusCode == 401 &&
+              !isAuthEndpoint &&
+              tokenStorage.requestOrigin == _origin) {
             final currentToken = await tokenStorage.read();
             final sentAuthorization =
                 error.requestOptions.headers['Authorization'];
@@ -65,6 +96,7 @@ class ApiClient {
   }
 
   final Dio _dio;
+  late final String _origin;
   final TokenStorage tokenStorage;
 
   /// Di-set oleh controller auth agar 401 dari endpoint terproteksi
@@ -96,8 +128,16 @@ class ApiClient {
     Future<Response<dynamic>> Function() request,
   ) async {
     try {
-      return _wrap(await request());
+      final response = await request();
+      if (tokenStorage.requestOrigin != _origin) {
+        throw const ApiException(
+          code: 'SERVER_CHANGED',
+          message: 'Server berubah. Muat ulang halaman.',
+        );
+      }
+      return _wrap(response);
     } on DioException catch (error) {
+      if (error.error is ApiException) throw error.error!;
       throw ApiException.fromDio(error);
     }
   }

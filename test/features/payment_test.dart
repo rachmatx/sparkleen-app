@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
+import '../support/auth_fakes.dart';
+
 import 'package:sparkleen_mobile/core/api/api_exception.dart';
 import 'package:sparkleen_mobile/core/providers.dart';
 import 'package:sparkleen_mobile/core/theme/app_theme.dart';
@@ -65,7 +68,10 @@ Widget app(
   double scale = 1,
 }) => ProviderScope(
   retry: (_, _) => null,
-  overrides: [paymentRepositoryProvider.overrideWithValue(repository)],
+  overrides: [
+    paymentRepositoryProvider.overrideWithValue(repository),
+    tokenStorageProvider.overrideWithValue(FakeTokenStorage('fixture-token')),
+  ],
   child: MaterialApp(
     theme: buildAppTheme(brightness: brightness),
     builder: (context, child) => MediaQuery(
@@ -173,7 +179,12 @@ void main() {
     () async {
       final repository = FakePayments()..delayed = Completer();
       final container = ProviderContainer(
-        overrides: [paymentRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          paymentRepositoryProvider.overrideWithValue(repository),
+          tokenStorageProvider.overrideWithValue(
+            FakeTokenStorage('fixture-token'),
+          ),
+        ],
         retry: (_, _) => null,
       );
       final subscription = container.listen(

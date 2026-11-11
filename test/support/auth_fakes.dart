@@ -17,15 +17,35 @@ class FakeTokenStorage extends TokenStorage {
   FakeTokenStorage([this.token]);
 
   String? token;
+  String? biometricBinding;
+  @override
+  Future<String?> readBiometricBinding() async => biometricBinding;
+  @override
+  Future<void> writeBiometricBinding(String value) async {
+    biometricBinding = value;
+  }
+
+  @override
+  Future<void> clearBiometricBinding() async {
+    biometricBinding = null;
+  }
 
   @override
   Future<String?> read() async => token;
 
   @override
-  Future<void> save(String value) async => token = value;
+  Future<void> save(String value) async {
+    token = value;
+    biometricBinding = null;
+  }
 
   @override
-  Future<void> clear() async => token = null;
+  Future<void> clear() async {
+    generation++;
+    token = null;
+    biometricBinding = null;
+    sessionLocked = false;
+  }
 }
 
 class FakeAuthRepository implements AuthRepository {
@@ -51,10 +71,7 @@ class FakeAuthRepository implements AuthRepository {
   String? lastAlamat;
 
   @override
-  Future<Pelanggan> login({
-    required String noTelp,
-    required String pin,
-  }) async {
+  Future<Pelanggan> login({required String noTelp, required String pin}) async {
     loginCalls++;
     lastPhone = noTelp;
     lastPin = pin;

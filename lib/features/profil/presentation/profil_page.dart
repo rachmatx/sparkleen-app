@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../core/sync/customer_refresh.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
@@ -26,96 +29,106 @@ class ProfilPage extends ConsumerWidget {
     final colors = theme.colorScheme;
     return AppBackdrop(
       child: Scaffold(
-        body: SafeArea(
-          bottom: false,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(22, 24, 22, 120),
-            children: [
-              Text('Profil', style: theme.textTheme.headlineMedium),
-              const SizedBox(height: 6),
-              Text(
-                'Detail akun, poin, dan informasi kontak.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 24),
-              if (pelanggan == null)
-                auth.isLoading
-                    ? const LoadingList()
-                    : ErrorState(
-                        error:
-                            auth.error ??
-                            const ApiException(
-                              code: 'NO_SESSION',
-                              message: 'Sesi tidak ditemukan. Silakan masuk kembali.',
-                            ),
-                        onRetry: () => ref.invalidate(authControllerProvider),
-                      )
-              else ...[
-                _ProfileHeader(pelanggan: pelanggan),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: () => context.push('/poin'),
-                  icon: const Icon(Icons.stars_outlined),
-                  label: const Text('Tukar dan riwayat poin'),
-                ),
-                const SizedBox(height: 26),
-                Text('Informasi akun', style: theme.textTheme.titleMedium),
-                const SizedBox(height: 12),
-                AppCard(
-                  child: Column(
-                    children: [
-                      _DetailRow(
-                        icon: Icons.phone_android_rounded,
-                        label: 'Nomor telepon',
-                        value: pelanggan.noTelp,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 18),
-                        child: TicketDivider(),
-                      ),
-                      _DetailRow(
-                        icon: Icons.location_on_outlined,
-                        label: 'Alamat',
-                        value: pelanggan.alamat.isEmpty
-                            ? 'Belum ada alamat'
-                            : pelanggan.alamat,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-                AppButton(
-                  label: 'Ubah Profil',
-                  icon: Icons.edit_outlined,
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => const EditProfilPage(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-                OutlinedButton.icon(
-                  onPressed: () => _confirmLogout(context, ref),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colors.error,
-                  ),
-                  icon: const Icon(Icons.logout_rounded, size: 18),
-                  label: const Text('Keluar Akun'),
-                ),
-                const SizedBox(height: 24),
+        body: RefreshIndicator(
+          onRefresh: () => ref.read(customerRefreshProvider.notifier).refresh(),
+          child: SafeArea(
+            bottom: false,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(22, 24, 22, 120),
+              children: [
+                Text('Profil', style: theme.textTheme.headlineMedium),
+                const SizedBox(height: 6),
                 Text(
-                  'Sparkleen Laundry',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.labelSmall?.copyWith(
+                  'Detail akun, poin, dan informasi kontak.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
                 ),
+                const SizedBox(height: 24),
+                if (pelanggan == null)
+                  auth.isLoading
+                      ? const LoadingList()
+                      : ErrorState(
+                          error:
+                              auth.error ??
+                              const ApiException(
+                                code: 'NO_SESSION',
+                                message: 'Sesi tidak ditemukan. Silakan masuk kembali.',
+                              ),
+                          onRetry: () => ref.invalidate(authControllerProvider),
+                        )
+                else ...[
+                  _ProfileHeader(pelanggan: pelanggan),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () => context.push('/keamanan'),
+                    icon: const Icon(Icons.fingerprint),
+                    label: const Text('Keamanan dan biometrik'),
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () => context.push('/poin'),
+                    icon: const Icon(Icons.stars_outlined),
+                    label: const Text('Tukar dan riwayat poin'),
+                  ),
+                  const SizedBox(height: 26),
+                  Text('Informasi akun', style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 12),
+                  AppCard(
+                    child: Column(
+                      children: [
+                        _DetailRow(
+                          icon: Icons.phone_android_rounded,
+                          label: 'Nomor telepon',
+                          value: pelanggan.noTelp,
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 18),
+                          child: TicketDivider(),
+                        ),
+                        _DetailRow(
+                          icon: Icons.location_on_outlined,
+                          label: 'Alamat',
+                          value: pelanggan.alamat.isEmpty
+                              ? 'Belum ada alamat'
+                              : pelanggan.alamat,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  AppButton(
+                    label: 'Ubah Profil',
+                    icon: Icons.edit_outlined,
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const EditProfilPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  OutlinedButton.icon(
+                    onPressed: () => _confirmLogout(context, ref),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.error,
+                    ),
+                    icon: const Icon(Icons.logout_rounded, size: 18),
+                    label: const Text('Keluar Akun'),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Sparkleen Laundry',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

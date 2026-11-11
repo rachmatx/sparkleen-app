@@ -4,6 +4,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/security/biometric_service.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/utils/formatters.dart';
@@ -132,7 +135,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (view.error != null) ...[
+                TextButton.icon(onPressed: view.busy ? null : ()=>context.push('/keamanan'), icon: const Icon(Icons.fingerprint), label: Text(ref.watch(biometricSettingsProvider).value?.payments == true ? 'Konfirmasi biometrik aktif' : 'Atur keamanan pembayaran')),
+            if (view.error != null) ...[
                   AppCard(
                     color: colors.errorContainer,
                     child: Text(

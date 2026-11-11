@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -49,68 +48,80 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
   );
 
   final textTheme = base.textTheme.copyWith(
-    headlineLarge: GoogleFonts.plusJakartaSans(
+    headlineLarge: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 28,
       fontWeight: FontWeight.w600,
       letterSpacing: -0.9,
       color: colors.onSurface,
     ),
-    headlineMedium: GoogleFonts.plusJakartaSans(
+    headlineMedium: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 26,
       fontWeight: FontWeight.w600,
       letterSpacing: -0.7,
       color: colors.onSurface,
     ),
-    headlineSmall: GoogleFonts.plusJakartaSans(
+    headlineSmall: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 20,
       fontWeight: FontWeight.w600,
       letterSpacing: -0.5,
       color: colors.onSurface,
     ),
-    titleLarge: GoogleFonts.plusJakartaSans(
+    titleLarge: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 18,
       fontWeight: FontWeight.w600,
       letterSpacing: -0.4,
       color: colors.onSurface,
     ),
-    titleMedium: GoogleFonts.plusJakartaSans(
+    titleMedium: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 16,
       fontWeight: FontWeight.w500,
       letterSpacing: -0.3,
       color: colors.onSurface,
     ),
-    titleSmall: GoogleFonts.plusJakartaSans(
+    titleSmall: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 14,
       fontWeight: FontWeight.w500,
       letterSpacing: -0.2,
       color: colors.onSurface,
     ),
-    bodyLarge: GoogleFonts.manrope(
+    bodyLarge: TextStyle(
+      fontFamily: 'Manrope',
       fontSize: 16,
       height: 1.5,
       color: colors.onSurface,
     ),
-    bodyMedium: GoogleFonts.manrope(
+    bodyMedium: TextStyle(
+      fontFamily: 'Manrope',
       fontSize: 14,
       height: 1.5,
       color: colors.onSurface,
     ),
-    bodySmall: GoogleFonts.manrope(
+    bodySmall: TextStyle(
+      fontFamily: 'Manrope',
       fontSize: 12,
       height: 1.45,
       color: colors.onSurfaceVariant,
     ),
-    labelLarge: GoogleFonts.plusJakartaSans(
+    labelLarge: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 14,
       fontWeight: FontWeight.w600,
       letterSpacing: 0,
     ),
-    labelMedium: GoogleFonts.manrope(
+    labelMedium: TextStyle(
+      fontFamily: 'Manrope',
       fontSize: 12,
       fontWeight: FontWeight.w500,
       color: colors.onSurfaceVariant,
     ),
-    labelSmall: GoogleFonts.manrope(
+    labelSmall: TextStyle(
+      fontFamily: 'Manrope',
       fontSize: 12,
       fontWeight: FontWeight.w500,
       color: colors.onSurfaceVariant,
