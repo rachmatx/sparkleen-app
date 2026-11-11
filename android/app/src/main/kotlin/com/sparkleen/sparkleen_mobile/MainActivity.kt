@@ -10,6 +10,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterFragmentActivity() {
     private var pending: MethodChannel.Result? = null
     private var prompt: BiometricPrompt? = null
+    private var verificationId = 0L
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -36,17 +37,20 @@ class MainActivity : FlutterFragmentActivity() {
             return
         }
         pending = result
+        val attempt = ++verificationId
         try {
             prompt = BiometricPrompt(this, ContextCompat.getMainExecutor(this),
                 object : BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationSucceeded(authenticationResult: BiometricPrompt.AuthenticationResult) {
-                        complete(true)
+                        complete(true, attempt)
                     }
                     override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                        if (attempt != verificationId) return
                         if (errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON ||
                             errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
-                            errorCode == BiometricPrompt.ERROR_CANCELED) complete(false)
+                            errorCode == BiometricPrompt.ERROR_CANCELED) complete(false, attempt)
                         else {
+                            verificationId++
                             pending?.error("BIOMETRIC_FAILED", "Verifikasi perangkat belum berhasil.", null)
                             pending = null
                         }
@@ -61,12 +65,16 @@ class MainActivity : FlutterFragmentActivity() {
                 .build()
             prompt?.authenticate(info)
         } catch (_: Exception) {
+            verificationId++
             pending?.error("BIOMETRIC_UNAVAILABLE", "Verifikasi perangkat tidak tersedia.", null)
             pending = null
         }
     }
 
-    private fun complete(success: Boolean) {
+    private fun complete(success: Boolean, attempt: Long = verificationId) {
+        // A delayed callback from an interrupted prompt must not complete a new one.
+        if (attempt != verificationId) return
+        verificationId++
         val callback = pending
         pending = null
         callback?.success(success)

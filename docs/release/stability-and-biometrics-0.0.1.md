@@ -20,7 +20,12 @@ Branch: `feat/app-stability-biometrics-v0.0.1`. Perubahan tahap ini hanya pada r
 - Integrasi HTTP Dart → PHP → MariaDB: **1 skenario lulus**, meliputi penukaran poin, pembayaran kasir, inbox, dan isolasi akun. Fixture memakai database pengujian terpisah.
 - Cakupan baru: pemulihan sesi offline/5xx, 401, logout dan pergantian akun saat request/prompt masih berjalan, biometrik batal, pencegahan invoice setelah sesi berganti, validasi server LAN, penguncian setelah background, refresh gabungan, serta layout lebar 320 px dengan skala teks 1,8 pada tema terang/gelap.
 - Enam screenshot halaman keamanan, pemulihan sesi, dan server tersedia di `docs/screenshots/v0.0.1/`; native biometrik dimock dalam pengambilan screenshot.
-- Native Android compilation dan publikasi APK dijalankan oleh `.github/workflows/android-preview.yml`. Keberhasilan tes Dart tidak menyatakan build Android berhasil; periksa hasil workflow dan release sebelum memasang.
+- Build lokal `flutter build apk --flavor preview --release --no-pub --dart-define=APP_PREVIEW=true --build-name=0.0.1 --build-number=1` berhasil dengan Flutter 3.47.9, JDK 21, Android SDK 36, dan Gradle 9.3.1.
+- APK: 66.274.643 byte; package `com.sparkleen.sparkleen_mobile.preview`, version name `0.0.1`, version code `1`, minimum SDK 24, target SDK 36. Izin biometrik/fingerprint dan seluruh aset brand, ilustrasi, layanan, serta delapan berkas font/lisensi terkonfirmasi dalam paket.
+- `apksigner verify --verbose`: berhasil, signature v2, sertifikat Android Debug untuk preview internal.
+- SHA-256 APK: `45dfb39b622b1b41acd59775d5376da21808ee7e6b13a9e1cfba7b8c22b93459`.
+
+Build dan upload release dilakukan lokal. Rencana workflow otomatis tidak disertakan karena credential yang tersedia tidak memiliki scope `workflow`; tidak ada perubahan pada izin token.
 
 ## Batas pengujian
 
