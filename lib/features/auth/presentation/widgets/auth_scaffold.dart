@@ -39,7 +39,12 @@ class AuthScaffold extends StatelessWidget {
                     const AuthBrandHeader(),
                     SizedBox(height: keyboard ? 20 : 28),
                     if (illustrationAsset != null && !keyboard) ...[
-                      AppArtwork(asset: illustrationAsset!, height: 176),
+                      AppArtwork(
+                        asset: illustrationAsset!,
+                        height: MediaQuery.sizeOf(context).height < 740
+                            ? 80
+                            : 160,
+                      ),
                       const SizedBox(height: 20),
                     ],
                     Semantics(

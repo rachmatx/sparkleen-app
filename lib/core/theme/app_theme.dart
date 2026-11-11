@@ -130,6 +130,10 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
 
   return base.copyWith(
     textTheme: textTheme,
+    actionIconTheme: ActionIconThemeData(
+      backButtonIconBuilder: (context) =>
+          const Icon(Icons.chevron_left_rounded),
+    ),
     appBarTheme: AppBarTheme(
       systemOverlayStyle: dark
           ? SystemUiOverlayStyle.light

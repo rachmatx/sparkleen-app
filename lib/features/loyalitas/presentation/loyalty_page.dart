@@ -28,38 +28,57 @@ class LoyaltyPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
                 AppCard(
+                  color: colors.primaryContainer,
+                  padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const AppArtwork(
-                        asset: AppAssets.points,
-                        width: 52,
-                        height: 52,
-                        fallbackIcon: Icons.stars_outlined,
+                      Row(
+                        children: [
+                          const AppArtwork(
+                            asset: AppAssets.points,
+                            width: 62,
+                            height: 62,
+                            fallbackIcon: Icons.stars_outlined,
+                          ),
+                          const SizedBox(width: 18),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Saldo poinmu',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                Text(
+                                  '${view.summary.balance} poin',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineLarge,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '1 poin = ${formatRupiah(view.summary.value)} potongan.',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      const Text('Saldo poin Anda'),
-                      const SizedBox(height: 6),
-                      Text(
-                        '${view.summary.balance} poin',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '1 poin = ${formatRupiah(view.summary.value)} potongan laundry.',
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Tukar melalui detail pesanan sebelum pembayaran pertama dan sebelum membuat tagihan online.',
-                      ),
-                      const SizedBox(height: 16),
-                      OutlinedButton.icon(
+                      const SizedBox(height: 20),
+                      FilledButton.icon(
                         onPressed: () => context.go('/pesanan'),
                         icon: const Icon(Icons.receipt_long_outlined),
                         label: const Text('Pilih pesanan'),
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Tukar sebelum pembayaran pertama atau pembuatan tagihan.',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 24),
                 Text(

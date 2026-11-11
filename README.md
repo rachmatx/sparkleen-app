@@ -90,14 +90,25 @@ flutter run --dart-define=API_BASE_URL="$API_URL"
 APK debug:
 
 ```bash
-flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:8080
+flutter build apk --debug --flavor preview --dart-define=APP_PREVIEW=true --dart-define=API_BASE_URL=http://10.0.2.2:8080
 ```
 
-APK release:
+APK pratinjau release yang lebih kecil untuk HP Android ARM64 (termasuk Xiaomi 14T):
 
 ```bash
-flutter build apk --release --dart-define=API_BASE_URL=https://<domain-backend>
+flutter pub get
+flutter build apk --release --flavor preview --dart-define=APP_PREVIEW=true --target-platform=android-arm64 --split-per-abi --split-debug-info=build/symbols/0.0.3
 ```
+
+Hasilnya `build/app/outputs/flutter-apk/app-arm64-v8a-preview-release.apk`.
+Server dapat diatur dari gear login atau Profil → Pengaturan → Konfigurasi server.
+Build preview mendukung HTTP lokal; HP dan laptop harus dapat saling terhubung.
+Untuk mendistribusikan ke arsitektur lain, hapus `--target-platform=android-arm64`
+dan tetap gunakan `--split-per-abi` agar setiap APK hanya memuat satu arsitektur.
+Simpan direktori simbol bersama versi APK bila diperlukan untuk membaca crash trace.
+
+Build produksi memakai flavor `production`, HTTPS, dan keystore milik pemilik aplikasi.
+Guard build akan menolak production release sebelum konfigurasi signing disiapkan.
 
 Hasil build ada di `build/app/outputs/flutter-apk/`. Konfigurasi signing release masih
 memakai debug key bawaan template; buat `android/key.properties` dan konfigurasi keystore
@@ -116,9 +127,8 @@ flutter analyze
 flutter test
 ```
 
-Saat ini `flutter analyze` bersih dan 50 test lulus. Build web release juga
-diverifikasi. Build dan tampilan pada perangkat Android tetap perlu diuji
-sebelum distribusi APK.
+Hasil verifikasi terbaru, perubahan UI, dan batas pengujian Android dicatat dalam
+[catatan 0.0.3](docs/redesign-v0.0.3.md). Jalankan pengujian di atas setelah mengubah kode.
 
 ## Struktur
 
@@ -198,3 +208,10 @@ Permintaan jemput dari beranda dan alur antrean kasir:
 ### UI refresh 0.0.2
 
 Tema terang/gelap, panel glass, aset WebP, Pengaturan, serta perbaikan navigasi dan pemuatan riwayat: [catatan implementasi](docs/redesign-v0.0.2.md).
+
+
+### Penyempurnaan UI 0.0.3
+
+Notifikasi dengan “Hari ini” di kiri dan “Tandai semua dibaca” di kanan,
+form berlabel tetap, layar keamanan/koneksi, serta koreksi nominal pembayaran lunas:
+[catatan perubahan dan pengujian](docs/redesign-v0.0.3.md).

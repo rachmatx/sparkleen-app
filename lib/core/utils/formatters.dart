@@ -24,3 +24,11 @@ String formatBerat(double value) {
 
 String formatEstimasi(DateTime value) =>
     DateFormat('d MMMM · HH.mm', 'id_ID').format(value.toLocal());
+
+/// Calendar fields in the outlet's timezone, independent of the phone timezone.
+DateTime jakartaCalendarDate({DateTime? instant, int daysAfter = 0}) {
+  final local = (instant ?? DateTime.now()).toUtc().add(
+    const Duration(hours: 7),
+  );
+  return DateTime(local.year, local.month, local.day + daysAfter);
+}

@@ -96,7 +96,8 @@ class NotificationPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(notificationsProvider);
     final controller = ref.read(notificationsProvider.notifier);
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     return AppBackdrop(
       child: Scaffold(
         appBar: AppBar(title: const Text('Notifikasi')),
@@ -105,149 +106,206 @@ class NotificationPage extends ConsumerWidget {
           onRetry: () => ref.invalidate(notificationsProvider),
           builder: (context, view) => RefreshIndicator(
             onRefresh: controller.refresh,
-            child: ListView(
+            child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-              children: [
-                Text(
-                  'Perkembangan cucian Anda',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Pembaruan tersimpan di sini. Tarik ke bawah untuk memuat yang terbaru.',
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: view.busy || view.result.unread == 0
-                              ? null
-                              : () => controller.mark(),
-                          icon: const Icon(Icons.done_all),
-                          label: const Text('Tandai semua dibaca'),
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'Hari ini',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ],
-                ),
-                if (view.error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      view.error is ApiException
-                          ? (view.error as ApiException).message
-                          : 'Pembaruan belum tersimpan. Coba lagi.',
-                      style: TextStyle(color: colors.error),
-                    ),
-                  ),
-                if (view.result.items.isEmpty)
-                  const AppCard(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Column(
-                        children: [
-                          Icon(Icons.notifications_none_rounded, size: 40),
-                          SizedBox(height: 12),
-                          Text('Belum ada notifikasi'),
-                          SizedBox(height: 8),
-                          Text(
-                            'Pembaruan pesanan berikutnya akan muncul di sini.',
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                if (!view.result.items.any((item) => _isToday(item.createdAt)))
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: Text('Belum ada notifikasi hari ini.'),
-                  ),
-                for (final (index, item) in view.result.items.indexed) ...[
-                  if (!_isToday(item.createdAt) &&
-                      (index == 0 ||
-                          _isToday(view.result.items[index - 1].createdAt)))
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Text(
-                        'Sebelumnya',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                    ),
-                  AppCard(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    onTap: view.busy ? null : () => _open(context, ref, item),
-                    child: Row(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(switch (item.category) {
-                          'payment' => Icons.payments_outlined,
-                          'pickup' => Icons.local_shipping_outlined,
-                          'loyalty' => Icons.stars_outlined,
-                          _ => Icons.local_laundry_service_outlined,
-                        }, color: colors.primary),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.title,
-                                style: Theme.of(context).textTheme.titleSmall
-                                    ?.copyWith(
-                                      fontWeight: item.unread
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                    ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(item.body),
-                              if (item.createdAt != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Text(
-                                    formatTanggal(item.createdAt!),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall,
-                                  ),
-                                ),
-                              if (item.unread)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Text(
-                                    'Belum dibaca',
-                                    style: TextStyle(
-                                      color: colors.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                            ],
+                        Text(
+                          'Kabar terbaru cucianmu.',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colors.onSurfaceVariant,
                           ),
                         ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Text(
+                              'Hari ini',
+                              style: theme.textTheme.titleMedium,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  onPressed:
+                                      view.busy || view.result.unread == 0
+                                      ? null
+                                      : () => controller.mark(),
+                                  icon: const Icon(Icons.done_all, size: 18),
+                                  label: const Text('Tandai semua dibaca'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (view.error != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              view.error is ApiException
+                                  ? (view.error as ApiException).message
+                                  : 'Pembaruan belum tersimpan. Coba lagi.',
+                              style: TextStyle(color: colors.error),
+                            ),
+                          ),
+                        if (view.result.items.isEmpty)
+                          const EmptyState(
+                            icon: Icons.notifications_none_rounded,
+                            message: 'Belum ada notifikasi',
+                          ),
+                        if (view.result.items.isNotEmpty &&
+                            !view.result.items.any(
+                              (item) => _isToday(item.createdAt),
+                            ))
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Text(
+                              'Belum ada notifikasi hari ini.',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ),
                       ],
                     ),
                   ),
-                ],
-                if (view.busy) const Center(child: CircularProgressIndicator()),
-                if (view.result.page < view.result.lastPage)
-                  OutlinedButton(
-                    onPressed: view.busy ? null : controller.loadMore,
-                    child: Text(
-                      view.result.page == 1
-                          ? 'Lihat semua notifikasi'
-                          : 'Muat 20 berikutnya',
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverList.separated(
+                    itemCount: view.result.items.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final item = view.result.items[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (!_isToday(item.createdAt) &&
+                              (index == 0 ||
+                                  _isToday(
+                                    view.result.items[index - 1].createdAt,
+                                  )))
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: 12,
+                                bottom: 12,
+                              ),
+                              child: Text(
+                                'Sebelumnya',
+                                style: theme.textTheme.titleMedium,
+                              ),
+                            ),
+                          AppCard(
+                            color: item.unread ? colors.primaryContainer : null,
+                            padding: const EdgeInsets.all(16),
+                            onTap: view.busy
+                                ? null
+                                : () => _open(context, ref, item),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  switch (item.category) {
+                                    'payment' => Icons.payments_outlined,
+                                    'pickup' => Icons.local_shipping_outlined,
+                                    'loyalty' => Icons.stars_outlined,
+                                    _ => Icons.local_laundry_service_outlined,
+                                  },
+                                  color: colors.primary,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              item.title,
+                                              style: theme.textTheme.titleSmall
+                                                  ?.copyWith(
+                                                    fontWeight: item.unread
+                                                        ? FontWeight.w700
+                                                        : FontWeight.w500,
+                                                  ),
+                                            ),
+                                          ),
+                                          if (item.unread) ...[
+                                            const SizedBox(width: 10),
+                                            Semantics(
+                                              label: 'Belum dibaca',
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                  top: 5,
+                                                ),
+                                                child: Container(
+                                                  width: 8,
+                                                  height: 8,
+                                                  decoration: BoxDecoration(
+                                                    color: colors.primary,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        item.body,
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: theme.textTheme.bodyMedium,
+                                      ),
+                                      if (item.createdAt != null) ...[
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          formatTanggal(item.createdAt!),
+                                          style: theme.textTheme.bodySmall,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (view.busy)
+                          const Center(child: CircularProgressIndicator()),
+                        if (view.result.page < view.result.lastPage)
+                          OutlinedButton(
+                            onPressed: view.busy ? null : controller.loadMore,
+                            child: Text(
+                              view.result.page == 1
+                                  ? 'Lihat semua notifikasi'
+                                  : 'Muat 20 berikutnya',
+                            ),
+                          ),
+                      ],
                     ),
                   ),
+                ),
               ],
             ),
           ),

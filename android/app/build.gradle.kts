@@ -46,7 +46,7 @@ android {
 
     buildTypes {
         release {
-            // v0.0.1 is an explicitly debug-signed internal preview, not a store release.
+            // Internal previews are debug-signed; store releases require owner-managed signing.
             // Production distribution needs an owner-managed release signing key.
             signingConfig = signingConfigs.getByName("debug")
         }

@@ -1,3 +1,5 @@
+import '../../../../core/widgets/app_text_field.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -31,7 +33,7 @@ class _PinFormFieldState extends State<PinFormField> {
   bool _visible = false;
 
   @override
-  Widget build(BuildContext context) => TextFormField(
+  Widget build(BuildContext context) => AppTextFormField(
     controller: widget.controller,
     enabled: widget.enabled,
     obscureText: !_visible,

@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_text_field.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -84,7 +86,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               AuthErrorBanner(message: _serverError!.message),
               const SizedBox(height: 16),
             ],
-            TextFormField(
+            AppTextFormField(
               controller: _nama,
               textInputAction: TextInputAction.next,
               textCapitalization: TextCapitalization.words,
@@ -98,7 +100,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               onChanged: (_) => _clearServerError(),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            AppTextFormField(
               controller: _phone,
               enabled: !isLoading,
               autofillHints: const [AutofillHints.telephoneNumber],
@@ -114,7 +116,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               onChanged: (_) => _clearServerError(),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            AppTextFormField(
               controller: _alamat,
               textInputAction: TextInputAction.next,
               textCapitalization: TextCapitalization.sentences,

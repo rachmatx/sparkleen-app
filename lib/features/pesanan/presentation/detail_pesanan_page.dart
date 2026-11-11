@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/providers.dart';
 import '../../../core/widgets/app_card.dart';
@@ -63,6 +62,14 @@ class DetailPesananPage extends ConsumerWidget {
                 ),
                 _ItemsCard(items: detail.items),
                 _PaymentCard(detail: detail),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () => context.push('/pesanan/${detail.id}/nota'),
+                    icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                    label: const Text('Lihat Nota'),
+                  ),
+                ),
                 _PinCard(pin: detail.pinPengambilan),
               ],
             ),
@@ -84,120 +91,43 @@ class _HeaderCard extends StatelessWidget {
     final colors = theme.colorScheme;
 
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              StatusChip(status: detail.status, label: detail.statusLabel),
-              Text(detail.noNota, style: theme.textTheme.bodySmall),
-            ],
-          ),
-          const SizedBox(height: 14),
-          const AppArtwork(asset: AppAssets.home, width: 76, height: 60),
-          const SizedBox(height: 8),
-          if (detail.tglEstimasi != null) ...[
-            Text(
-              'Estimasi selesai',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              formatEstimasi(detail.tglEstimasi!),
-              style: theme.textTheme.headlineSmall?.copyWith(
-                color: colors.onSurface,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.6,
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-          _TicketInfoLine(
-            icon: Icons.login_rounded,
-            label: 'Masuk',
-            value: formatTanggal(detail.tglMasuk),
-          ),
-          if (detail.tglAktual != null)
-            _TicketInfoLine(
-              icon: Icons.task_alt_rounded,
-              label: 'Selesai',
-              value: formatTanggal(detail.tglAktual!),
-            ),
-          _TicketInfoLine(
-            icon: Icons.scale_outlined,
-            label: 'Total berat',
-            value: formatBerat(detail.totalBerat),
-            isLast: true,
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () => context.push('/pesanan/${detail.id}/nota'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(0, 48),
-              ),
-              icon: const Icon(Icons.receipt_long_outlined, size: 18),
-              label: const Text('Lihat Nota'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TicketInfoLine extends StatelessWidget {
-  const _TicketInfoLine({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.isLast = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+      margin: const EdgeInsets.only(bottom: 20),
+      color: colors.primaryContainer,
+      padding: const EdgeInsets.all(18),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: colors.primary),
-          const SizedBox(width: 8),
+          if (MediaQuery.textScalerOf(context).scale(14) < 20) ...[
+            const AppArtwork(asset: AppAssets.home, width: 70, height: 70),
+            const SizedBox(width: 12),
+          ],
           Expanded(
-            child: Text(
-              label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(detail.noNota, style: theme.textTheme.titleSmall),
+                const SizedBox(height: 8),
+                StatusChip(status: detail.status, label: detail.statusLabel),
+                const SizedBox(height: 12),
+                Text('Estimasi selesai', style: theme.textTheme.bodySmall),
+                const SizedBox(height: 4),
+                Text(
+                  detail.tglEstimasi == null
+                      ? 'Menunggu estimasi'
+                      : formatEstimasi(detail.tglEstimasi!),
+                  style: theme.textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${formatBerat(detail.totalBerat)} · Masuk ${formatTanggal(detail.tglMasuk)}',
+                  style: theme.textTheme.bodySmall,
+                ),
+                if (detail.tglAktual != null)
+                  Text(
+                    'Selesai ${formatTanggal(detail.tglAktual!)}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+              ],
             ),
           ),
         ],

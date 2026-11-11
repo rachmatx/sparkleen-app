@@ -17,6 +17,7 @@ import '../../features/pembayaran/presentation/payment_page.dart';
 import '../../features/pesanan/presentation/detail_pesanan_page.dart';
 import '../../features/pesanan/presentation/pesanan_page.dart';
 import '../../features/profil/presentation/profil_page.dart';
+import '../../features/profil/presentation/edit_profil_page.dart';
 import '../../features/splash/splash_page.dart';
 import '../widgets/app_shell.dart';
 import '../../features/pengaturan/presentation/settings_page.dart';
@@ -59,6 +60,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/riwayat-pesanan',
         builder: (context, state) => const PesananPage(fullHistory: true),
+      ),
+      GoRoute(
+        path: '/ubah-profil',
+        builder: (context, state) => const EditProfilPage(),
       ),
       GoRoute(
         path: '/pengaturan',

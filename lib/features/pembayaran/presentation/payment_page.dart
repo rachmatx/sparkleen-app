@@ -11,6 +11,7 @@ import '../../../core/security/biometric_service.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_components.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../application/payment_controller.dart';
 
@@ -94,42 +95,65 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
-                AppCard(
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: payment.status == 'SUCCESS'
+                        ? CrossAxisAlignment.center
+                        : CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        payment.status == 'SUCCESS'
-                            ? Icons.verified_outlined
-                            : Icons.receipt_long_outlined,
-                        color: colors.primary,
-                        size: 32,
-                      ),
-                      const SizedBox(height: 16),
+                      if (payment.status == 'SUCCESS') ...[
+                        Icon(
+                          Icons.check_circle_outline_rounded,
+                          size: 48,
+                          color: colors.primary,
+                        ),
+                        const SizedBox(height: 18),
+                      ],
                       Text(
                         payment.status == 'SUCCESS'
                             ? 'Pembayaran tercatat'
                             : 'Sisa tagihan',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       Text(
-                        formatRupiah(
-                          payment.status == 'SUCCESS'
-                              ? payment.amount
-                              : payment.remaining,
-                        ),
-                        style: Theme.of(context).textTheme.headlineMedium,
+                        formatRupiah(payment.displayAmount),
+                        style: Theme.of(context).textTheme.headlineLarge,
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       Text(
                         payment.status == 'SUCCESS'
-                            ? 'Pesanan sudah lunas. Bukti pembayaran tersedia pada nota pesanan.'
+                            ? 'Pesananmu sudah lunas.'
                             : 'Nominal mengikuti catatan pembayaran outlet.',
+                        textAlign: payment.status == 'SUCCESS'
+                            ? TextAlign.center
+                            : TextAlign.start,
                       ),
                     ],
                   ),
                 ),
+                if (payment.status == 'SUCCESS')
+                  AppCard(
+                    child: Column(
+                      children: [
+                        const AppSummaryRow(
+                          label: 'Status',
+                          value: 'Lunas',
+                          emphasized: true,
+                        ),
+                        if (payment.method != null)
+                          AppSummaryRow(
+                            label: 'Metode',
+                            value: '${payment.method} simulasi',
+                          ),
+                        const AppSummaryRow(
+                          label: 'Bukti pembayaran',
+                          value: 'Tersimpan pada nota',
+                        ),
+                      ],
+                    ),
+                  ),
                 if (payment.status == 'SUCCESS') ...[
                   const SizedBox(height: 16),
                   FilledButton.icon(
@@ -145,12 +169,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                   ),
                 ],
                 const SizedBox(height: 16),
-                AppCard(
-                  color: colors.primaryContainer,
-                  child: Text(
-                    'Mode simulasi • Untuk uji coba Sparkleen dan Smart Pay. QR dan rekening di halaman ini bukan sarana pembayaran bank. Jangan transfer uang nyata.',
-                    style: TextStyle(color: colors.onPrimaryContainer),
-                  ),
+                const AppInfoBanner(
+                  message: 'Mode simulasi · Untuk pengujian Smart Pay. Jangan transfer uang nyata.',
                 ),
                 const SizedBox(height: 16),
                 TextButton.icon(

@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_config.dart';
+import '../../../core/app_info.dart';
 import '../../../core/settings/appearance_settings.dart';
 import '../../../core/settings/server_settings.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../auth/application/auth_controller.dart';
-import '../../profil/presentation/edit_profil_page.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -67,11 +67,11 @@ class SettingsPage extends ConsumerWidget {
               SettingsTile(
                 icon: Icons.info_outline,
                 title: 'Tentang Sparkleen',
-                value: '0.0.2',
+                value: AppInfo.version,
                 onTap: () => showAboutDialog(
                   context: context,
                   applicationName: 'Sparkleen',
-                  applicationVersion: '0.0.2 · Pratinjau',
+                  applicationVersion: '${AppInfo.versionLabel} · Pratinjau',
                   children: const [
                     Text(
                       'Laundry jadi ringan. Pembayaran online pada versi pengujian menggunakan simulasi Smart Pay.',
@@ -188,9 +188,7 @@ class SettingsPage extends ConsumerWidget {
   }
 }
 
-void openEditProfile(BuildContext context) =>
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (_) => const EditProfilPage()));
+void openEditProfile(BuildContext context) => context.push('/ubah-profil');
 
 class SettingsTile extends StatelessWidget {
   const SettingsTile({

@@ -6,6 +6,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/providers.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../application/loyalty_controller.dart';
 import '../data/loyalty_repository.dart';
@@ -132,7 +133,7 @@ class _RedemptionPageState extends ConsumerState<RedemptionPage> {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 12),
-                        TextField(
+                        AppTextFormField(
                           controller: _input,
                           enabled: !view.busy,
                           keyboardType: TextInputType.number,

@@ -1,6 +1,8 @@
 # Sparkleen 0.0.2 — glass UI refresh
 
 Implementasi pada branch `feat/glass-redesign-v0.0.2`, berbasis `fa24dc6` (0.0.1).
+Penyempurnaan dan APK berikutnya dicatat di [0.0.3](redesign-v0.0.3.md).
+
 Fokus perubahan hanya repositori Sparkleen App. Kontrak API dan backend pembayaran tidak diubah.
 
 ## Tampilan dan navigasi
@@ -13,7 +15,7 @@ Fokus perubahan hanya repositori Sparkleen App. Kontrak API dan backend pembayar
 - Profil memisahkan identitas, saldo poin, informasi akun dan aktivitas. Keamanan, server, tema, informasi aplikasi dan logout tersedia di Pengaturan.
 - `total_transaksi` adalah akumulasi nilai belanja pada backend, sehingga ditampilkan sebagai Total belanja dalam rupiah.
 - Daftar/detail pesanan menggunakan thumbnail. Endpoint daftar tidak menyediakan nama layanan, sehingga kartu daftar memakai ilustrasi laundry umum; detail memakai nama layanan yang benar dari API.
-- Batalkan permintaan jemput rata kanan. Tandai semua dibaca rata kiri pada baris Hari ini; tanggal notifikasi dikelompokkan memakai kalender WIB.
+- Batalkan permintaan jemput rata kanan. Pada implementasi awal, Tandai semua dibaca rata kiri pada baris Hari ini (direvisi ke kanan pada 0.0.3); tanggal notifikasi dikelompokkan memakai kalender WIB.
 - Status pembayaran berhasil menampilkan nominal transaksi, akses nota dan kembali ke pesanan. Konfirmasi biometrik tetap hanya melindungi pembuatan tagihan; status lunas berasal dari server.
 
 ## Aset dan performa

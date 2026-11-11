@@ -6,6 +6,7 @@ class PaymentSnapshot {
     required this.enabled,
     required this.amount,
     required this.remaining,
+    this.totalPaid = 0,
     this.method,
     this.expiresAt,
     this.detail = const {},
@@ -14,6 +15,9 @@ class PaymentSnapshot {
   final bool enabled;
   final int amount;
   final int remaining;
+  final int totalPaid;
+  int get displayAmount =>
+      status == 'SUCCESS' ? (totalPaid > 0 ? totalPaid : amount) : remaining;
   final String? method;
   final DateTime? expiresAt;
   final Map<String, dynamic> detail;
@@ -36,6 +40,7 @@ class PaymentSnapshot {
       enabled: supported && json['enabled'] == true,
       amount: (json['nominal'] as num?)?.toInt() ?? 0,
       remaining: (json['sisa'] as num?)?.toInt() ?? 0,
+      totalPaid: (json['total_dibayar'] as num?)?.toInt() ?? 0,
       method: json['metode'] as String?,
       expiresAt: DateTime.tryParse(json['expired_at']?.toString() ?? ''),
       detail: supported && json['payment_detail'] is Map

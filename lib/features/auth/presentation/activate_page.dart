@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_text_field.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -80,7 +82,7 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
               AuthErrorBanner(message: _serverError!.message),
               const SizedBox(height: 16),
             ],
-            TextFormField(
+            AppTextFormField(
               controller: _phone,
               enabled: !isLoading,
               autofillHints: const [AutofillHints.telephoneNumber],
@@ -96,7 +98,7 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
               onChanged: (_) => _clearServerError(),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            AppTextFormField(
               controller: _noNota,
               textInputAction: TextInputAction.next,
               textCapitalization: TextCapitalization.characters,

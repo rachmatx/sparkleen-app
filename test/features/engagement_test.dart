@@ -119,7 +119,7 @@ void main() {
     );
     await tester.tap(find.text('Tandai semua dibaca'));
     await tester.pumpAndSettle();
-    expect(find.text('Belum dibaca'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('Belum dibaca')), findsWidgets);
     expect(find.text('Koneksi terputus'), findsOneWidget);
   });
   testWidgets('badge refreshes only in foreground', (tester) async {
@@ -302,7 +302,7 @@ void main() {
         addTearDown(tester.view.resetDevicePixelRatio);
         await tester.pumpWidget(app(page, brightness: brightness, scale: 1.8));
         await tester.pumpAndSettle();
-        await tester.drag(find.byType(ListView), const Offset(0, -700));
+        await tester.drag(find.byType(Scrollable).first, const Offset(0, -700));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       });

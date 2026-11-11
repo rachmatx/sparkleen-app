@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_text_field.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +28,7 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
   final _note = TextEditingController();
   late final TextEditingController _address;
   int? _serviceId;
-  DateTime _date = DateTime.now().add(const Duration(days: 1));
+  DateTime _date = jakartaCalendarDate(daysAfter: 1);
   String _slot = 'siang';
   bool _busy = false;
   ApiException? _error;
@@ -103,8 +105,7 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
   }
 
   Future<void> _chooseDate() async {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    final today = jakartaCalendarDate();
     final chosen = await showDatePicker(
       context: context,
       initialDate: _date.isBefore(today) ? today : _date,
@@ -211,7 +212,7 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      TextFormField(
+                      AppTextFormField(
                         key: const Key('pickup-weight'),
                         controller: _weight,
                         enabled: !_busy,
@@ -254,7 +255,7 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: 14),
-                      TextFormField(
+                      AppTextFormField(
                         key: const Key('pickup-address'),
                         controller: _address,
                         enabled: !_busy,
@@ -320,7 +321,7 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
                         style: theme.textTheme.bodySmall,
                       ),
                       const SizedBox(height: 14),
-                      TextFormField(
+                      AppTextFormField(
                         key: const Key('pickup-note'),
                         controller: _note,
                         enabled: !_busy,

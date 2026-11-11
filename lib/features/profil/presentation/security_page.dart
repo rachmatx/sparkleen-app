@@ -5,6 +5,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/providers.dart';
 import '../../../core/security/biometric_service.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_components.dart';
 import '../../auth/application/auth_controller.dart';
 
 class SecurityPage extends ConsumerStatefulWidget {
@@ -51,38 +52,47 @@ class _SecurityPageState extends ConsumerState<SecurityPage> {
     final settings = ref.watch(biometricSettingsProvider);
     final ready = ref.watch(biometricAvailableProvider).value == true;
     final enabled = settings.value?.enabled == true;
+    final theme = Theme.of(context);
     return AppBackdrop(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Keamanan akun')),
+        appBar: AppBar(title: const Text('Keamanan')),
         body: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
           children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.shield_outlined,
+                  size: 32,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Praktis, tetap terlindungi.',
+                        style: theme.textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text('Atur biometrik untuk perangkat ini.'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 28),
             AppCard(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.fingerprint,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Akses lebih praktis, tetap terlindungi',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Login pertama memakai PIN akun. Setelah diaktifkan, sidik jari atau biometrik perangkat bisa membuka kembali sesi yang masih berlaku. Data biometrik tetap ditangani oleh sistem perangkat.',
-                  ),
-                  const SizedBox(height: 16),
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Buka dengan biometrik'),
                     subtitle: Text(
-                      ready
-                          ? 'Sesi dikunci saat aplikasi dibuka kembali atau setelah 1 menit di latar belakang.'
-                          : 'Daftarkan sidik jari di pengaturan Android agar fitur tersedia.',
+                      ready ? 'Buka kembali sesi yang masih berlaku.' : 'Daftarkan sidik jari di pengaturan Android agar fitur tersedia.',
                     ),
                     value: enabled,
                     onChanged: _busy || !ready || settings.isLoading
@@ -93,48 +103,56 @@ class _SecurityPageState extends ConsumerState<SecurityPage> {
                                 : service.disable(token),
                           ),
                   ),
-                  if (enabled)
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Konfirmasi tagihan'),
-                      subtitle: const Text(
-                        'Minta biometrik sebelum membuat tagihan. Status pembayaran tetap diverifikasi server.',
-                      ),
-                      value: settings.value?.payments == true,
-                      onChanged: _busy || !ready
-                          ? null
-                          : (on) => _change(
-                              (service, token) =>
-                                  service.paymentPreference(token, on),
-                            ),
+                  const Divider(),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Konfirmasi tagihan'),
+                    subtitle: const Text(
+                      'Minta biometrik sebelum membuat tagihan pembayaran.',
                     ),
-                  if (_error != null)
-                    Text(
-                      _error!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  if (settings.hasError)
-                    const Text(
-                      'Pengaturan keamanan belum dapat dibaca. Masuk ulang dengan PIN akun.',
-                    ),
-                  if (_busy) const Center(child: CircularProgressIndicator()),
+                    value: settings.value?.payments == true,
+                    onChanged: _busy || !ready || !enabled || settings.isLoading
+                        ? null
+                        : (on) => _change(
+                            (service, token) =>
+                                service.paymentPreference(token, on),
+                          ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+            const AppInfoBanner(
+              message: 'Sesi dikunci saat aplikasi dibuka kembali atau setelah 1 menit di latar belakang.',
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'PIN akun tetap diperlukan jika sesi berakhir. Keluar akun atau berganti server akan menghapus pengaturan biometrik sesi ini.',
+              style: theme.textTheme.bodySmall,
+            ),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: theme.colorScheme.error),
+                ),
+              ),
+            if (settings.hasError)
+              const Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text(
+                  'Pengaturan keamanan belum dapat dibaca. Masuk ulang dengan PIN akun.',
+                ),
+              ),
             if (enabled && !ready)
-              OutlinedButton(
+              TextButton(
                 onPressed: _busy
                     ? null
                     : () => ref.read(authControllerProvider.notifier).logout(),
                 child: const Text('Masuk ulang dengan PIN akun'),
               ),
-            const SizedBox(height: 8),
-            const Text(
-              'Sesi yang kedaluwarsa tetap memerlukan PIN akun. Logout atau berganti server menghapus pengaturan biometrik sesi ini.',
-            ),
+            if (_busy) const Center(child: CircularProgressIndicator()),
           ],
         ),
       ),

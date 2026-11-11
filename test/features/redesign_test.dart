@@ -287,6 +287,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(DetailPesananPage), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Lihat Nota'), 200);
+    await tester.ensureVisible(find.text('Lihat Nota'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Lihat Nota'));
     await tester.pumpAndSettle();
     expect(find.byType(NotaPage), findsOneWidget);
