@@ -88,6 +88,12 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          for (final element in find.byType(Image).evaluate()) {
+            await precacheImage((element.widget as Image).image, element);
+          }
+        });
+        await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         final boundary =
             key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
