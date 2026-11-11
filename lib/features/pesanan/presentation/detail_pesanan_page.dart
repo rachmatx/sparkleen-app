@@ -1,3 +1,6 @@
+import '../../../core/theme/app_assets.dart';
+import '../../../core/widgets/app_artwork.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -95,7 +98,9 @@ class _HeaderCard extends StatelessWidget {
               Text(detail.noNota, style: theme.textTheme.bodySmall),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
+          const AppArtwork(asset: AppAssets.home, width: 76, height: 60),
+          const SizedBox(height: 8),
           if (detail.tglEstimasi != null) ...[
             Text(
               'Estimasi selesai',
@@ -244,10 +249,12 @@ class _ItemRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.local_laundry_service_outlined,
-          size: 22,
-          color: colors.primary,
+        AppArtwork(
+          asset:
+              AppAssets.serviceArtwork(name: item.namaLayanan) ??
+              AppAssets.home,
+          width: 48,
+          height: 48,
         ),
         const SizedBox(width: 12),
         Expanded(

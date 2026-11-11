@@ -1,13 +1,13 @@
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: assets/brand/sparkleen_mark.png
+  image_path: tool/branding/sparkleen_mark.png
   min_sdk_android: 21
   adaptive_icon_background: '#0D63D8'
-  adaptive_icon_foreground: assets/brand/sparkleen_mark.png
+  adaptive_icon_foreground: tool/branding/sparkleen_mark.png
   adaptive_icon_foreground_inset: 12
   web:
     generate: true
-    image_path: assets/brand/sparkleen_mark.png
+    image_path: tool/branding/sparkleen_mark.png
     background_color: '#E9F1F8'
     theme_color: '#0D63D8'

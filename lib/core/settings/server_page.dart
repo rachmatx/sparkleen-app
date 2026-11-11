@@ -77,7 +77,7 @@ class _ServerPageState extends ConsumerState<ServerPage> {
   @override
   Widget build(BuildContext context) => AppBackdrop(
     child: Scaffold(
-      appBar: AppBar(title: const Text('Server pengujian')),
+      appBar: AppBar(title: const Text('Konfigurasi server')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

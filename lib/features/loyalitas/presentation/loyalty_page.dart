@@ -54,7 +54,7 @@ class LoyaltyPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
-                        onPressed: () => context.push('/pesanan'),
+                        onPressed: () => context.go('/pesanan'),
                         icon: const Icon(Icons.receipt_long_outlined),
                         label: const Text('Pilih pesanan'),
                       ),
@@ -129,7 +129,11 @@ class LoyaltyPage extends ConsumerWidget {
                     onPressed: view.busy
                         ? null
                         : ref.read(loyaltySummaryProvider.notifier).loadMore,
-                    child: const Text('Muat riwayat berikutnya'),
+                    child: Text(
+                      view.summary.page == 1
+                          ? 'Lihat semua riwayat poin'
+                          : 'Muat 20 berikutnya',
+                    ),
                   ),
               ],
             ),

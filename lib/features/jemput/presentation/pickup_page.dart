@@ -8,6 +8,7 @@ import '../../../core/providers.dart';
 import '../../../core/theme/app_assets.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../application/pickup_controller.dart';
 import '../data/pickup_repository.dart';
@@ -85,11 +86,7 @@ class _PickupPageState extends ConsumerState<PickupPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(
-                      Icons.local_shipping_outlined,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 32,
-                    ),
+                    const AppArtwork(asset: AppAssets.home, height: 100),
                     const SizedBox(height: 12),
                     Text(
                       'Cucian dijemput dari rumah',
@@ -158,7 +155,11 @@ class _PickupPageState extends ConsumerState<PickupPage> {
                                   .read(pickupControllerProvider.notifier)
                                   .loadMore(),
                         child: Text(
-                          data.loadingMore ? 'Memuat…' : 'Muat riwayat lainnya',
+                          data.loadingMore
+                              ? 'Memuat…'
+                              : (data.result.page == 1
+                                    ? 'Lihat semua riwayat'
+                                    : 'Muat 20 berikutnya'),
                         ),
                       ),
                   ],
@@ -240,9 +241,16 @@ class _PickupCard extends StatelessWidget {
           ],
           if (item.canCancel) ...[
             const SizedBox(height: 8),
-            TextButton(
-              onPressed: busy ? null : onCancel,
-              child: Text(busy ? 'Membatalkan…' : 'Batalkan permintaan'),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.error,
+                ),
+                onPressed: busy ? null : onCancel,
+                icon: const Icon(Icons.delete_outline, size: 18),
+                label: Text(busy ? 'Membatalkan…' : 'Batalkan permintaan'),
+              ),
             ),
           ],
         ],

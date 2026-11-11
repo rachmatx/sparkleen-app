@@ -21,7 +21,7 @@ void main() {
             : AppColors.background;
         final card = Color.alphaBlend(
           colors.surface.withValues(
-            alpha: brightness == Brightness.dark ? .96 : .95,
+            alpha: .87,
           ),
           canvas,
         );

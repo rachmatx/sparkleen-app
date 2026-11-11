@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 abstract final class AppColors {
   static const primary = Color(0xFF0D63D8);
   static const link = Color(0xFF0B56C2);
-  static const backgroundDark = Color(0xFF101C2C);
+  static const backgroundDark = Color(0xFF0B1220);
   static const primaryDark = Color(0xFF084FAF);
   static const primarySoft = Color(0xFFE4EDFA);
-  static const background = Color(0xFFEFF3F8);
+  static const background = Color(0xFFEDF3FA);
   static const surface = Color(0xFFFFFFFF);
   static const surfaceMuted = Color(0xFFE1EBF5);
   static const border = Color(0xFFC6D2E0);
@@ -20,8 +20,8 @@ abstract final class AppColors {
   static const warningSoft = Color(0xFFFFF1D7);
   static const mintSoft = Color(0xFFDDF2E9);
 
-  static const radiusCard = 22.0;
-  static const radiusInput = 15.0;
+  static const radiusCard = 18.0;
+  static const radiusInput = 12.0;
   static const radiusSheet = 30.0;
 
   static const cardShadow = [

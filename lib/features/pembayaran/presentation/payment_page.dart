@@ -114,7 +114,11 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        formatRupiah(payment.remaining),
+                        formatRupiah(
+                          payment.status == 'SUCCESS'
+                              ? payment.amount
+                              : payment.remaining,
+                        ),
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
                       const SizedBox(height: 10),
@@ -126,6 +130,20 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                     ],
                   ),
                 ),
+                if (payment.status == 'SUCCESS') ...[
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () => context.push('/pesanan/${widget.id}/nota'),
+                    icon: const Icon(Icons.receipt_long_outlined),
+                    label: const Text('Lihat nota'),
+                  ),
+                  TextButton(
+                    onPressed: () => context.canPop()
+                        ? context.pop()
+                        : context.go('/pesanan'),
+                    child: const Text('Kembali ke pesanan'),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 AppCard(
                   color: colors.primaryContainer,
@@ -135,8 +153,16 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextButton.icon(onPressed: view.busy ? null : ()=>context.push('/keamanan'), icon: const Icon(Icons.fingerprint), label: Text(ref.watch(biometricSettingsProvider).value?.payments == true ? 'Konfirmasi biometrik aktif' : 'Atur keamanan pembayaran')),
-            if (view.error != null) ...[
+                TextButton.icon(
+                  onPressed: view.busy ? null : () => context.push('/keamanan'),
+                  icon: const Icon(Icons.fingerprint),
+                  label: Text(
+                    ref.watch(biometricSettingsProvider).value?.payments == true
+                        ? 'Konfirmasi biometrik aktif'
+                        : 'Atur keamanan pembayaran',
+                  ),
+                ),
+                if (view.error != null) ...[
                   AppCard(
                     color: colors.errorContainer,
                     child: Text(

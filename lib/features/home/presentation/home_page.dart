@@ -52,45 +52,55 @@ class HomePage extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
               children: [
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final brand = Row(
                       children: [
-                        const BrandMark(size: 36),
+                        const BrandMark(size: 32),
                         const SizedBox(width: 8),
-                        Flexible(
+                        Expanded(
                           child: Text(
                             'sparkleen',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleLarge,
                           ),
                         ),
                       ],
-                    ),
-                    const NotificationBell(),
-                    TextButton.icon(
-                      onPressed: () => context.go('/profil'),
-                      style: TextButton.styleFrom(
-                        backgroundColor: colors.surface,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        side: BorderSide(color: colors.outlineVariant),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
+                    );
+                    final points = TextButton.icon(
+                      onPressed: () => context.push('/poin'),
                       icon: const AppArtwork(
                         asset: AppAssets.points,
-                        width: 22,
-                        height: 22,
-                        fallbackIcon: Icons.auto_awesome_outlined,
+                        width: 20,
+                        height: 20,
                       ),
                       label: Text('${pelanggan?.poin ?? 0} poin'),
-                    ),
-                  ],
+                    );
+                    if (MediaQuery.textScalerOf(context).scale(14) > 20) {
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: brand),
+                              const NotificationBell(),
+                            ],
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: points,
+                          ),
+                        ],
+                      );
+                    }
+                    return Row(
+                      children: [
+                        Expanded(child: brand),
+                        points,
+                        const NotificationBell(),
+                      ],
+                    );
+                  },
                 ),
                 if (ref.watch(customerRefreshProvider).failed)
                   Padding(
@@ -104,31 +114,35 @@ class HomePage extends ConsumerWidget {
                 _WelcomeHeader(nama: nama),
                 const SizedBox(height: 16),
                 AppCard(
+                  color: colors.primaryContainer.withValues(alpha: 0.87),
                   onTap: () => context.push('/jemput'),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.local_shipping_outlined,
-                        color: colors.primary,
-                      ),
-                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Jemput laundry',
-                              style: theme.textTheme.titleSmall,
+                              'Laundry tanpa repot.',
+                              style: theme.textTheme.titleLarge,
                             ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'Ajukan jadwal dan pantau penjemputan',
-                              style: theme.textTheme.bodySmall,
+                            const SizedBox(height: 6),
+                            const Text('Kami jemput dari rumahmu.'),
+                            const SizedBox(height: 12),
+                            FilledButton(
+                              onPressed: () => context.push('/jemput'),
+                              child: const Text('Jemput laundry'),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded),
+                      const SizedBox(width: 8),
+                      if (MediaQuery.textScalerOf(context).scale(14) < 20)
+                        const AppArtwork(
+                          asset: AppAssets.home,
+                          width: 100,
+                          height: 108,
+                        ),
                     ],
                   ),
                 ),
@@ -267,7 +281,7 @@ class HomePage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  '${pelanggan?.totalTransaksi ?? 0} transaksi',
+                  'sparkleen laundry',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall,
                 ),
@@ -287,30 +301,13 @@ class _WelcomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final greeting = Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Selamat datang,', style: text.bodySmall),
+        Text('Halo, $nama.', style: text.headlineMedium),
         const SizedBox(height: 4),
-        Text(nama, style: text.headlineMedium),
+        Text('Cucian terurus, waktumu kembali.', style: text.bodyMedium),
       ],
-    );
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (MediaQuery.textScalerOf(context).scale(16) > 22) return greeting;
-        return Row(
-          children: [
-            Expanded(child: greeting),
-            const SizedBox(width: 8),
-            const IllustrationPanel(
-              asset: AppAssets.home,
-              width: 82,
-              height: 62,
-              padding: EdgeInsets.all(4),
-            ),
-          ],
-        );
-      },
     );
   }
 }
@@ -448,8 +445,8 @@ class _ServiceCard extends StatelessWidget {
           if (asset != null)
             IllustrationPanel(
               asset: asset,
-              width: 66,
-              height: 58,
+              width: 120,
+              height: 96,
               padding: const EdgeInsets.all(3),
             )
           else

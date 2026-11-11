@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/theme/app_assets.dart';
+import '../../../../core/widgets/app_artwork.dart';
+import 'order_stages.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../../data/transaksi_ringkas.dart';
@@ -32,19 +35,36 @@ class TransaksiCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Text(
-            transaksi.isAktif ? 'Estimasi selesai' : 'Tanggal masuk',
-            style: theme.textTheme.bodySmall,
+          Row(
+            children: [
+              const AppArtwork(asset: AppAssets.home, width: 64, height: 64),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      transaksi.isAktif ? 'Estimasi selesai' : 'Tanggal masuk',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      transaksi.isAktif
+                          ? (transaksi.tglEstimasi == null
+                                ? 'Menunggu estimasi'
+                                : formatEstimasi(transaksi.tglEstimasi!))
+                          : formatTanggalSingkat(transaksi.tglMasuk),
+                      style: theme.textTheme.titleSmall,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            transaksi.isAktif
-                ? (transaksi.tglEstimasi == null
-                      ? 'Menunggu estimasi'
-                      : formatEstimasi(transaksi.tglEstimasi!))
-                : formatTanggalSingkat(transaksi.tglMasuk),
-            style: theme.textTheme.titleSmall,
-          ),
+          if (transaksi.isAktif) ...[
+            const SizedBox(height: 12),
+            OrderStages(status: transaksi.status),
+          ],
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 14),
             child: Divider(),

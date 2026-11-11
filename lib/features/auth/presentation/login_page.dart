@@ -6,7 +6,6 @@ import '../../../core/theme/app_assets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/api/api_config.dart';
 import '../../../core/widgets/app_button.dart';
 import '../application/auth_controller.dart';
 import 'validators.dart';
@@ -62,16 +61,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     return AuthScaffold(
       illustrationAsset: AppAssets.login,
-      title: 'Selamat datang kembali.',
-      subtitle: 'Pantau cucian dan riwayat pesanan dalam satu tempat.',
+      title: 'Cucian beres.\nHari lebih lega.',
+      subtitle: 'Masuk untuk pantau cucianmu.',
       footer: Column(
         children: [
-          if (ApiConfig.isPreview)
-            TextButton.icon(
-              onPressed: isLoading ? null : () => context.push('/server'),
-              icon: const Icon(Icons.dns_outlined),
-              label: const Text('Atur server laptop • 0.0.1 preview'),
-            ),
           AuthLinkPrompt(
             question: 'Belum punya akun?',
             actionLabel: 'Daftar',

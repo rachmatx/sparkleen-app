@@ -24,6 +24,14 @@ import 'package:sparkleen_mobile/features/profil/presentation/profil_page.dart';
 import 'package:sparkleen_mobile/main.dart';
 
 import '../support/auth_fakes.dart';
+import '../support/engagement_fakes.dart';
+
+import 'package:sparkleen_mobile/features/pengaturan/presentation/settings_page.dart';
+import 'package:sparkleen_mobile/features/profil/presentation/security_page.dart';
+
+import 'package:sparkleen_mobile/features/loyalitas/presentation/loyalty_page.dart';
+import 'package:sparkleen_mobile/features/loyalitas/application/loyalty_controller.dart';
+
 import '../support/home_fakes.dart';
 import '../support/redesign_fixtures.dart';
 
@@ -61,6 +69,8 @@ void main() {
             NotaPage(id: 87),
             ProfilPage(),
             EditProfilPage(),
+            SettingsPage(),
+            SecurityPage(),
           ]) {
             final container = ProviderContainer.test(
               retry: (_, _) => null,
@@ -204,6 +214,7 @@ void main() {
       ProviderScope(
         overrides: [
           tokenStorageProvider.overrideWithValue(FakeTokenStorage('demo')),
+          loyaltyRepositoryProvider.overrideWithValue(FakeLoyalty()),
           authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
           homeRepositoryProvider.overrideWithValue(
             FakeHomeRepository()
@@ -240,7 +251,9 @@ void main() {
     await tester.scrollUntilVisible(find.text('15 poin'), -400);
     await tester.tap(find.text('15 poin'));
     await tester.pumpAndSettle();
-    expect(find.byType(ProfilPage), findsOneWidget);
+    expect(find.byType(LoyaltyPage), findsOneWidget);
+    Navigator.of(tester.element(find.byType(LoyaltyPage))).pop();
+    await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(
         of: find.byType(NavigationBar),
@@ -267,6 +280,8 @@ void main() {
         matching: find.text('Beranda'),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Detail pesanan'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Detail pesanan'));
     await tester.pumpAndSettle();

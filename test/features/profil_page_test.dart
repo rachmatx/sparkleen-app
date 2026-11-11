@@ -7,6 +7,8 @@ import 'package:sparkleen_mobile/features/profil/presentation/profil_page.dart';
 
 import '../support/auth_fakes.dart';
 
+import 'package:sparkleen_mobile/features/pengaturan/presentation/settings_page.dart';
+
 void main() {
   testWidgets(
     'profil menampilkan data pelanggan dan keluar mengosongkan sesi',
@@ -33,12 +35,20 @@ void main() {
       expect(find.text('Budi Santoso'), findsOneWidget);
       expect(find.text('PLG012'), findsOneWidget);
       expect(find.text('6281298765432'), findsOneWidget);
-      expect(find.text('15'), findsOneWidget);
-      expect(find.text('4 transaksi'), findsOneWidget);
-      expect(find.text('Rp 4'), findsNothing);
+      expect(find.text('15 poin'), findsOneWidget);
+      expect(find.text('Total belanja'), findsOneWidget);
+      expect(find.text('Rp 4'), findsOneWidget);
+      expect(find.text('4 transaksi'), findsNothing);
 
-      await tester.scrollUntilVisible(find.text('Keluar Akun'), 200);
-      await tester.tap(find.text('Keluar Akun'));
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(home: SettingsPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Keluar dari akun'), 200);
+      await tester.tap(find.text('Keluar dari akun'));
       await tester.pumpAndSettle();
       expect(find.text('Keluar dari akun?'), findsOneWidget);
       await tester.tap(find.text('Keluar'));

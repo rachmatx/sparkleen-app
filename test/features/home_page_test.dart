@@ -44,7 +44,7 @@ void main() {
     await tester.pumpWidget(_buildPage(FakeHomeRepository()));
     await _settleData(tester);
 
-    expect(find.text('Budi Santoso'), findsOneWidget);
+    expect(find.text('Halo, Budi Santoso.'), findsOneWidget);
     expect(find.text('Belum ada pesanan aktif.'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Belum ada layanan tersedia.'),
@@ -75,9 +75,9 @@ void main() {
     await tester.scrollUntilVisible(find.text('Cuci Kering'), 200);
     expect(find.text('Cuci Kering'), findsOneWidget);
     expect(find.textContaining('7.000'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('4 transaksi'), 200);
-    expect(find.text('4 transaksi'), findsOneWidget);
-    expect(find.text('Rp 4'), findsNothing);
+    await tester.scrollUntilVisible(find.text('sparkleen laundry'), 200);
+    expect(find.text('sparkleen laundry'), findsOneWidget);
+    expect(find.text('4 transaksi'), findsNothing);
   });
 
   testWidgets('beranda menampilkan error dan tombol coba lagi', (tester) async {

@@ -8,22 +8,22 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
   final colors = ColorScheme.fromSeed(
     seedColor: AppColors.primary,
     brightness: brightness,
-    primary: dark ? const Color(0xFF98C0FF) : AppColors.link,
-    onPrimary: dark ? const Color(0xFF101C2C) : Colors.white,
+    primary: dark ? const Color(0xFF8AB4FF) : AppColors.link,
+    onPrimary: dark ? const Color(0xFF0B1220) : Colors.white,
     primaryContainer: dark ? const Color(0xFF173756) : AppColors.primarySoft,
     onPrimaryContainer: dark ? const Color(0xFFB5D6FF) : AppColors.primaryDark,
     secondary: dark ? const Color(0xFF85BBFF) : AppColors.primary,
-    onSecondary: dark ? const Color(0xFF101C2C) : Colors.white,
+    onSecondary: dark ? const Color(0xFF0B1220) : Colors.white,
     secondaryContainer: dark ? const Color(0xFF173756) : AppColors.primarySoft,
     onSecondaryContainer: dark
         ? const Color(0xFFB5D6FF)
         : AppColors.primaryDark,
-    surface: dark ? const Color(0xFF1A2B40) : AppColors.surface,
-    surfaceDim: dark ? const Color(0xFF101C2C) : AppColors.surfaceMuted,
+    surface: dark ? const Color(0xFF172437) : AppColors.surface,
+    surfaceDim: dark ? const Color(0xFF0B1220) : AppColors.surfaceMuted,
     surfaceBright: dark ? const Color(0xFF2C455E) : AppColors.surface,
-    surfaceContainerLowest: dark ? const Color(0xFF101C2C) : Colors.white,
+    surfaceContainerLowest: dark ? const Color(0xFF0B1220) : Colors.white,
     surfaceContainerLow: dark ? const Color(0xFF0D2035) : AppColors.surface,
-    surfaceContainer: dark ? const Color(0xFF1A2B40) : AppColors.background,
+    surfaceContainer: dark ? const Color(0xFF172437) : AppColors.background,
     surfaceContainerHigh: dark
         ? const Color(0xFF193149)
         : AppColors.surfaceMuted,
@@ -31,7 +31,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     onSurface: dark ? const Color(0xFFF0F6FD) : AppColors.text,
     onSurfaceVariant: dark ? const Color(0xFFB0BFD2) : AppColors.muted,
     outline: dark ? const Color(0xFF8299B1) : AppColors.soft,
-    outlineVariant: dark ? const Color(0xFF30465E) : AppColors.border,
+    outlineVariant: dark ? const Color(0xFF2D4058) : AppColors.border,
     inverseSurface: dark ? AppColors.surface : AppColors.text,
     onInverseSurface: dark ? AppColors.text : AppColors.surface,
     inversePrimary: dark ? AppColors.primary : const Color(0xFF85BBFF),
@@ -153,8 +153,9 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     ),
     inputDecorationTheme: InputDecorationThemeData(
       filled: true,
-      fillColor: dark ? const Color(0xFF132237) : const Color(0xFFF5F7FB),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+      fillColor: colors.surface.withValues(alpha: 0.85),
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       hintStyle: textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
       labelStyle: textTheme.bodyMedium?.copyWith(
         color: colors.onSurfaceVariant,
@@ -167,11 +168,11 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       suffixIconColor: colors.onSurfaceVariant,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusInput),
-        borderSide: BorderSide(color: colors.outline, width: 1),
+        borderSide: BorderSide(color: colors.outline, width: 0.8),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusInput),
-        borderSide: BorderSide(color: colors.outline, width: 1),
+        borderSide: BorderSide(color: colors.outline, width: 0.8),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusInput),
@@ -190,7 +191,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size(48, 52),
-        backgroundColor: AppColors.primary,
+        backgroundColor: dark ? const Color(0xFF1D5FCC) : AppColors.primary,
         foregroundColor: Colors.white,
         disabledBackgroundColor: colors.onSurface.withValues(alpha: 0.12),
         disabledForegroundColor: colors.onSurface.withValues(alpha: 0.38),
@@ -202,7 +203,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(48, 52),
         foregroundColor: colors.primary,
-        side: BorderSide(color: colors.outline, width: 1),
+        side: BorderSide(color: colors.outlineVariant, width: 1),
         textStyle: textTheme.labelLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),

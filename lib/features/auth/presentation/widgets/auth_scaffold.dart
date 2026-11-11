@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/api/api_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_artwork.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -15,78 +16,45 @@ class AuthScaffold extends StatelessWidget {
     this.showBack = false,
     this.illustrationAsset,
   });
-
-  final String title;
-  final String subtitle;
+  final String title, subtitle;
   final Widget child;
   final Widget? footer;
   final bool showBack;
   final String? illustrationAsset;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
-
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom > 0;
     return AppBackdrop(
       child: Scaffold(
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16, keyboardVisible ? 12 : 24, 16, 24),
-            child: Align(
-              alignment: Alignment.topCenter,
+            padding: EdgeInsets.fromLTRB(24, keyboard ? 12 : 24, 24, 24),
+            child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
+                constraints: const BoxConstraints(maxWidth: 440),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _AuthHeader(showBack: showBack),
-                    SizedBox(height: keyboardVisible ? 20 : 28),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final showArt =
-                            !keyboardVisible &&
-                            illustrationAsset != null &&
-                            MediaQuery.textScalerOf(context).scale(16) <= 22;
-                        final intro = Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Semantics(
-                              header: true,
-                              child: Text(
-                                title,
-                                style: theme.textTheme.headlineLarge,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              subtitle,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colors.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        );
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(child: intro),
-                            if (showArt) ...[
-                              const SizedBox(width: 12),
-                              IllustrationPanel(
-                                asset: illustrationAsset!,
-                                width: 76,
-                                height: 84,
-                                padding: const EdgeInsets.all(4),
-                              ),
-                            ],
-                          ],
-                        );
-                      },
+                    const AuthBrandHeader(),
+                    SizedBox(height: keyboard ? 20 : 28),
+                    if (illustrationAsset != null && !keyboard) ...[
+                      AppArtwork(asset: illustrationAsset!, height: 176),
+                      const SizedBox(height: 20),
+                    ],
+                    Semantics(
+                      header: true,
+                      child: Text(title, style: theme.textTheme.headlineLarge),
                     ),
-                    const SizedBox(height: 24),
-                    AppCard(padding: const EdgeInsets.all(20), child: child),
+                    const SizedBox(height: 8),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    child,
                     if (footer != null) ...[
                       const SizedBox(height: 16),
                       footer!,
@@ -102,65 +70,24 @@ class AuthScaffold extends StatelessWidget {
   }
 }
 
-class _AuthHeader extends StatelessWidget {
-  const _AuthHeader({required this.showBack});
-
-  final bool showBack;
-
+class AuthBrandHeader extends StatelessWidget {
+  const AuthBrandHeader({super.key});
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
-    return Row(
-      children: [
-        if (showBack) ...[
-          IconButton(
-            tooltip: 'Kembali',
-            onPressed: () =>
-                context.canPop() ? context.pop() : context.go('/login'),
-            style: IconButton.styleFrom(
-              minimumSize: const Size(48, 48),
-              foregroundColor: colors.onSurface,
-              backgroundColor: colors.surface,
-              side: BorderSide(color: colors.outlineVariant),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            icon: const Icon(Icons.arrow_back_rounded, size: 24),
-          ),
-          const SizedBox(width: 12),
-        ],
-        const BrandMark(size: 36),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'sparkleen',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: colors.onSurface,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Laundry',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
+  Widget build(BuildContext context) => Row(
+    children: [
+      const BrandMark(size: 36),
+      const SizedBox(width: 10),
+      Expanded(
+        child: Text('sparkleen', style: Theme.of(context).textTheme.titleLarge),
+      ),
+      if (ApiConfig.isPreview)
+        IconButton(
+          tooltip: 'Pengaturan koneksi',
+          onPressed: () => context.push('/server'),
+          icon: const Icon(Icons.settings_outlined),
         ),
-      ],
-    );
-  }
+    ],
+  );
 }
 
 class AuthErrorBanner extends StatelessWidget {

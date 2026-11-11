@@ -68,9 +68,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
 
     return AuthScaffold(
-      showBack: true,
-      title: 'Buat akun baru',
-      subtitle: 'Satu akun untuk semua riwayat laundry-mu.',
+      title: 'Mulai dari sini.',
+      subtitle: 'Buat akun untuk laundry yang lebih praktis.',
       footer: AuthLinkPrompt(
         question: 'Sudah punya akun?',
         actionLabel: 'Masuk',
@@ -152,7 +151,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 24),
-            AppButton(label: 'Daftar', loading: isLoading, onPressed: _submit),
+            AppButton(
+              label: 'Buat akun',
+              loading: isLoading,
+              onPressed: _submit,
+            ),
           ],
         ),
       ),

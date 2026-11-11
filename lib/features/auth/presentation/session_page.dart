@@ -6,6 +6,8 @@ import '../../../core/api/api_config.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_artwork.dart';
+import '../../../core/theme/app_assets.dart';
+import 'widgets/auth_scaffold.dart';
 import '../application/auth_controller.dart';
 
 class SessionPage extends ConsumerStatefulWidget {
@@ -43,74 +45,100 @@ class _SessionPageState extends ConsumerState<SessionPage> {
     final value = ref.watch(authControllerProvider);
     final locked = value.value is AuthLocked;
     final controller = ref.read(authControllerProvider.notifier);
+    final theme = Theme.of(context);
     return AppBackdrop(
       child: Scaffold(
         body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Center(child: BrandMark(size: 64)),
-                    const SizedBox(height: 24),
-                    Icon(
-                      locked ? Icons.fingerprint : Icons.cloud_off_outlined,
-                      size: 44,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      locked
-                          ? 'Selamat datang kembali'
-                          : 'Sesi Anda tetap tersimpan',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      locked
-                          ? 'Gunakan biometrik perangkat untuk membuka Sparkleen.'
-                          : 'Profil belum dapat diperiksa. Pastikan server dan koneksi tersedia, lalu coba lagi.',
-                      textAlign: TextAlign.center,
-                    ),
-                    if (_error != null)
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const AuthBrandHeader(),
                       Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Text(
-                          _error!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
+                        padding: const EdgeInsets.symmetric(vertical: 48),
+                        child: Column(
+                          children: [
+                            if (!locked) ...[
+                              const AppArtwork(
+                                asset: AppAssets.connectionError,
+                                height: 120,
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                            Text(
+                              locked
+                                  ? 'Selamat datang kembali'
+                                  : 'Koneksi belum tersambung.',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.headlineMedium,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              locked
+                                  ? 'Buka Sparkleen dengan biometrik perangkatmu.'
+                                  : 'Sesi Anda tetap tersimpan. Periksa koneksi atau alamat server, lalu coba lagi.',
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
-                    const SizedBox(height: 24),
-                    FilledButton.icon(
-                      onPressed: _busy || value.isLoading
-                          ? null
-                          : () => _run(
-                              locked
-                                  ? controller.unlock
-                                  : controller.retrySession,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (_error != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Text(
+                                _error!,
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
                             ),
-                      icon: Icon(locked ? Icons.fingerprint : Icons.refresh),
-                      label: Text(
-                        locked ? 'Buka dengan biometrik' : 'Coba lagi',
+                          FilledButton.icon(
+                            onPressed: _busy || value.isLoading
+                                ? null
+                                : () => _run(
+                                    locked
+                                        ? controller.unlock
+                                        : controller.retrySession,
+                                  ),
+                            icon: Icon(
+                              locked ? Icons.fingerprint : Icons.refresh,
+                              size: 24,
+                            ),
+                            label: Text(
+                              locked ? 'Buka dengan biometrik' : 'Coba lagi',
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: _busy
+                                ? null
+                                : () => _run(controller.logout),
+                            child: const Text('Masuk ulang dengan PIN akun'),
+                          ),
+                          if (ApiConfig.isPreview)
+                            TextButton(
+                              onPressed: _busy
+                                  ? null
+                                  : () => context.push('/server'),
+                              child: const Text(
+                                'Periksa alamat server pengujian',
+                              ),
+                            ),
+                          if (_busy || value.isLoading)
+                            const Center(child: CircularProgressIndicator()),
+                        ],
                       ),
-                    ),
-                    TextButton(
-                      onPressed: _busy ? null : () => _run(controller.logout),
-                      child: const Text('Masuk ulang dengan PIN akun'),
-                    ),
-                    if (ApiConfig.isPreview)
-                      TextButton(
-                        onPressed: _busy ? null : () => context.push('/server'),
-                        child: const Text('Periksa alamat server pengujian'),
-                      ),
-                    if (_busy || value.isLoading)
-                      const Center(child: CircularProgressIndicator()),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

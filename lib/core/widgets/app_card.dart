@@ -32,16 +32,10 @@ class AppCard extends StatelessWidget {
       decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow),
       child: ClipRRect(
         borderRadius: radius,
-        child: BackdropFilter(
+        child: BackdropFilter.grouped(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Material(
-            color:
-                color ??
-                colors.surface.withValues(
-                  alpha: Theme.of(context).brightness == Brightness.dark
-                      ? 0.96
-                      : 0.95,
-                ),
+            color: color ?? colors.surface.withValues(alpha: 0.87),
             shape: RoundedRectangleBorder(
               borderRadius: radius,
               side: BorderSide(color: colors.outlineVariant),
@@ -72,10 +66,12 @@ class AppBackdrop extends StatelessWidget {
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: ColoredBox(
         color: dark ? AppColors.backgroundDark : AppColors.background,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: child,
+        child: BackdropGroup(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: child,
+            ),
           ),
         ),
       ),

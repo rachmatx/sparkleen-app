@@ -19,6 +19,7 @@ import '../../features/pesanan/presentation/pesanan_page.dart';
 import '../../features/profil/presentation/profil_page.dart';
 import '../../features/splash/splash_page.dart';
 import '../widgets/app_shell.dart';
+import '../../features/pengaturan/presentation/settings_page.dart';
 import '../api/api_config.dart';
 import '../settings/server_page.dart';
 import '../../features/auth/presentation/session_page.dart';
@@ -55,6 +56,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           path: '/server',
           builder: (context, state) => const ServerPage(),
         ),
+      GoRoute(
+        path: '/riwayat-pesanan',
+        builder: (context, state) => const PesananPage(fullHistory: true),
+      ),
+      GoRoute(
+        path: '/pengaturan',
+        builder: (context, state) => const SettingsPage(),
+      ),
       GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       GoRoute(

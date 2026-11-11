@@ -96,7 +96,7 @@ class _SecurityPageState extends ConsumerState<SecurityPage> {
                   if (enabled)
                     SwitchListTile.adaptive(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Konfirmasi pembayaran'),
+                      title: const Text('Konfirmasi tagihan'),
                       subtitle: const Text(
                         'Minta biometrik sebelum membuat tagihan. Status pembayaran tetap diverifikasi server.',
                       ),

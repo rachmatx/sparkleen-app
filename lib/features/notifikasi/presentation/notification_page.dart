@@ -118,15 +118,25 @@ class NotificationPage extends ConsumerWidget {
                   'Pembaruan tersimpan di sini. Tarik ke bawah untuk memuat yang terbaru.',
                 ),
                 const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: view.busy || view.result.unread == 0
-                        ? null
-                        : () => controller.mark(),
-                    icon: const Icon(Icons.done_all),
-                    label: const Text('Tandai semua dibaca'),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: view.busy || view.result.unread == 0
+                              ? null
+                              : () => controller.mark(),
+                          icon: const Icon(Icons.done_all),
+                          label: const Text('Tandai semua dibaca'),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Hari ini',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ],
                 ),
                 if (view.error != null)
                   Padding(
@@ -156,7 +166,22 @@ class NotificationPage extends ConsumerWidget {
                       ),
                     ),
                   ),
-                for (final item in view.result.items)
+                if (!view.result.items.any((item) => _isToday(item.createdAt)))
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Text('Belum ada notifikasi hari ini.'),
+                  ),
+                for (final (index, item) in view.result.items.indexed) ...[
+                  if (!_isToday(item.createdAt) &&
+                      (index == 0 ||
+                          _isToday(view.result.items[index - 1].createdAt)))
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                        'Sebelumnya',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
                   AppCard(
                     margin: const EdgeInsets.only(bottom: 12),
                     onTap: view.busy ? null : () => _open(context, ref, item),
@@ -212,11 +237,16 @@ class NotificationPage extends ConsumerWidget {
                       ],
                     ),
                   ),
+                ],
                 if (view.busy) const Center(child: CircularProgressIndicator()),
                 if (view.result.page < view.result.lastPage)
                   OutlinedButton(
                     onPressed: view.busy ? null : controller.loadMore,
-                    child: const Text('Muat lebih banyak'),
+                    child: Text(
+                      view.result.page == 1
+                          ? 'Lihat semua notifikasi'
+                          : 'Muat 20 berikutnya',
+                    ),
                   ),
               ],
             ),
@@ -225,4 +255,13 @@ class NotificationPage extends ConsumerWidget {
       ),
     );
   }
+}
+
+bool _isToday(DateTime? date) {
+  if (date == null) return false;
+  final local = date.toUtc().add(const Duration(hours: 7));
+  final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+  return local.year == now.year &&
+      local.month == now.month &&
+      local.day == now.day;
 }

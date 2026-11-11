@@ -8,6 +8,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/settings/server_settings.dart';
+import 'core/settings/appearance_settings.dart';
 import 'core/security/session_boundary.dart';
 
 Future<void> main() async {
@@ -20,9 +21,13 @@ Future<void> main() async {
     ], await rootBundle.loadString('assets/fonts/OFL.txt'));
   });
   final server = await const ServerSettings().load();
+  final appearance = await const AppearanceSettings().load();
   runApp(
     ProviderScope(
-      overrides: [initialServerAddressProvider.overrideWithValue(server)],
+      overrides: [
+        initialServerAddressProvider.overrideWithValue(server),
+        initialThemeModeProvider.overrideWithValue(appearance),
+      ],
       retry: (retryCount, error) => null,
       child: const SparkleenApp(),
     ),
@@ -36,6 +41,7 @@ class SparkleenApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'Sparkleen',
+      themeMode: ref.watch(themeModeProvider),
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
       darkTheme: buildAppTheme(brightness: Brightness.dark),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_assets.dart';
-import '../theme/app_colors.dart';
 
 /// Decorative artwork; the adjacent heading or label supplies its meaning.
 class AppArtwork extends StatelessWidget {
@@ -59,8 +58,7 @@ class BrandMark extends StatelessWidget {
       AppArtwork(asset: AppAssets.brandMark, width: size, height: size);
 }
 
-/// A pale-blue illustration surface also keeps white artwork legible in dark
-/// mode. The supplied raster masters retain a little white edge matting.
+/// Transparent cutouts share the surrounding glass surface in either theme.
 class IllustrationPanel extends StatelessWidget {
   const IllustrationPanel({
     super.key,
@@ -83,7 +81,7 @@ class IllustrationPanel extends StatelessWidget {
     height: height,
     padding: padding,
     decoration: BoxDecoration(
-      color: AppColors.primarySoft,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(18),
     ),
     child: LayoutBuilder(

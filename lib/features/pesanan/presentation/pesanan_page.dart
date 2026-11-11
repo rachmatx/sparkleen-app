@@ -11,7 +11,8 @@ import '../application/pesanan_controller.dart';
 import 'widgets/transaksi_card.dart';
 
 class PesananPage extends ConsumerStatefulWidget {
-  const PesananPage({super.key});
+  const PesananPage({super.key, this.fullHistory = false});
+  final bool fullHistory;
 
   @override
   ConsumerState<PesananPage> createState() => _PesananPageState();
@@ -22,25 +23,9 @@ class _PesananPageState extends ConsumerState<PesananPage> {
   PesananScope _scope = PesananScope.aktif;
 
   @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
   void dispose() {
-    _scrollController
-      ..removeListener(_onScroll)
-      ..dispose();
+    _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
-      ref.read(pesananControllerProvider.notifier).loadMore();
-    }
   }
 
   Future<void> _refresh() =>
@@ -56,6 +41,9 @@ class _PesananPageState extends ConsumerState<PesananPage> {
 
     return AppBackdrop(
       child: Scaffold(
+        appBar: widget.fullHistory
+            ? AppBar(title: const Text('Riwayat pesanan'))
+            : null,
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -66,7 +54,10 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Pesanan', style: textTheme.headlineMedium),
+                    Text(
+                      widget.fullHistory ? 'Semua pesanan' : 'Pesanan',
+                      style: textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: 6),
                     Text(
                       'Pantau cucian kamu dari masuk sampai siap diambil.',
@@ -158,29 +149,60 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                         ],
                       ),
                     ),
-                    builder: (context, data) => RefreshIndicator(
-                      onRefresh: _refresh,
-                      child: ListView.separated(
-                        controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(top: 4, bottom: 116),
-                        itemCount:
-                            data.items.length +
-                            (data.isLoadingMore || data.error != null ? 1 : 0),
-                        separatorBuilder: (_, _) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          if (index >= data.items.length) {
-                            return _LoadMoreFooter(state: data);
-                          }
-                          final transaksi = data.items[index];
-                          return TransaksiCard(
-                            transaksi: transaksi,
-                            onTap: () =>
-                                context.push('/pesanan/${transaksi.id}'),
-                          );
-                        },
-                      ),
-                    ),
+                    builder: (context, data) {
+                      final items = widget.fullHistory
+                          ? data.items
+                          : data.items.take(20).toList();
+                      final showFooter =
+                          data.hasMore ||
+                          (!widget.fullHistory && data.items.length > 20) ||
+                          data.error != null ||
+                          data.isLoadingMore;
+                      return RefreshIndicator(
+                        onRefresh: _refresh,
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.only(top: 4, bottom: 116),
+                          itemCount: items.length + (showFooter ? 1 : 0),
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            if (index >= items.length) {
+                              if (data.error != null || data.isLoadingMore) {
+                                return _LoadMoreFooter(state: data);
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                child: OutlinedButton(
+                                  onPressed: widget.fullHistory
+                                      ? ref
+                                            .read(
+                                              pesananControllerProvider
+                                                  .notifier,
+                                            )
+                                            .loadMore
+                                      : () => context.push('/riwayat-pesanan'),
+                                  child: Text(
+                                    widget.fullHistory
+                                        ? 'Muat 20 berikutnya'
+                                        : 'Lihat semua pesanan',
+                                  ),
+                                ),
+                              );
+                            }
+                            final transaksi = items[index];
+                            return TransaksiCard(
+                              transaksi: transaksi,
+                              onTap: () =>
+                                  context.push('/pesanan/${transaksi.id}'),
+                            );
+                          },
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

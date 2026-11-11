@@ -202,6 +202,7 @@ void main() {
     await tester.pumpWidget(app(repo, const PickupPage()));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Batalkan permintaan'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Batalkan permintaan'));
     await tester.pumpAndSettle();
     expect(repo.cancels, 0);
