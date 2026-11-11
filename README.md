@@ -193,3 +193,8 @@ Verifikasi Android fisik dan syarat APK produksi:
 
 Permintaan jemput dari beranda dan alur antrean kasir:
 [Pickup requests](docs/pickup-requests.md).
+
+
+### UI refresh 0.0.2
+
+Tema terang/gelap, panel glass, aset WebP, Pengaturan, serta perbaikan navigasi dan pemuatan riwayat: [catatan implementasi](docs/redesign-v0.0.2.md).

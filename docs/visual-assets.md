@@ -4,15 +4,15 @@ Paket pertama berisi sembilan PNG master dengan gaya biru/putih dan objek laundr
 
 | Aset | Pemakaian |
 | --- | --- |
-| `assets/brand/sparkleen_mark.png` | Header, auth, splash, nota; sumber ikon Android/web |
-| `assets/brand/badge_points.png` | Poin pada beranda dan profil |
-| `assets/illustrations/home_laundry.png` | Kartu sapaan beranda |
-| `assets/illustrations/auth_laundry.png` | Login pada viewport tinggi ketika keyboard tertutup |
-| `assets/illustrations/empty_active_order.png` | Pesanan aktif kosong |
-| `assets/illustrations/empty_order_history.png` | Riwayat/daftar pesanan kosong |
-| `assets/illustrations/error_connection.png` | Error dengan kode `NETWORK_ERROR` |
-| `assets/services/service_cuci_kering.png` | Layanan Cuci Kering |
-| `assets/services/service_cuci_setrika.png` | Layanan Cuci & Setrika |
+| `assets/brand/sparkleen_mark.webp` | Header, auth, splash, nota; sumber ikon Android/web |
+| `assets/brand/badge_points.webp` | Poin pada beranda dan profil |
+| `assets/illustrations/home_laundry.webp` | Kartu sapaan beranda |
+| `assets/illustrations/auth_laundry.webp` | Login pada viewport tinggi ketika keyboard tertutup |
+| `assets/illustrations/empty_active_order.webp` | Pesanan aktif kosong |
+| `assets/illustrations/empty_order_history.webp` | Riwayat/daftar pesanan kosong |
+| `assets/illustrations/error_connection.webp` | Error dengan kode `NETWORK_ERROR` |
+| `assets/services/service_cuci_kering.webp` | Layanan Cuci Kering |
+| `assets/services/service_cuci_setrika.webp` | Layanan Cuci & Setrika |
 
 ## Perilaku komponen
 
