@@ -15,6 +15,15 @@ class TransaksiRingkas {
 
   final List<String> serviceNames;
   LaundryWorkflow get workflow => LaundryWorkflow.fromNames(serviceNames);
+  String get customerStatusLabel {
+    final plan = workflow;
+    if ((!plan.known && const {'proses', 'setrika'}.contains(status)) ||
+        (plan.known && plan.customerStage(status) != status)) {
+      return 'Diproses';
+    }
+    return statusLabel;
+  }
+
   final int id;
   final String noNota;
   final DateTime tglMasuk;

@@ -22,13 +22,13 @@ Timeline pelanggan diproyeksikan dari `items[].nama_layanan` pada rincian pesana
 
 Tahap siap diambil dan selesai/pengambilan dipertahankan. Bila server lama menandai Cuci Reguler sebagai `setrika`, pelanggan melihat “Diproses” pada tahap cuci sampai status berikutnya, tanpa menampilkan layanan setrika yang tidak dipesan. Timestamp asli tahap tetap dipakai; waktu baru tidak dibuat-buat. Data timeline dan status mentah tetap tersedia pada model.
 
-Endpoint daftar di server lama belum menyertakan nama layanan. Ringkasan tersebut memakai Diterima → Proses → Siap, sehingga tidak menjanjikan tahap setrika. Jika API menyertakan `nama_layanan` atau `items`, ringkasan otomatis memakai tahap layanan yang diketahui. Tidak menambah satu request detail untuk setiap kartu daftar.
+Endpoint daftar di server lama belum menyertakan nama layanan. Ringkasan tersebut memakai Diterima → Proses → Siap, sehingga tidak menjanjikan tahap setrika. Jika API menyertakan `nama_layanan` atau `items`, ringkasan otomatis memakai tahap layanan yang diketahui. Status proses pada ringkasan tanpa rincian layanan juga memakai label umum “Diproses”. Tidak menambah satu request detail untuk setiap kartu daftar.
 
 Layanan tidak dikenal atau tahap API baru tetap memakai timeline server secara konservatif. Layanan khusus perlu metadata workflow eksplisit di backend sebelum dapat disederhanakan dengan aman. Patch ini tidak mengubah workflow operasional kasir.
 
 ## Verifikasi
 
-- 179 tes unit/widget lulus, termasuk variasi layanan, pesanan campuran, status lama yang tidak sesuai, waktu asli, status teks pada kedua tema, dan koordinat tepi kanan poin pada skala teks 1/1,8.
+- 180 tes unit/widget lulus, termasuk variasi layanan, pesanan campuran, status lama yang tidak sesuai, waktu asli, status teks pada kedua tema, dan koordinat tepi kanan poin pada skala teks 1/1,8.
 - Matriks layout yang sudah ada tetap meliputi lebar 320/360/390/412, skala teks 1/1,5/2, navigasi Poin → Pesanan, pembayaran, autentikasi, dan pagination.
 - Dua tes capture menyelesaikan 25 skenario × 2 tema dengan font dan aset asli, termasuk dua detail dengan layanan berbeda; scroll diperiksa.
 - Analyzer bersih. Lihat [hasil terang](screenshots/v0.0.5/Sparkleen-0.0.5-UI-light.webp) dan [hasil gelap](screenshots/v0.0.5/Sparkleen-0.0.5-UI-dark.webp). Data dalam capture adalah data demonstrasi.

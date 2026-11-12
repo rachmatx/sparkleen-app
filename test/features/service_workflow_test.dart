@@ -31,6 +31,18 @@ TransaksiDetail order(List<String> names, {String status = 'menunggu'}) =>
     });
 
 void main() {
+  test('summaries do not claim ironing without a matching service', () {
+    TransaksiRingkas summary({String? service}) => TransaksiRingkas.fromJson({
+      'id_transaksi': 1,
+      'tgl_masuk': '2026-11-12',
+      'status': 'setrika',
+      'status_label': 'Disetrika',
+      'nama_layanan': service,
+    });
+    expect(summary().customerStatusLabel, 'Diproses');
+    expect(summary(service: 'Cuci Reguler').customerStatusLabel, 'Diproses');
+    expect(summary(service: 'Cuci + Setrika').customerStatusLabel, 'Disetrika');
+  });
   for (final service in [
     'Cuci Reguler',
     'Cuci Kering',

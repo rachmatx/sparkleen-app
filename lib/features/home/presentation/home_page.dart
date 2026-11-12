@@ -294,7 +294,7 @@ class _ActiveOrderCard extends StatelessWidget {
             children: [
               StatusChip(
                 status: transaksi.status,
-                label: transaksi.statusLabel,
+                label: transaksi.customerStatusLabel,
               ),
               Text(transaksi.noNota, style: theme.textTheme.bodySmall),
             ],

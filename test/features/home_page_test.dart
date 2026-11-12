@@ -67,7 +67,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(StatusChip),
-        matching: find.text('Dicuci'),
+        matching: find.text('Diproses'),
       ),
       findsOneWidget,
     );
