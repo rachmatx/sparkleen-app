@@ -66,7 +66,7 @@ class DetailPesananPage extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 12, bottom: 20),
                   child: TimelineStatus(
-                    steps: detail.timeline
+                    steps: detail.customerTimeline
                         .where(
                           (step) =>
                               step.status != 'diambil' ||
@@ -121,7 +121,7 @@ class _HeaderCard extends StatelessWidget {
                     ),
                     StatusChip(
                       status: detail.status,
-                      label: detail.statusLabel,
+                      label: detail.customerStatusLabel,
                     ),
                   ],
                 ),

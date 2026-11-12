@@ -95,7 +95,13 @@ class _TimelineTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    step.at == null ? 'Menunggu' : formatTanggal(step.at!),
+                    step.at != null
+                        ? formatTanggal(step.at!)
+                        : switch (step.state) {
+                            TimelineState.current => 'Sedang diproses',
+                            TimelineState.done => 'Tahap selesai',
+                            TimelineState.pending => 'Menunggu',
+                          },
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurfaceVariant,
                     ),

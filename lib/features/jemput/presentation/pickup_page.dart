@@ -324,10 +324,7 @@ class _PickupCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 6,
               children: [
-                StatusChip(
-                  status: item.status == 'dikonfirmasi' ? 'proses' : 'diambil',
-                  label: item.statusLabel,
-                ),
+                StatusChip(status: item.status, label: item.statusLabel),
                 Text('#${item.id}', style: theme.textTheme.bodySmall),
               ],
             ),
@@ -374,16 +371,7 @@ class _PickupCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 6,
             children: [
-              StatusChip(
-                status: item.status == 'menunggu'
-                    ? 'menunggu'
-                    : item.status == 'dikonfirmasi'
-                    ? 'proses'
-                    : item.status == 'ditolak'
-                    ? 'diambil'
-                    : 'proses',
-                label: item.statusLabel,
-              ),
+              StatusChip(status: item.status, label: item.statusLabel),
               Text('#${item.id}', style: theme.textTheme.bodySmall),
             ],
           ),

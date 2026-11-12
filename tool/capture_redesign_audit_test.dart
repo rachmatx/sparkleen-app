@@ -24,6 +24,9 @@ import 'package:sparkleen_mobile/features/notifikasi/data/notification_repositor
 import 'package:sparkleen_mobile/features/pembayaran/application/payment_controller.dart';
 import 'package:sparkleen_mobile/features/pembayaran/data/payment_repository.dart';
 import 'package:sparkleen_mobile/features/pesanan/application/pesanan_controller.dart';
+import 'package:sparkleen_mobile/features/loyalitas/data/loyalty_repository.dart';
+
+import 'package:sparkleen_mobile/features/pesanan/data/transaksi_detail.dart';
 
 import '../test/support/auth_fakes.dart';
 import '../test/support/home_fakes.dart';
@@ -79,6 +82,7 @@ void main() {
     'orders': '/pesanan',
     'history': '/riwayat-pesanan',
     'detail': '/pesanan/87',
+    'detail-ironing': '/pesanan/87',
     'receipt': '/pesanan/87/nota',
     'pickup': '/jemput',
     'pickup-form': '/jemput/baru',
@@ -159,6 +163,67 @@ void main() {
               unread: 2,
               latestId: 2,
             );
+          final orders = redesignTransaksiRepository();
+          if (name == 'detail' || name == 'detail-ironing') {
+            orders.detailResults[87] = TransaksiDetail.fromJson({
+              'id_transaksi': 87,
+              'no_nota': 'LAU/20261112/0003',
+              'tgl_masuk': '2026-11-12T08:00:00+07:00',
+              'tgl_selesai_estimasi': '2026-11-14T08:00:00+07:00',
+              'total_berat': 6,
+              'total_biaya': 42000,
+              'grand_total': 42000,
+              'status': name == 'detail' ? 'menunggu' : 'setrika',
+              'status_label': name == 'detail' ? 'Diterima' : 'Disetrika',
+              'status_pembayaran': 'lunas',
+              'metode_pembayaran': 'qris',
+              'items': [
+                {
+                  'nama_layanan': name == 'detail'
+                      ? 'Cuci Reguler'
+                      : 'Cuci + Setrika',
+                  'berat': 6,
+                  'harga_satuan': 7000,
+                  'subtotal': 42000,
+                },
+              ],
+              'timeline': [
+                for (final phase in const {
+                  'menunggu': 'Diterima',
+                  'proses': 'Dicuci',
+                  'setrika': 'Disetrika',
+                  'selesai': 'Siap diambil',
+                  'diambil': 'Selesai',
+                }.entries)
+                  {
+                    'status': phase.key,
+                    'label': phase.value,
+                    'state': 'pending',
+                    'at': phase.key == 'menunggu'
+                        ? '2026-11-12T08:00:00+07:00'
+                        : name == 'detail-ironing' && phase.key == 'proses'
+                        ? '2026-11-12T09:00:00+07:00'
+                        : null,
+                  },
+              ],
+            });
+          }
+          final loyalty = FakeLoyalty()
+            ..balance = LoyaltySummary(
+              balance: 10,
+              history: [
+                for (var i = 0; i < 3; i++)
+                  PointMovement(
+                    id: i + 1,
+                    orderId: 87,
+                    delta: i == 0 ? 4 : 3,
+                    balanceAfter: 10 - i * 3,
+                    reason: 'Poin pesanan baru',
+                    nota: 'LAU/20261112/000${3 - i}',
+                    createdAt: DateTime(2026, 11, 12 - i),
+                  ),
+              ],
+            );
           final container = ProviderContainer(
             retry: (_, _) => null,
             overrides: [
@@ -189,14 +254,12 @@ void main() {
                   ]
                   ..pesananAktifResult = testTransaksiAktif,
               ),
-              transaksiRepositoryProvider.overrideWithValue(
-                redesignTransaksiRepository(),
-              ),
+              transaksiRepositoryProvider.overrideWithValue(orders),
               pickupRepositoryProvider.overrideWithValue(
                 pickup_fixture.FakePickupRepository()
                   ..items = [pickup_fixture.pickup()],
               ),
-              loyaltyRepositoryProvider.overrideWithValue(FakeLoyalty()),
+              loyaltyRepositoryProvider.overrideWithValue(loyalty),
               notificationRepositoryProvider.overrideWithValue(notifications),
               paymentRepositoryProvider.overrideWithValue(payments),
               if (name == 'locked')
@@ -277,7 +340,7 @@ void main() {
                     .toImage();
             final png = await image.toByteData(format: ui.ImageByteFormat.png);
             final file = File(
-              '../.tooling/ui-qa-v004/${brightness.name}/$name.png',
+              '../.tooling/ui-qa-v005/${brightness.name}/$name.png',
             );
             await file.parent.create(recursive: true);
             await file.writeAsBytes(png!.buffer.asUint8List());

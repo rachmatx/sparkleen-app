@@ -20,9 +20,9 @@ abstract final class AppColors {
   static const warningSoft = Color(0xFFFFF1D7);
   static const mintSoft = Color(0xFFDDF2E9);
 
-  static const radiusCard = 18.0;
-  static const radiusInput = 12.0;
-  static const radiusSheet = 30.0;
+  static const radiusCard = 24.0;
+  static const radiusInput = 16.0;
+  static const radiusSheet = 32.0;
 
   static const cardShadow = [
     BoxShadow(color: Color(0x0C183A60), blurRadius: 24, offset: Offset(0, 8)),

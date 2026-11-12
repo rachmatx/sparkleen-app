@@ -9,6 +9,7 @@ import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../application/loyalty_controller.dart';
+import '../data/loyalty_repository.dart';
 
 class LoyaltyPage extends ConsumerWidget {
   const LoyaltyPage({super.key});
@@ -119,61 +120,9 @@ class LoyaltyPage extends ConsumerWidget {
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (_, i) {
                       final item = view.summary.history[i];
-                      return AppCard(
-                        padding: const EdgeInsets.all(14),
+                      return PointMovementTile(
+                        item: item,
                         onTap: () => context.push('/pesanan/${item.orderId}'),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.receipt_long_outlined,
-                              color: colors.onSurface,
-                              size: 22,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.reason,
-                                    style: theme.textTheme.titleSmall,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    item.nota,
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                  Text(
-                                    'Saldo ${item.balanceAfter} poin',
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '${item.delta > 0 ? '+' : ''}${item.delta} poin',
-                                    style: theme.textTheme.titleSmall?.copyWith(
-                                      color: colors.primary,
-                                    ),
-                                  ),
-                                  if (item.createdAt != null)
-                                    Text(
-                                      formatTanggalSingkat(item.createdAt!),
-                                      textAlign: TextAlign.right,
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            const Icon(Icons.chevron_right, size: 18),
-                          ],
-                        ),
                       );
                     },
                   ),
@@ -219,6 +168,86 @@ class LoyaltyPage extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class PointMovementTile extends StatelessWidget {
+  const PointMovementTile({super.key, required this.item, required this.onTap});
+  final PointMovement item;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    Widget detail() => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(item.reason, style: theme.textTheme.titleSmall),
+        const SizedBox(height: 4),
+        Text(item.nota, style: theme.textTheme.bodySmall),
+        Text(
+          'Saldo ${item.balanceAfter} poin',
+          style: theme.textTheme.bodySmall,
+        ),
+      ],
+    );
+    Widget amount() => Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          '${item.delta > 0 ? '+' : ''}${item.delta} poin',
+          key: ValueKey('point-delta-${item.id}'),
+          textAlign: TextAlign.right,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+          ),
+        ),
+        if (item.createdAt != null)
+          Text(
+            formatTanggalSingkat(item.createdAt!),
+            key: ValueKey('point-date-${item.id}'),
+            textAlign: TextAlign.right,
+            style: theme.textTheme.bodySmall,
+          ),
+      ],
+    );
+    return AppCard(
+      padding: const EdgeInsets.all(14),
+      onTap: onTap,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (MediaQuery.textScalerOf(context).scale(14) > 20) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.receipt_long_outlined, size: 22),
+                    const SizedBox(width: 12),
+                    Expanded(child: detail()),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Align(alignment: Alignment.centerRight, child: amount()),
+              ],
+            );
+          }
+          return Row(
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                color: theme.colorScheme.onSurface,
+                size: 22,
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: detail()),
+              const SizedBox(width: 10),
+              amount(),
+            ],
+          );
+        },
       ),
     );
   }

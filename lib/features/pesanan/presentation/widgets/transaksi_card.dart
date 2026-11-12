@@ -73,7 +73,7 @@ class TransaksiCard extends StatelessWidget {
           ),
           if (transaksi.isAktif) ...[
             const SizedBox(height: 10),
-            OrderStages(status: transaksi.status),
+            OrderStages(status: transaksi.status, workflow: transaksi.workflow),
           ],
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 10),

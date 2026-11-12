@@ -105,7 +105,7 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                                     fontSize: 13,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                                 onPressed: () {

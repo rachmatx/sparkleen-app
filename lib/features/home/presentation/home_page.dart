@@ -309,7 +309,7 @@ class _ActiveOrderCard extends StatelessWidget {
             style: theme.textTheme.titleLarge,
           ),
           const SizedBox(height: 10),
-          OrderStages(status: transaksi.status),
+          OrderStages(status: transaksi.status, workflow: transaksi.workflow),
           const SizedBox(height: 8),
           const Divider(),
           const SizedBox(height: 8),

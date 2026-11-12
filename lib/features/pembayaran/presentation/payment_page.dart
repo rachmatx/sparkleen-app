@@ -151,7 +151,14 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                           ),
                           const Divider(height: 16),
                         ],
-                        const AppSummaryRow(label: 'Status', value: 'Lunas'),
+                        AppSummaryRow(
+                          label: 'Status',
+                          value: 'Lunas',
+                          valueColor: statusColor(
+                            'lunas',
+                            brightness: theme.brightness,
+                          ),
+                        ),
                         const Divider(height: 16),
                         const AppSummaryRow(
                           label: 'Bukti pembayaran',

@@ -1,3 +1,5 @@
+import 'laundry_workflow.dart';
+
 class TransaksiRingkas {
   const TransaksiRingkas({
     required this.id,
@@ -8,8 +10,11 @@ class TransaksiRingkas {
     required this.status,
     required this.statusLabel,
     this.tglEstimasi,
+    this.serviceNames = const [],
   });
 
+  final List<String> serviceNames;
+  LaundryWorkflow get workflow => LaundryWorkflow.fromNames(serviceNames);
   final int id;
   final String noNota;
   final DateTime tglMasuk;
@@ -33,6 +38,15 @@ class TransaksiRingkas {
       grandTotal: (json['grand_total'] as num?)?.toInt() ?? 0,
       status: json['status'] as String? ?? '',
       statusLabel: json['status_label'] as String? ?? '',
+      serviceNames: json['nama_layanan'] is String
+          ? [json['nama_layanan'] as String]
+          : json['items'] is List
+          ? (json['items'] as List)
+                .whereType<Map>()
+                .map((item) => item['nama_layanan'])
+                .whereType<String>()
+                .toList()
+          : const [],
     );
   }
 }

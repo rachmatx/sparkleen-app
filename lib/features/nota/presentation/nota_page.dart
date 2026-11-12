@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/providers.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/status_chip.dart';
 import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../pesanan/application/pesanan_controller.dart';
@@ -159,29 +160,9 @@ class _NotaReceipt extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: paid
-                            ? (theme.brightness == Brightness.dark
-                                  ? const Color(0xFF173C33)
-                                  : const Color(0xFFDDF2E9))
-                            : colors.primaryContainer,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        paid ? 'Lunas' : 'Belum dibayar',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: paid
-                              ? (theme.brightness == Brightness.dark
-                                    ? const Color(0xFF79D5B3)
-                                    : const Color(0xFF08745D))
-                              : colors.primary,
-                        ),
-                      ),
+                    StatusChip(
+                      status: paid ? 'lunas' : 'belum',
+                      label: paid ? 'Lunas' : 'Belum dibayar',
                     ),
                   ],
                 ),

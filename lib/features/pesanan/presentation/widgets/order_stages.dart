@@ -1,24 +1,43 @@
 import 'package:flutter/material.dart';
 
+import '../../data/laundry_workflow.dart';
+
 /// These are process states, not a percentage or a time-based prediction.
 class OrderStages extends StatelessWidget {
-  const OrderStages({super.key, required this.status});
+  const OrderStages({super.key, required this.status, this.workflow});
   final String status;
+  final LaundryWorkflow? workflow;
 
   @override
   Widget build(BuildContext context) {
-    final current = switch (status) {
-      'menunggu' => 0,
-      'proses' => 1,
-      'setrika' => 2,
-      'selesai' => 3,
-      'diambil' => 4,
-      _ => null,
-    };
-    if (current == null) return const SizedBox.shrink();
+    if (!const {
+      'menunggu',
+      'proses',
+      'setrika',
+      'selesai',
+      'diambil',
+    }.contains(status)) {
+      return const SizedBox.shrink();
+    }
+    final plan = workflow ?? LaundryWorkflow.fromNames(const []);
+    final stages = plan.summaryStages;
+    final normalized = status == 'diambil'
+        ? 'selesai'
+        : !plan.known && status == 'setrika'
+        ? 'proses'
+        : plan.customerStage(status);
+    final current = stages.indexOf(normalized);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    const labels = ['Diterima', 'Dicuci', 'Setrika', 'Siap'];
+    final labels = [
+      for (final stage in stages)
+        switch (stage) {
+          'menunggu' => 'Diterima',
+          'proses' => plan.known ? 'Dicuci' : 'Proses',
+          'setrika' => 'Setrika',
+          _ => 'Siap',
+        },
+    ];
     final largeText = MediaQuery.textScalerOf(context).scale(12) > 17;
     final children = [
       for (var index = 0; index < labels.length; index++)
@@ -72,8 +91,9 @@ class OrderStages extends StatelessWidget {
           for (final child in children)
             SizedBox(
               width:
-                  (constraints.maxWidth - (largeText ? 8 : 24)) /
-                  (largeText ? 2 : 4),
+                  (constraints.maxWidth -
+                      (largeText ? 8 : (labels.length - 1) * 8)) /
+                  (largeText ? 2 : labels.length),
               child: child,
             ),
         ],

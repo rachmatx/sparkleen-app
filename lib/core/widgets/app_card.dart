@@ -14,6 +14,8 @@ class AppCard extends StatelessWidget {
     this.onTap,
     this.color,
     this.shadow = AppColors.cardShadow,
+    this.radius = AppColors.radiusCard,
+    this.blur = 18,
   });
 
   final Widget child;
@@ -22,26 +24,28 @@ class AppCard extends StatelessWidget {
   final VoidCallback? onTap;
   final Color? color;
   final List<BoxShadow> shadow;
+  final double radius;
+  final double blur;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(AppColors.radiusCard);
+    final corners = BorderRadius.circular(radius);
     return Container(
       margin: margin,
-      decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow),
+      decoration: BoxDecoration(borderRadius: corners, boxShadow: shadow),
       child: ClipRRect(
-        borderRadius: radius,
+        borderRadius: corners,
         child: BackdropFilter.grouped(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
           child: Material(
             color: (color ?? colors.surface).withValues(alpha: 0.75),
             shape: RoundedRectangleBorder(
-              borderRadius: radius,
+              borderRadius: corners,
               side: BorderSide(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : Colors.white.withValues(alpha: 0.92),
+                    ? Colors.white.withValues(alpha: 0.14)
+                    : Colors.white.withValues(alpha: 0.82),
                 width: 1,
               ),
             ),

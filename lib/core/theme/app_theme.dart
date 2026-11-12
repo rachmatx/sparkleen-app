@@ -210,7 +210,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
         disabledBackgroundColor: colors.onSurface.withValues(alpha: 0.12),
         disabledForegroundColor: colors.onSurface.withValues(alpha: 0.38),
         textStyle: textTheme.labelLarge,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -219,7 +219,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
         foregroundColor: colors.primary,
         side: BorderSide(color: colors.outlineVariant, width: 1),
         textStyle: textTheme.labelLarge,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -267,7 +267,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
         color: colors.onInverseSurface,
       ),
       actionTextColor: colors.inversePrimary,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     dialogTheme: DialogThemeData(
       backgroundColor: colors.surface,
@@ -283,7 +283,9 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       surfaceTintColor: Colors.transparent,
       showDragHandle: true,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppColors.radiusSheet),
+        ),
       ),
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(color: colors.primary),
