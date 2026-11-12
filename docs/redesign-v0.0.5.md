@@ -43,3 +43,16 @@ flutter build apk --release --flavor preview --dart-define=APP_PREVIEW=true --ta
 ```
 
 Build preview tetap menggunakan debug signing internal. Instalasi pembaruan membutuhkan sertifikat penandatangan yang sama dengan APK sebelumnya. Pengujian fingerprint, lifecycle OEM, keyboard, dan performa glass saat scroll tetap memerlukan HP fisik.
+
+
+## Hasil paket Android
+
+Build `assemblePreviewRelease` berhasil; pemeriksaan lint release juga selesai. APK ARM64 berukuran **20.531.250 byte (20,53 MB)**. Package `com.sparkleen.sparkleen_mobile.preview`, version name `0.0.5`, versionCode `2005`, minimum SDK 24, target SDK 36. Paket hanya berisi library ARM64.
+
+Verifikasi ZIP, tanda tangan APK v2, alignment ZIP/ELF minimal 16 KB, empat bobot Inter, 12 WebP (byte sama dengan source), channel biometrik, dan plugin secure storage lulus. Simbol debug dipisahkan dari APK.
+
+SHA-256 APK: `5ddaaaa9ec60d8cfa23deab37b38a0b4fbecb9ead64fce28490173b7b0938a4d`.
+
+**Sertifikat preview baru:** sertifikat build ini berbeda dari APK 0.0.4 yang sebelumnya dibagikan. Android tidak menerima pembaruan di atas APK dengan penandatangan berbeda. Untuk mengganti APK lama itu, catat alamat server dan lakukan instal ulang; konfigurasi server lokal serta biometrik perlu diatur kembali. Data akun/pesanan di server tidak dihapus oleh instal ulang aplikasi. Build sendiri dengan keystore yang sama seperti build sebelumnya dapat mempertahankan kompatibilitas pembaruan.
+
+Tes otomatis dan pemeriksaan paket tidak menggantikan pengujian fingerprint serta performa glass pada HP fisik.
