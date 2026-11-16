@@ -48,3 +48,12 @@ flutter build apk --release --flavor preview --dart-define=APP_PREVIEW=true --ta
 ```
 
 Output: `build/app/outputs/flutter-apk/app-arm64-v8a-preview-release.apk`. Simpan simbol terpisah. Preview menggunakan signing internal; pembaruan di atas APK lama hanya diterima Android jika sertifikat sama. Fingerprint, keyboard, lifecycle OEM, dan kelancaran blur tetap perlu diuji pada HP fisik.
+
+
+## Hasil APK
+
+Build release dan lint Android lulus. APK ARM64 berukuran **20.600.045 byte (20,6 MB)**, versionCode `2006`, minimum Android SDK 24, target SDK 36. ZIP valid, APK signature v2 valid, ZIP/ELF memenuhi alignment 16 KB, empat bobot Inter dan kedua font Phosphor terbundel, 12 WebP identik dengan source, channel biometrik serta plugin secure storage tersedia. AOT terakhir dibuat setelah perubahan UI final.
+
+SHA-256: `1c22b064e4589695a30e422263b446fd45a23022a2b437d1e62a593afa5b4728`.
+
+Sertifikat preview SHA-256: `4a716d04db8ec185a24f364bf2c41d82baa3de3bb0b9e85f787e79c6e73578ef`. **Berbeda dari 0.0.5**; pemasangan memerlukan uninstall APK preview lama terlebih dahulu. Catat alamat server, lalu atur ulang server dan biometrik setelah instalasi. Akun/pesanan di server tetap tersimpan. Build sendiri memakai keystore komputer yang sama dapat mempertahankan kompatibilitas pembaruan berikutnya.

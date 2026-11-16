@@ -222,3 +222,8 @@ form berlabel tetap, layar keamanan/koneksi, serta koreksi nominal pembayaran lu
 Seluruh UI utama diselaraskan kembali dengan preview yang disetujui. Font Inter dibundel,
 semua panel glass memakai opacity 75%, halaman koneksi menggunakan ilustrasi router,
 dan splash minimal dua detik. [Rincian dan screenshot hasil kode](docs/redesign-v0.0.4.md).
+
+
+### Alamat tersimpan dan UI 0.0.6
+
+CRUD alamat penjemputan (tambah, lihat, ubah, hapus), alamat utama, dan snapshot penjemputan lintas aplikasi. Navigasi glass lebih ramping dan ikon Phosphor lokal. Backend Laundry perlu diperbarui dan menjalankan migration sebelum APK baru digunakan. [Petunjuk pembaruan, pengujian, layanan Setrika Saja, dan APK](docs/redesign-v0.0.6.md).
