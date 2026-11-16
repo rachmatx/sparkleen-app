@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -86,7 +88,9 @@ class LoyaltyPage extends ConsumerWidget {
                               const SizedBox(height: 18),
                               FilledButton.icon(
                                 onPressed: () => context.go('/pesanan'),
-                                icon: const Icon(Icons.receipt_long_outlined),
+                                icon: const Icon(
+                                  AppIcons.receipt_long_outlined,
+                                ),
                                 label: const Text('Pilih pesanan'),
                               ),
                             ],
@@ -224,7 +228,7 @@ class PointMovementTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.receipt_long_outlined, size: 22),
+                    const Icon(AppIcons.receipt_long_outlined, size: 22),
                     const SizedBox(width: 12),
                     Expanded(child: detail()),
                   ],
@@ -237,7 +241,7 @@ class PointMovementTile extends StatelessWidget {
           return Row(
             children: [
               Icon(
-                Icons.receipt_long_outlined,
+                AppIcons.receipt_long_outlined,
                 color: theme.colorScheme.onSurface,
                 size: 22,
               ),

@@ -1,3 +1,4 @@
+import '../../../core/theme/app_icons.dart';
 import '../../../core/widgets/app_text_field.dart';
 
 import 'package:flutter/material.dart';
@@ -93,7 +94,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               decoration: const InputDecoration(
                 labelText: 'Nama lengkap',
                 hintText: 'Budi Santoso',
-                prefixIcon: Icon(Icons.person_outline_rounded),
+                prefixIcon: Icon(AppIcons.person_outline_rounded),
               ),
               validator: (value) =>
                   _serverError?.fieldError('nama') ?? validateNama(value),
@@ -109,7 +110,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               decoration: const InputDecoration(
                 labelText: 'Nomor telepon',
                 hintText: '0812xxxxxxx',
-                prefixIcon: Icon(Icons.phone_android_rounded),
+                prefixIcon: Icon(AppIcons.phone_android_rounded),
               ),
               validator: (value) =>
                   _serverError?.fieldError('no_telp') ?? validatePhone(value),
@@ -125,7 +126,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               decoration: const InputDecoration(
                 labelText: 'Alamat',
                 hintText: 'Jl. Merdeka No. 10',
-                prefixIcon: Icon(Icons.location_on_outlined),
+                prefixIcon: Icon(AppIcons.location_on_outlined),
               ),
               validator: (value) =>
                   _serverError?.fieldError('alamat') ?? validateAlamat(value),

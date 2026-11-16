@@ -20,6 +20,7 @@ class AppTextFormField extends StatelessWidget {
     this.decoration = const InputDecoration(),
     this.validator,
     this.onChanged,
+    this.onTap,
     this.onFieldSubmitted,
     this.minLines,
     this.maxLines = 1,
@@ -36,6 +37,7 @@ class AppTextFormField extends StatelessWidget {
   final InputDecoration decoration;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged, onFieldSubmitted;
+  final VoidCallback? onTap;
   final int? minLines, maxLines, maxLength;
   @override
   Widget build(BuildContext context) {
@@ -75,6 +77,7 @@ class AppTextFormField extends StatelessWidget {
             ),
             validator: validator,
             onChanged: onChanged,
+            onTap: onTap,
             onFieldSubmitted: onFieldSubmitted,
             minLines: minLines,
             maxLines: maxLines,

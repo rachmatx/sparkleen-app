@@ -1,3 +1,5 @@
+import '../../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -89,7 +91,7 @@ class AuthBrandHeader extends StatelessWidget {
         IconButton(
           tooltip: 'Pengaturan koneksi',
           onPressed: () => context.push('/server'),
-          icon: const Icon(Icons.settings_outlined),
+          icon: const Icon(AppIcons.settings_outlined),
         ),
     ],
   );
@@ -117,7 +119,7 @@ class AuthErrorBanner extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
-              Icons.error_outline_rounded,
+              AppIcons.error_outline_rounded,
               size: 24,
               color: colors.onErrorContainer,
             ),

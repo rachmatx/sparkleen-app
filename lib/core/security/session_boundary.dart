@@ -1,3 +1,5 @@
+import '../theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -73,7 +75,7 @@ class _SessionBoundaryState extends ConsumerState<SessionBoundary>
             color: Theme.of(context).colorScheme.surface,
             child: Center(
               child: Icon(
-                Icons.lock_outline,
+                AppIcons.lock_outline,
                 size: 48,
                 color: Theme.of(context).colorScheme.primary,
               ),

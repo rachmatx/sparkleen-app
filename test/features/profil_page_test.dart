@@ -48,6 +48,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.text('Keluar dari akun'), 200);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Keluar dari akun'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Keluar dari akun'));
       await tester.pumpAndSettle();
       expect(find.text('Keluar dari akun?'), findsOneWidget);

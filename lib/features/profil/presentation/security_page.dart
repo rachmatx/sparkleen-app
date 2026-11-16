@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -63,7 +65,7 @@ class _SecurityPageState extends ConsumerState<SecurityPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  Icons.shield_outlined,
+                  AppIcons.shield_outlined,
                   size: 32,
                   color: theme.colorScheme.primary,
                 ),

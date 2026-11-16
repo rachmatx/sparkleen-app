@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,12 +31,12 @@ class SettingsPage extends ConsumerWidget {
             const SizedBox(height: 28),
             _group(context, 'Akun & keamanan', [
               SettingsTile(
-                icon: Icons.person_outline,
+                icon: AppIcons.person_outline,
                 title: 'Ubah profil',
                 onTap: () => openEditProfile(context),
               ),
               SettingsTile(
-                icon: Icons.fingerprint,
+                icon: AppIcons.fingerprint,
                 title: 'PIN & biometrik',
                 subtitle: 'Login dan konfirmasi tagihan',
                 onTap: () => context.push('/keamanan'),
@@ -42,13 +44,13 @@ class SettingsPage extends ConsumerWidget {
             ]),
             _group(context, 'Preferensi', [
               SettingsTile(
-                icon: Icons.notifications_none,
+                icon: AppIcons.notifications_none,
                 title: 'Notifikasi',
                 subtitle: 'Pembaruan pesanan',
                 onTap: () => context.push('/notifikasi'),
               ),
               SettingsTile(
-                icon: Icons.brightness_6_outlined,
+                icon: AppIcons.brightness_6_outlined,
                 title: 'Tampilan',
                 value: themeModeLabel(mode),
                 onTap: () => _appearance(context, ref),
@@ -57,7 +59,7 @@ class SettingsPage extends ConsumerWidget {
             if (ApiConfig.isPreview)
               _group(context, 'Koneksi', [
                 SettingsTile(
-                  icon: Icons.dns_outlined,
+                  icon: AppIcons.dns_outlined,
                   title: 'Konfigurasi server',
                   subtitle: server,
                   onTap: () => context.push('/server'),
@@ -65,7 +67,7 @@ class SettingsPage extends ConsumerWidget {
               ]),
             _group(context, 'Tentang', [
               SettingsTile(
-                icon: Icons.info_outline,
+                icon: AppIcons.info_outline,
                 title: 'Tentang Sparkleen',
                 value: AppInfo.version,
                 onTap: () => showAboutDialog(
@@ -83,7 +85,7 @@ class SettingsPage extends ConsumerWidget {
             AppCard(
               padding: EdgeInsets.zero,
               child: ListTile(
-                leading: Icon(Icons.logout, color: theme.colorScheme.error),
+                leading: Icon(AppIcons.logout, color: theme.colorScheme.error),
                 title: Text(
                   'Keluar dari akun',
                   style: TextStyle(color: theme.colorScheme.error),
@@ -135,13 +137,13 @@ class SettingsPage extends ConsumerWidget {
                   title: Text(themeModeLabel(mode)),
                   leading: Icon(
                     mode == ThemeMode.system
-                        ? Icons.brightness_auto_outlined
+                        ? AppIcons.brightness_auto_outlined
                         : mode == ThemeMode.light
-                        ? Icons.light_mode_outlined
-                        : Icons.dark_mode_outlined,
+                        ? AppIcons.light_mode_outlined
+                        : AppIcons.dark_mode_outlined,
                   ),
                   trailing: ref.read(themeModeProvider) == mode
-                      ? const Icon(Icons.check)
+                      ? const Icon(AppIcons.check)
                       : null,
                   onTap: () => Navigator.pop(context, mode),
                 ),
@@ -247,7 +249,7 @@ class SettingsTile extends StatelessWidget {
               ),
             ],
             const SizedBox(width: 4),
-            const Icon(Icons.chevron_right, size: 20),
+            const Icon(AppIcons.chevron_right, size: 20),
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -42,7 +44,7 @@ class ProfilPage extends ConsumerWidget {
                     ),
                     IconButton(
                       tooltip: 'Pengaturan',
-                      icon: const Icon(Icons.settings_outlined),
+                      icon: const Icon(AppIcons.settings_outlined),
                       onPressed: () => context.push('/pengaturan'),
                     ),
                   ],
@@ -130,7 +132,7 @@ class ProfilPage extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right),
+                        const Icon(AppIcons.chevron_right),
                       ],
                     ),
                   ),
@@ -194,7 +196,7 @@ class ProfilPage extends ConsumerWidget {
                           ),
                           subtitleTextStyle: theme.textTheme.bodySmall,
                           leading: Icon(
-                            Icons.phone_android_outlined,
+                            AppIcons.phone_android_outlined,
                             color: theme.colorScheme.primary,
                           ),
                           title: const Text('Nomor telepon'),
@@ -202,12 +204,12 @@ class ProfilPage extends ConsumerWidget {
                         ),
                         const Divider(indent: 16, endIndent: 16),
                         SettingsTile(
-                          icon: Icons.location_on_outlined,
+                          icon: AppIcons.location_on_outlined,
                           title: 'Alamat penjemputan',
                           subtitle: pelanggan.alamat.isEmpty
                               ? 'Lengkapi alamat'
                               : pelanggan.alamat,
-                          onTap: () => openEditProfile(context),
+                          onTap: () => context.push('/alamat'),
                         ),
                       ],
                     ),
@@ -220,13 +222,13 @@ class ProfilPage extends ConsumerWidget {
                     child: Column(
                       children: [
                         SettingsTile(
-                          icon: Icons.receipt_long_outlined,
+                          icon: AppIcons.receipt_long_outlined,
                           title: 'Riwayat pesanan',
                           onTap: () => context.go('/pesanan'),
                         ),
                         const Divider(indent: 16, endIndent: 16),
                         SettingsTile(
-                          icon: Icons.stars_outlined,
+                          icon: AppIcons.stars_outlined,
                           title: 'Tukar dan riwayat poin',
                           onTap: () => context.push('/poin'),
                         ),

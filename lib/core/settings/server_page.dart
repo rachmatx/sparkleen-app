@@ -1,3 +1,5 @@
+import '../theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -93,7 +95,7 @@ class _ServerPageState extends ConsumerState<ServerPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    Icons.dns_outlined,
+                    AppIcons.dns_outlined,
                     size: 28,
                     color: theme.colorScheme.primary,
                   ),

@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -78,7 +80,9 @@ class _SessionPageState extends ConsumerState<SessionPage> {
                     child: Row(
                       children: [
                         Icon(
-                          local ? Icons.dns_outlined : Icons.public_rounded,
+                          local
+                              ? AppIcons.dns_outlined
+                              : AppIcons.public_rounded,
                           size: 34,
                         ),
                         const SizedBox(width: 16),
@@ -163,7 +167,7 @@ class _SessionPageState extends ConsumerState<SessionPage> {
                                     foregroundColor:
                                         theme.colorScheme.onPrimaryContainer,
                                     child: const Icon(
-                                      Icons.person_outline_rounded,
+                                      AppIcons.person_outline_rounded,
                                     ),
                                   ),
                                   const SizedBox(width: 14),
@@ -237,7 +241,7 @@ class _SessionPageState extends ConsumerState<SessionPage> {
                                         : controller.retrySession,
                                   ),
                             icon: Icon(
-                              locked ? Icons.fingerprint : Icons.refresh,
+                              locked ? AppIcons.fingerprint : AppIcons.refresh,
                               size: 24,
                             ),
                             label: Text(

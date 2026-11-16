@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -230,8 +232,8 @@ class _NotaReceipt extends StatelessWidget {
                   children: [
                     Icon(
                       paid
-                          ? Icons.check_circle_rounded
-                          : Icons.schedule_outlined,
+                          ? AppIcons.check_circle_rounded
+                          : AppIcons.schedule_outlined,
                       color: colors.primary,
                     ),
                     const SizedBox(width: 8),

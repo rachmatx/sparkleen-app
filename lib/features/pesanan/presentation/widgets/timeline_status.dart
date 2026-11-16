@@ -1,3 +1,5 @@
+import '../../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/formatters.dart';
@@ -53,10 +55,10 @@ class _TimelineTile extends StatelessWidget {
               children: [
                 Icon(
                   isDone
-                      ? Icons.check_circle_rounded
+                      ? AppIcons.check_circle_rounded
                       : isCurrent
-                      ? Icons.radio_button_checked_rounded
-                      : Icons.radio_button_unchecked_rounded,
+                      ? AppIcons.radio_button_checked_rounded
+                      : AppIcons.radio_button_unchecked_rounded,
                   size: 20,
                   color: color,
                 ),

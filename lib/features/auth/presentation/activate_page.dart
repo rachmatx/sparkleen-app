@@ -1,3 +1,4 @@
+import '../../../core/theme/app_icons.dart';
 import '../../../core/widgets/app_text_field.dart';
 
 import 'package:flutter/material.dart';
@@ -91,7 +92,7 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
               decoration: const InputDecoration(
                 labelText: 'Nomor telepon',
                 hintText: '0812xxxxxxx',
-                prefixIcon: Icon(Icons.phone_android_rounded),
+                prefixIcon: Icon(AppIcons.phone_android_rounded),
               ),
               validator: (value) =>
                   _serverError?.fieldError('no_telp') ?? validatePhone(value),
@@ -105,7 +106,7 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
               decoration: const InputDecoration(
                 labelText: 'Nomor nota',
                 hintText: 'LAU/20261021/0001',
-                prefixIcon: Icon(Icons.receipt_long_rounded),
+                prefixIcon: Icon(AppIcons.receipt_long_rounded),
               ),
               validator: (value) =>
                   _serverError?.fieldError('no_nota') ?? validateNoNota(value),

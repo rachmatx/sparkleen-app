@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_icons.dart';
 import '../../../../core/widgets/app_text_field.dart';
 
 import 'package:flutter/material.dart';
@@ -48,15 +49,15 @@ class _PinFormFieldState extends State<PinFormField> {
     decoration: InputDecoration(
       labelText: widget.label,
       hintText: widget.hint,
-      prefixIcon: const Icon(Icons.lock_outline_rounded),
+      prefixIcon: const Icon(AppIcons.lock_outline_rounded),
       suffixIcon: IconButton(
         tooltip: '${_visible ? 'Sembunyikan' : 'Tampilkan'} ${widget.label}',
         isSelected: _visible,
         onPressed: widget.enabled
             ? () => setState(() => _visible = !_visible)
             : null,
-        icon: const Icon(Icons.visibility_outlined),
-        selectedIcon: const Icon(Icons.visibility_off_outlined),
+        icon: const Icon(AppIcons.visibility_outlined),
+        selectedIcon: const Icon(AppIcons.visibility_off_outlined),
       ),
     ),
     validator: widget.validator,

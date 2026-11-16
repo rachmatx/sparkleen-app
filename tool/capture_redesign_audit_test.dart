@@ -1,3 +1,7 @@
+import 'package:sparkleen_mobile/features/alamat/application/address_controller.dart';
+
+import '../test/support/address_fakes.dart';
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -71,6 +75,11 @@ void main() {
       }
       await loader.load();
     }
+    for (final family in ['SparkleenIcons', 'SparkleenIconsFill']) {
+      await (FontLoader(
+        family,
+      )..addFont(rootBundle.load('assets/icons/$family.ttf'))).load();
+    }
     await (FontLoader(
       'MaterialIcons',
     )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
@@ -78,6 +87,8 @@ void main() {
   final cases = <String, String>{
     'home': '/beranda',
     'profile': '/profil',
+    'addresses': '/alamat',
+    'address-form': '/alamat',
     'settings': '/pengaturan',
     'orders': '/pesanan',
     'history': '/riwayat-pesanan',
@@ -227,6 +238,7 @@ void main() {
           final container = ProviderContainer(
             retry: (_, _) => null,
             overrides: [
+              addressRepositoryProvider.overrideWithValue(FakeAddresses()),
               startupReadyProvider.overrideWith((ref) async {}),
               initialThemeModeProvider.overrideWithValue(
                 brightness == Brightness.dark
@@ -246,6 +258,12 @@ void main() {
                       estimasiHari: 1,
                     ),
                     Layanan(
+                      id: 4,
+                      nama: 'Setrika Saja',
+                      hargaPerKg: 5000,
+                      estimasiHari: 1,
+                    ),
+                    Layanan(
                       id: 2,
                       nama: 'Cuci Kilat',
                       hargaPerKg: 10000,
@@ -257,7 +275,15 @@ void main() {
               transaksiRepositoryProvider.overrideWithValue(orders),
               pickupRepositoryProvider.overrideWithValue(
                 pickup_fixture.FakePickupRepository()
-                  ..items = [pickup_fixture.pickup()],
+                  ..items = [
+                    pickup_fixture.pickup(),
+                    pickup_fixture.pickup(id: 2, status: 'dibatalkan'),
+                    pickup_fixture.pickup(
+                      id: 3,
+                      status: 'dikonfirmasi',
+                      transactionId: 87,
+                    ),
+                  ],
               ),
               loyaltyRepositoryProvider.overrideWithValue(loyalty),
               notificationRepositoryProvider.overrideWithValue(notifications),
@@ -295,6 +321,10 @@ void main() {
             } else {
               unawaited(router.push(entry.value));
             }
+            await tester.pumpAndSettle();
+          }
+          if (name == 'address-form') {
+            await tester.tap(find.byTooltip('Tambah alamat'));
             await tester.pumpAndSettle();
           }
           if (name == 'security') {
@@ -340,7 +370,7 @@ void main() {
                     .toImage();
             final png = await image.toByteData(format: ui.ImageByteFormat.png);
             final file = File(
-              '../.tooling/ui-qa-v005/${brightness.name}/$name.png',
+              '../.tooling/ui-qa-v006/${brightness.name}/$name.png',
             );
             await file.parent.create(recursive: true);
             await file.writeAsBytes(png!.buffer.asUint8List());

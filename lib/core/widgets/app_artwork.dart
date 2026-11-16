@@ -1,3 +1,5 @@
+import '../theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_assets.dart';
@@ -9,7 +11,7 @@ class AppArtwork extends StatelessWidget {
     required this.asset,
     required this.height,
     this.width,
-    this.fallbackIcon = Icons.local_laundry_service_outlined,
+    this.fallbackIcon = AppIcons.local_laundry_service_outlined,
   });
 
   final String asset;
@@ -66,7 +68,7 @@ class IllustrationPanel extends StatelessWidget {
     this.width = 164,
     this.height = 120,
     this.padding = const EdgeInsets.all(10),
-    this.fallbackIcon = Icons.local_laundry_service_outlined,
+    this.fallbackIcon = AppIcons.local_laundry_service_outlined,
   });
 
   final String asset;

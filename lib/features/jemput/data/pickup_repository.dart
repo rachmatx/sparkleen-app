@@ -11,6 +11,7 @@ class PickupRequest {
     required this.scheduledAt,
     required this.slot,
     this.note,
+    this.landmark,
     this.rejectionReason,
     this.transactionId,
   });
@@ -25,6 +26,7 @@ class PickupRequest {
   final String slot;
   final String? note;
   final String? rejectionReason;
+  final String? landmark;
   final int? transactionId;
 
   bool get isActive => status == 'menunggu' || status == 'diproses';
@@ -45,6 +47,7 @@ class PickupRequest {
   };
   factory PickupRequest.fromJson(Map<String, dynamic> json) => PickupRequest(
     id: (json['id_permintaan'] as num).toInt(),
+    landmark: json['patokan_jemput'] as String?,
     status: json['status'] as String,
     service: json['nama_layanan'] as String? ?? '',
     estimatedWeight: (json['berat_perkiraan'] as num).toDouble(),
@@ -93,6 +96,7 @@ class PickupRepository {
     required String date,
     required String slot,
     String note = '',
+    int? addressId,
   }) async {
     final response = await _client.post(
       '/permintaan',
@@ -100,6 +104,7 @@ class PickupRepository {
         'id_layanan': serviceId,
         'berat_perkiraan': weight,
         'alamat_jemput': address,
+        'id_alamat': ?addressId,
         'tgl_jemput': date,
         'slot_jemput': slot,
         'catatan': note,

@@ -20,7 +20,7 @@ abstract final class AppAssets {
     if (assetKey != null && assetKey.trim().isNotEmpty) {
       return switch (assetKey.trim()) {
         'cuci_kering' || 'cuci_reguler' || 'cuci_kilat' => cuciKering,
-        'cuci_setrika' => cuciSetrika,
+        'cuci_setrika' || 'setrika_saja' => cuciSetrika,
         _ => null,
       };
     }
@@ -34,7 +34,8 @@ abstract final class AppAssets {
       'cuci & setrika' ||
       'cuci + setrika' ||
       'cuci dan setrika' ||
-      'cuci setrika' => cuciSetrika,
+      'cuci setrika' ||
+      'setrika saja' => cuciSetrika,
       _ => null,
     };
   }

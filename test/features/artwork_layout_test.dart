@@ -82,8 +82,7 @@ void main() {
     );
     await tester.pump();
     final loginArtwork = find.byWidgetPredicate(
-      (widget) =>
-          widget is AppArtwork && widget.asset == AppAssets.login,
+      (widget) => widget is AppArtwork && widget.asset == AppAssets.login,
     );
     expect(loginArtwork, findsOneWidget);
     tester.view.viewInsets = const FakeViewPadding(bottom: 320);

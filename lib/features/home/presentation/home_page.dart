@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -130,7 +132,7 @@ class HomePage extends ConsumerWidget {
                   isEmpty: (transaksi) => transaksi == null,
                   emptyBuilder: (context) => EmptyState(
                     message: 'Belum ada pesanan aktif.',
-                    icon: Icons.local_laundry_service_outlined,
+                    icon: AppIcons.local_laundry_service_outlined,
                     illustrationAsset: AppAssets.emptyActiveOrder,
                     actionLabel: 'Lihat riwayat',
                     onAction: () => context.go('/pesanan'),
@@ -151,7 +153,7 @@ class HomePage extends ConsumerWidget {
                   isEmpty: (layanan) => layanan.isEmpty,
                   emptyBuilder: (context) => const EmptyState(
                     message: 'Belum ada layanan tersedia.',
-                    icon: Icons.local_laundry_service_outlined,
+                    icon: AppIcons.local_laundry_service_outlined,
                   ),
                   builder: (context, layanan) => LayoutBuilder(
                     builder: (context, constraints) {
@@ -193,7 +195,7 @@ class HomePage extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
-                              Icons.storefront_outlined,
+                              AppIcons.storefront_outlined,
                               color: colors.primary,
                               size: 22,
                             ),
@@ -232,7 +234,7 @@ class HomePage extends ConsumerWidget {
                           const SizedBox(height: 8),
                           TextButton.icon(
                             onPressed: () => _copyWhatsapp(context, outlet),
-                            icon: const Icon(Icons.copy_outlined, size: 18),
+                            icon: const Icon(AppIcons.copy_outlined, size: 18),
                             label: const Text('Salin nomor WhatsApp outlet'),
                           ),
                         ],
@@ -313,35 +315,38 @@ class _ActiveOrderCard extends StatelessWidget {
           const SizedBox(height: 8),
           const Divider(),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final cost = Text(
                 '${formatBerat(transaksi.totalBerat)} · ${formatRupiah(transaksi.grandTotal)}',
                 style: theme.textTheme.bodyMedium,
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
+              );
+              final detail = TextButton.icon(
+                key: const Key('active-order-detail'),
+                onPressed: onTap,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.only(left: 8),
+                ),
+                iconAlignment: IconAlignment.end,
+                icon: const Icon(AppIcons.chevron_right_rounded, size: 18),
+                label: const Text('Detail'),
+              );
+              if (MediaQuery.textScalerOf(context).scale(14) > 18) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    cost,
+                    Align(alignment: Alignment.centerRight, child: detail),
+                  ],
+                );
+              }
+              return Row(
                 children: [
-                  Flexible(
-                    child: Text(
-                      'Detail',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 18,
-                    color: theme.colorScheme.primary,
-                  ),
+                  Expanded(child: cost),
+                  detail,
                 ],
-              ),
-            ],
+              );
+            },
           ),
         ],
       ),
@@ -412,7 +417,7 @@ class _ServiceCard extends StatelessWidget {
             )
           else
             Icon(
-              Icons.local_laundry_service_outlined,
+              AppIcons.local_laundry_service_outlined,
               size: 36,
               color: theme.colorScheme.primary,
             ),

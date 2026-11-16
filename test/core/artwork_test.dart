@@ -1,3 +1,4 @@
+import 'package:sparkleen_mobile/core/theme/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -63,7 +64,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.byIcon(Icons.local_laundry_service_outlined), findsOneWidget);
+    expect(
+      find.byIcon(AppIcons.local_laundry_service_outlined),
+      findsOneWidget,
+    );
   });
 
   testWidgets('only network errors display the disconnected illustration', (

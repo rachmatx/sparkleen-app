@@ -1,3 +1,7 @@
+import '../../../core/theme/app_icons.dart';
+
+import 'package:go_router/go_router.dart';
+
 import '../../../core/widgets/app_text_field.dart';
 
 import 'package:flutter/material.dart';
@@ -20,7 +24,6 @@ class EditProfilPage extends ConsumerStatefulWidget {
 class _EditProfilPageState extends ConsumerState<EditProfilPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nama;
-  late final TextEditingController _alamat;
   late final String _noTelp;
   ApiException? _serverError;
   bool _saving = false;
@@ -33,14 +36,12 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
       _ => null,
     };
     _nama = TextEditingController(text: pelanggan?.nama ?? '');
-    _alamat = TextEditingController(text: pelanggan?.alamat ?? '');
     _noTelp = pelanggan?.noTelp ?? '';
   }
 
   @override
   void dispose() {
     _nama.dispose();
-    _alamat.dispose();
     super.dispose();
   }
 
@@ -57,7 +58,7 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
     try {
       await ref
           .read(authControllerProvider.notifier)
-          .updateProfile(nama: _nama.text.trim(), alamat: _alamat.text.trim());
+          .updateProfile(nama: _nama.text.trim());
       if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Profil diperbarui.')));
@@ -138,27 +139,19 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
                   textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
                     labelText: 'Nama lengkap',
-                    prefixIcon: Icon(Icons.person_outline_rounded),
+                    prefixIcon: Icon(AppIcons.person_outline_rounded),
                   ),
                   validator: (value) =>
                       _serverError?.fieldError('nama') ?? validateNama(value),
                   onChanged: (_) => _clearServerError(),
                 ),
                 const SizedBox(height: 24),
-                AppTextFormField(
-                  controller: _alamat,
-                  enabled: !_saving,
-                  textCapitalization: TextCapitalization.sentences,
-                  minLines: 2,
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: 'Alamat',
-                    prefixIcon: Icon(Icons.location_on_outlined),
-                  ),
-                  validator: (value) =>
-                      _serverError?.fieldError('alamat') ??
-                      validateAlamat(value),
-                  onChanged: (_) => _clearServerError(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(AppIcons.location_on_outlined),
+                  title: const Text('Alamat penjemputan'),
+                  trailing: const Icon(AppIcons.chevron_right_rounded),
+                  onTap: _saving ? null : () => context.push('/alamat'),
                 ),
                 const SizedBox(height: 24),
                 AppTextFormField(
@@ -166,7 +159,7 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
                   readOnly: true,
                   decoration: const InputDecoration(
                     labelText: 'Nomor telepon',
-                    prefixIcon: Icon(Icons.lock_outline_rounded),
+                    prefixIcon: Icon(AppIcons.lock_outline_rounded),
                   ),
                 ),
                 const SizedBox(height: 8),

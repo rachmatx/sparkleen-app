@@ -1,3 +1,7 @@
+import 'package:sparkleen_mobile/features/alamat/application/address_controller.dart';
+
+import '../support/address_fakes.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -75,6 +79,7 @@ void main() {
             final container = ProviderContainer.test(
               retry: (_, _) => null,
               overrides: [
+                addressRepositoryProvider.overrideWithValue(FakeAddresses()),
                 tokenStorageProvider.overrideWithValue(
                   FakeTokenStorage('demo'),
                 ),
@@ -135,6 +140,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            addressRepositoryProvider.overrideWithValue(FakeAddresses()),
             tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
             authRepositoryProvider.overrideWithValue(repository),
           ],
@@ -213,6 +219,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          addressRepositoryProvider.overrideWithValue(FakeAddresses()),
           tokenStorageProvider.overrideWithValue(FakeTokenStorage('demo')),
           loyaltyRepositoryProvider.overrideWithValue(FakeLoyalty()),
           authRepositoryProvider.overrideWithValue(FakeAuthRepository()),

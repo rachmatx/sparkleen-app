@@ -181,7 +181,7 @@ class AuthController extends AsyncNotifier<AuthState> {
     () => _repository.activate(noTelp: noTelp, noNota: noNota, pin: pin),
   );
   Future<void> refreshMe() => _updatePelanggan(_repository.me);
-  Future<void> updateProfile({required String nama, required String alamat}) =>
+  Future<void> updateProfile({required String nama, String? alamat}) =>
       _updatePelanggan(() => _repository.updateMe(nama: nama, alamat: alamat));
   Future<void> _updatePelanggan(Future<Pelanggan> Function() action) async {
     final epoch = _epoch;

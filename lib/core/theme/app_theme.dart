@@ -1,3 +1,5 @@
+import 'app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -41,6 +43,10 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     onErrorContainer: dark ? const Color(0xFFFFD9E1) : const Color(0xFF780D28),
   );
   final base = ThemeData(
+    actionIconTheme: ActionIconThemeData(
+      backButtonIconBuilder: (context) =>
+          const Icon(AppIcons.chevron_left_rounded),
+    ),
     useMaterial3: true,
     brightness: brightness,
     colorScheme: colors,
@@ -139,7 +145,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     textTheme: textTheme,
     actionIconTheme: ActionIconThemeData(
       backButtonIconBuilder: (context) =>
-          const Icon(Icons.chevron_left_rounded),
+          const Icon(AppIcons.chevron_left_rounded),
     ),
     appBarTheme: AppBarTheme(
       systemOverlayStyle: dark

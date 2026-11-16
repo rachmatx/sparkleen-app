@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -62,7 +64,7 @@ class _NotificationBellState extends ConsumerState<NotificationBell>
       icon: Badge(
         isLabelVisible: unread > 0,
         label: Text(unread > 99 ? '99+' : '$unread'),
-        child: const Icon(Icons.notifications_none_rounded),
+        child: const Icon(AppIcons.notifications_none_rounded),
       ),
     );
   }
@@ -135,7 +137,7 @@ class NotificationPage extends ConsumerWidget {
                               onPressed: view.busy || view.result.unread == 0
                                   ? null
                                   : () => controller.mark(),
-                              icon: const Icon(Icons.done_all, size: 18),
+                              icon: const Icon(AppIcons.done_all, size: 18),
                               label: const Text('Tandai semua dibaca'),
                             );
                             if (MediaQuery.textScalerOf(context).scale(14) >
@@ -177,7 +179,7 @@ class NotificationPage extends ConsumerWidget {
                           ),
                         if (view.result.items.isEmpty)
                           const EmptyState(
-                            icon: Icons.notifications_none_rounded,
+                            icon: AppIcons.notifications_none_rounded,
                             message: 'Belum ada notifikasi',
                           ),
                         if (view.result.items.isNotEmpty &&
@@ -231,10 +233,12 @@ class NotificationPage extends ConsumerWidget {
                               children: [
                                 Icon(
                                   switch (item.category) {
-                                    'payment' => Icons.payments_outlined,
-                                    'pickup' => Icons.local_shipping_outlined,
-                                    'loyalty' => Icons.stars_outlined,
-                                    _ => Icons.local_laundry_service_outlined,
+                                    'payment' => AppIcons.payments_outlined,
+                                    'pickup' =>
+                                      AppIcons.local_shipping_outlined,
+                                    'loyalty' => AppIcons.stars_outlined,
+                                    _ =>
+                                      AppIcons.local_laundry_service_outlined,
                                   },
                                   color: colors.primary,
                                   size: 24,

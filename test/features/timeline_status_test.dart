@@ -1,3 +1,4 @@
+import 'package:sparkleen_mobile/core/theme/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -43,9 +44,12 @@ void main() {
     expect(find.text('Diterima'), findsOneWidget);
     expect(find.text('Dicuci'), findsOneWidget);
     expect(find.text('Disetrika'), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.radio_button_checked_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.radio_button_unchecked_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.check_circle_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.radio_button_checked_rounded), findsOneWidget);
+    expect(
+      find.byIcon(AppIcons.radio_button_unchecked_rounded),
+      findsOneWidget,
+    );
     expect(find.text('Menunggu'), findsOneWidget);
   });
 

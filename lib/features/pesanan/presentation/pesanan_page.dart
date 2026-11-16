@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -163,7 +165,7 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                         children: [
                           const SizedBox(height: 12),
                           EmptyState(
-                            icon: Icons.receipt_long_outlined,
+                            icon: AppIcons.receipt_long_outlined,
                             illustrationAsset: activeScope == PesananScope.aktif
                                 ? AppAssets.emptyActiveOrder
                                 : AppAssets.emptyOrderHistory,

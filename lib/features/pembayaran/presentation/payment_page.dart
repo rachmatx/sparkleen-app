@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -115,7 +117,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                         borderRadius: BorderRadius.circular(22),
                       ),
                       child: Icon(
-                        Icons.check_rounded,
+                        AppIcons.check_rounded,
                         size: 46,
                         color: colors.primary,
                       ),
@@ -240,7 +242,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                             onPressed: view.busy
                                 ? null
                                 : () => actions.start('QRIS'),
-                            icon: const Icon(Icons.qr_code_2),
+                            icon: const Icon(AppIcons.qr_code_2),
                             label: const Text('Buat QR simulasi'),
                           ),
                           const SizedBox(height: 10),
@@ -248,7 +250,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                             onPressed: view.busy
                                 ? null
                                 : () => actions.start('TRANSFER'),
-                            icon: const Icon(Icons.account_balance_outlined),
+                            icon: const Icon(AppIcons.account_balance_outlined),
                             label: const Text('Transfer simulasi'),
                           ),
                         ],
@@ -262,8 +264,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                         Center(
                           child: Icon(
                             payment.method == 'QRIS'
-                                ? Icons.qr_code_scanner_rounded
-                                : Icons.account_balance_outlined,
+                                ? AppIcons.qr_code_scanner_rounded
+                                : AppIcons.account_balance_outlined,
                             size: 27,
                             color: colors.primary,
                           ),
@@ -334,7 +336,10 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                                       }
                                     }
                                   : null,
-                              icon: const Icon(Icons.copy_outlined, size: 18),
+                              icon: const Icon(
+                                AppIcons.copy_outlined,
+                                size: 18,
+                              ),
                               label: const Text('Salin kode simulasi'),
                             ),
                           ),
@@ -372,7 +377,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                       onPressed: view.busy
                           ? null
                           : () => context.push('/keamanan'),
-                      icon: const Icon(Icons.fingerprint, size: 24),
+                      icon: const Icon(AppIcons.fingerprint, size: 24),
                       label: Text(
                         ref.watch(biometricSettingsProvider).value?.payments ==
                                 true

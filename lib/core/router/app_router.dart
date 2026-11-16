@@ -1,3 +1,5 @@
+import '../../features/alamat/presentation/address_page.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -56,6 +58,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) => _redirect(ref, state.matchedLocation),
     routes: [
+      GoRoute(
+        path: '/alamat',
+        builder: (context, state) => const AddressPage(),
+      ),
       GoRoute(
         path: '/session',
         builder: (context, state) => const SessionPage(),

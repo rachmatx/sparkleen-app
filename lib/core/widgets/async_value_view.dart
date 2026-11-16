@@ -1,3 +1,5 @@
+import '../theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -108,7 +110,7 @@ class ErrorState extends StatelessWidget {
                 asset: AppAssets.connectionError,
                 width: 148,
                 height: 116,
-                fallbackIcon: Icons.cloud_off_rounded,
+                fallbackIcon: AppIcons.cloud_off_rounded,
               )
             else
               Container(
@@ -119,7 +121,7 @@ class ErrorState extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
-                  Icons.error_outline_rounded,
+                  AppIcons.error_outline_rounded,
                   size: 22,
                   color: colors.onErrorContainer,
                 ),
@@ -136,7 +138,7 @@ class ErrorState extends StatelessWidget {
               const SizedBox(height: 12),
               TextButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded, size: 18),
+                icon: const Icon(AppIcons.refresh_rounded, size: 18),
                 label: const Text('Coba lagi'),
               ),
             ],
@@ -151,7 +153,7 @@ class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
     this.message = 'Belum ada data.',
-    this.icon = Icons.inbox_rounded,
+    this.icon = AppIcons.inbox_rounded,
     this.illustrationAsset,
     this.actionLabel,
     this.onAction,

@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -125,7 +127,7 @@ class _PickupPageState extends ConsumerState<PickupPage> {
                           else
                             FilledButton.icon(
                               onPressed: () => context.push('/jemput/baru'),
-                              icon: const Icon(Icons.add_rounded),
+                              icon: const Icon(AppIcons.add_rounded),
                               label: const Text('Ajukan penjemputan'),
                             ),
                           const SizedBox(height: 18),
@@ -208,31 +210,6 @@ class _PickupPageState extends ConsumerState<PickupPage> {
                                     : 'Muat 20 berikutnya',
                               ),
                             ),
-                          if (active.isNotEmpty)
-                            Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.onSurface.withValues(
-                                  alpha: .07,
-                                ),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'Permintaan sedang berjalan',
-                                    textAlign: TextAlign.center,
-                                    style: theme.textTheme.labelLarge,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Ajukan lagi setelah permintaan selesai.',
-                                    textAlign: TextAlign.center,
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ),
                         ],
                       ),
                     ),
@@ -291,12 +268,14 @@ class _PickupCard extends StatelessWidget {
                   Text(item.service, style: theme.textTheme.titleSmall),
                   const SizedBox(height: 12),
                   line(
-                    Icons.calendar_today_outlined,
+                    AppIcons.calendar_today_outlined,
                     '${formatTanggalSingkat(item.scheduledAt)} · ${item.slotLabel}',
                   ),
-                  line(Icons.location_on_outlined, item.address),
+                  line(AppIcons.location_on_outlined, item.address),
+                  if (item.landmark?.isNotEmpty == true)
+                    Text(item.landmark!, style: theme.textTheme.bodySmall),
                   line(
-                    Icons.shopping_basket_outlined,
+                    AppIcons.shopping_basket_outlined,
                     'Perkiraan ${formatBerat(item.estimatedWeight)} · ${formatRupiah(item.estimatedPrice)}',
                   ),
                   if (item.note?.isNotEmpty == true) Text(item.note!),
@@ -304,6 +283,18 @@ class _PickupCard extends StatelessWidget {
                     Text(
                       'Alasan: ${item.rejectionReason}',
                       style: TextStyle(color: theme.colorScheme.error),
+                    ),
+                  if (item.transactionId != null)
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        context.push('/pesanan/${item.transactionId}');
+                      },
+                      icon: const Icon(
+                        AppIcons.receipt_long_outlined,
+                        size: 18,
+                      ),
+                      label: const Text('Lihat pesanan'),
                     ),
                   const SizedBox(height: 16),
                   OutlinedButton(
@@ -318,13 +309,15 @@ class _PickupCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 6,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                StatusChip(status: item.status, label: item.statusLabel),
+                Expanded(
+                  child: StatusChip(
+                    status: item.status,
+                    label: item.statusLabel,
+                  ),
+                ),
                 Text('#${item.id}', style: theme.textTheme.bodySmall),
               ],
             ),
@@ -344,17 +337,7 @@ class _PickupCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (item.transactionId != null)
-                  Flexible(
-                    child: TextButton.icon(
-                      onPressed: () =>
-                          context.push('/pesanan/${item.transactionId}'),
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 17),
-                      label: const Text('Lihat pesanan'),
-                    ),
-                  )
-                else
-                  const Icon(Icons.chevron_right_rounded, size: 20),
+                const Icon(AppIcons.chevron_right_rounded, size: 20),
               ],
             ),
           ],
@@ -365,14 +348,26 @@ class _PickupCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 6,
+          Row(
             children: [
-              StatusChip(status: item.status, label: item.statusLabel),
+              Expanded(
+                child: StatusChip(status: item.status, label: item.statusLabel),
+              ),
               Text('#${item.id}', style: theme.textTheme.bodySmall),
+              if (item.canCancel)
+                IconButton(
+                  tooltip: busy ? 'Membatalkan…' : 'Batalkan permintaan',
+                  style: IconButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                  ),
+                  onPressed: busy ? null : onCancel,
+                  icon: busy
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(AppIcons.delete_outline, size: 20),
+                ),
             ],
           ),
           const SizedBox(height: 8),
@@ -383,16 +378,18 @@ class _PickupCard extends StatelessWidget {
               child: Divider(height: 1),
             ),
             line(
-              Icons.calendar_today_outlined,
+              AppIcons.calendar_today_outlined,
               '${formatTanggalSingkat(item.scheduledAt)} · ${item.slotLabel}',
             ),
-            line(Icons.location_on_outlined, item.address),
+            line(AppIcons.location_on_outlined, item.address),
+            if (item.landmark?.isNotEmpty == true)
+              Text(item.landmark!, style: theme.textTheme.bodySmall),
             line(
-              Icons.shopping_basket_outlined,
+              AppIcons.shopping_basket_outlined,
               'Perkiraan ${formatBerat(item.estimatedWeight)}',
             ),
             if (item.note?.isNotEmpty == true)
-              line(Icons.notes_rounded, item.note!),
+              line(AppIcons.notes_rounded, item.note!),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 10),
               child: Divider(height: 1),
@@ -401,10 +398,6 @@ class _PickupCard extends StatelessWidget {
               label: 'Perkiraan biaya',
               value: formatRupiah(item.estimatedPrice),
               emphasized: true,
-            ),
-            Text(
-              'Jadwal akan dikonfirmasi outlet.',
-              style: theme.textTheme.bodySmall,
             ),
           ] else ...[
             const SizedBox(height: 4),
@@ -422,9 +415,11 @@ class _PickupCard extends StatelessWidget {
                 style: theme.textTheme.bodySmall,
               ),
               children: [
-                line(Icons.location_on_outlined, item.address),
+                line(AppIcons.location_on_outlined, item.address),
+                if (item.landmark?.isNotEmpty == true)
+                  Text(item.landmark!, style: theme.textTheme.bodySmall),
                 line(
-                  Icons.shopping_basket_outlined,
+                  AppIcons.shopping_basket_outlined,
                   '${formatBerat(item.estimatedWeight)} · ${formatRupiah(item.estimatedPrice)}',
                 ),
                 if (item.note?.isNotEmpty == true)
@@ -442,20 +437,8 @@ class _PickupCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: () => context.push('/pesanan/${item.transactionId}'),
-                icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                icon: const Icon(AppIcons.arrow_forward_rounded, size: 18),
                 label: const Text('Lihat pesanan & biaya akhir'),
-              ),
-            ),
-          if (item.canCancel)
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                style: TextButton.styleFrom(
-                  foregroundColor: theme.colorScheme.error,
-                ),
-                onPressed: busy ? null : onCancel,
-                icon: const Icon(Icons.delete_outline, size: 18),
-                label: Text(busy ? 'Membatalkan…' : 'Batalkan permintaan'),
               ),
             ),
         ],

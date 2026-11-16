@@ -1,3 +1,5 @@
+import '../theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 
 import 'app_card.dart';
@@ -6,7 +8,7 @@ class AppInfoBanner extends StatelessWidget {
   const AppInfoBanner({
     super.key,
     required this.message,
-    this.icon = Icons.info_outline,
+    this.icon = AppIcons.info_outline,
   });
   final String message;
   final IconData icon;

@@ -26,9 +26,7 @@ void main() {
     final repository = FakeTransaksiRepository(
       results: {
         'aktif:1': [testTransaksi(1)],
-        'selesai:1': [
-          testTransaksi(2, status: 'selesai', label: 'Selesai'),
-        ],
+        'selesai:1': [testTransaksi(2, status: 'selesai', label: 'Selesai')],
       },
     );
     final container = ProviderContainer.test(

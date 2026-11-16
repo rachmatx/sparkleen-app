@@ -1,3 +1,4 @@
+import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_assets.dart';
 import '../../../core/widgets/app_artwork.dart';
 
@@ -288,12 +289,12 @@ class _PaymentCard extends ConsumerWidget {
             if (!detail.sudahLunas)
               TextButton.icon(
                 onPressed: () => open('/pesanan/${detail.id}/poin'),
-                icon: const Icon(Icons.star_border_rounded, size: 20),
+                icon: const Icon(AppIcons.star_border_rounded, size: 20),
                 label: const Text('Gunakan poin'),
               ),
             TextButton.icon(
               onPressed: () => context.push('/pesanan/${detail.id}/nota'),
-              icon: const Icon(Icons.receipt_long_outlined, size: 19),
+              icon: const Icon(AppIcons.receipt_long_outlined, size: 19),
               label: const Text('Lihat Nota'),
             ),
           ],
@@ -396,7 +397,7 @@ class _PinCard extends StatelessWidget {
       padding: EdgeInsets.zero,
       child: ExpansionTile(
         leading: Icon(
-          Icons.lock_outline_rounded,
+          AppIcons.lock_outline_rounded,
           color: theme.colorScheme.primary,
         ),
         title: Text('PIN Pengambilan', style: theme.textTheme.titleSmall),
@@ -429,7 +430,7 @@ class _PinCard extends StatelessWidget {
                     );
                   }
                 },
-                icon: const Icon(Icons.copy_outlined),
+                icon: const Icon(AppIcons.copy_outlined),
               ),
             ],
           ),

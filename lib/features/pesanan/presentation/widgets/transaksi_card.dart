@@ -1,3 +1,5 @@
+import '../../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/formatters.dart';
@@ -92,7 +94,7 @@ class TransaksiCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Icon(
-                Icons.arrow_forward_rounded,
+                AppIcons.arrow_forward_rounded,
                 size: 19,
                 color: theme.colorScheme.primary,
               ),

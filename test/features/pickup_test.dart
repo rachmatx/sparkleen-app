@@ -1,3 +1,7 @@
+import 'package:sparkleen_mobile/features/alamat/application/address_controller.dart';
+
+import '../support/address_fakes.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -65,12 +69,14 @@ class FakePickupRepository implements PickupRepository {
     required String date,
     required String slot,
     String note = '',
+    int? addressId,
   }) async {
     creates++;
     submitted = {
       'id_layanan': serviceId,
       'berat_perkiraan': weight,
       'alamat_jemput': address,
+      'id_alamat': addressId,
       'tgl_jemput': date,
       'slot_jemput': slot,
       'catatan': note,
@@ -94,6 +100,7 @@ Widget app(
 }) => ProviderScope(
   retry: (_, _) => null,
   overrides: [
+    addressRepositoryProvider.overrideWithValue(FakeAddresses()),
     pickupRepositoryProvider.overrideWithValue(repository),
     authControllerProvider.overrideWith(_Auth.new),
     homeRepositoryProvider.overrideWithValue(
@@ -222,16 +229,16 @@ void main() {
     final repo = FakePickupRepository()..items = [pickup()];
     await tester.pumpWidget(app(repo, const PickupPage()));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Batalkan permintaan'));
+    await tester.ensureVisible(find.byTooltip('Batalkan permintaan'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Batalkan permintaan'));
+    await tester.tap(find.byTooltip('Batalkan permintaan'));
     await tester.pumpAndSettle();
     expect(repo.cancels, 0);
     await tester.tap(find.text('Ya, batalkan'));
     await tester.pumpAndSettle();
     expect(repo.cancels, 1);
     expect(find.text('Dibatalkan'), findsOneWidget);
-    expect(find.text('Batalkan permintaan'), findsNothing);
+    expect(find.byTooltip('Batalkan permintaan'), findsNothing);
   });
   testWidgets(
     'processed pickup cannot be cancelled and rejected pickup explains why',
@@ -243,7 +250,7 @@ void main() {
         ];
       await tester.pumpWidget(app(repo, const PickupPage()));
       await tester.pumpAndSettle();
-      expect(find.text('Batalkan permintaan'), findsNothing);
+      expect(find.byTooltip('Batalkan permintaan'), findsNothing);
       await tester.scrollUntilVisible(
         find.text('Permintaan ditolak'),
         150,
@@ -304,7 +311,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         await tester.scrollUntilVisible(
-          find.text('Lihat pesanan'),
+          find.text('Cucian diterima'),
           180,
           scrollable: find.byType(Scrollable).first,
         );

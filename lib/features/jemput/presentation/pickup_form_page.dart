@@ -1,3 +1,7 @@
+import '../../alamat/application/address_controller.dart';
+import '../../alamat/data/address_repository.dart';
+import '../../alamat/presentation/address_page.dart';
+import '../../../core/theme/app_icons.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/app_artwork.dart';
 import '../../../core/theme/app_assets.dart';
@@ -13,7 +17,6 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
-import '../../auth/application/auth_controller.dart';
 import '../../home/application/home_providers.dart';
 import '../../home/data/layanan.dart';
 import '../application/pickup_controller.dart';
@@ -29,6 +32,9 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
   final _weight = TextEditingController();
   final _note = TextEditingController();
   late final TextEditingController _address;
+  CustomerAddress? _selectedAddress;
+  bool _loadingAddress = true;
+  String? _addressError;
   int? _serviceId;
   DateTime _date = jakartaCalendarDate(daysAfter: 1);
   String _slot = 'siang';
@@ -37,10 +43,71 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
   @override
   void initState() {
     super.initState();
-    final auth = ref.read(authControllerProvider).value;
-    _address = TextEditingController(
-      text: auth is AuthAuthenticated ? auth.pelanggan.alamat : '',
+    _address = TextEditingController();
+    _loadDefault();
+  }
+
+  Future<void> _loadDefault() async {
+    final revision = ref.read(customerSessionRevisionProvider);
+    try {
+      final result = await ref.read(addressRepositoryProvider).list();
+      if (!mounted || revision != ref.read(customerSessionRevisionProvider)) {
+        return;
+      }
+      final defaults = result.items.where((a) => a.isDefault);
+      setState(() {
+        _selectedAddress = defaults.isEmpty
+            ? (result.items.isEmpty ? null : result.items.first)
+            : defaults.first;
+        _address.text = _selectedAddress?.address ?? '';
+        _addressError = null;
+      });
+    } catch (_) {
+      if (mounted && revision == ref.read(customerSessionRevisionProvider)) {
+        setState(() => _addressError = 'Alamat belum dapat dimuat.');
+      }
+    } finally {
+      if (mounted) setState(() => _loadingAddress = false);
+    }
+  }
+
+  Future<void> _chooseAddress() async {
+    final revision = ref.read(customerSessionRevisionProvider);
+    final chosen = await Navigator.of(context).push<CustomerAddress>(
+      MaterialPageRoute(builder: (_) => const AddressPage(select: true)),
     );
+    if (!mounted || revision != ref.read(customerSessionRevisionProvider)) {
+      return;
+    }
+    if (chosen != null) {
+      setState(() {
+        _selectedAddress = chosen;
+        _address.text = chosen.address;
+        _addressError = null;
+        _error = null;
+      });
+    } else if (_selectedAddress != null) {
+      try {
+        final updated = await ref
+            .read(addressRepositoryProvider)
+            .get(_selectedAddress!.id);
+        if (mounted && revision == ref.read(customerSessionRevisionProvider)) {
+          setState(() {
+            _selectedAddress = updated;
+            _address.text = updated.address;
+          });
+        }
+      } on ApiException catch (e) {
+        if (mounted &&
+            revision == ref.read(customerSessionRevisionProvider) &&
+            e.statusCode == 404) {
+          setState(() {
+            _selectedAddress = null;
+            _address.clear();
+          });
+        }
+      }
+    }
   }
 
   @override
@@ -54,7 +121,12 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
   void _changed() => setState(() => _error = null);
   Future<void> _submit() async {
     FocusManager.instance.primaryFocus?.unfocus();
-    if (!_form.currentState!.validate() || _busy) return;
+    if (!_form.currentState!.validate() ||
+        _busy ||
+        _loadingAddress ||
+        _selectedAddress == null) {
+      return;
+    }
     final revision = ref.read(customerSessionRevisionProvider);
     setState(() {
       _busy = true;
@@ -67,6 +139,7 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
             serviceId: _serviceId!,
             weight: double.parse(_weight.text.replaceAll(',', '.')),
             address: _address.text.trim(),
+            addressId: _selectedAddress!.id,
             date: DateFormat('yyyy-MM-dd').format(_date),
             slot: _slot,
             note: _note.text.trim(),
@@ -154,7 +227,7 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 8),
           ),
-          icon: const Icon(Icons.calendar_today_outlined, size: 17),
+          icon: const Icon(AppIcons.calendar_today_outlined, size: 17),
           label: Text(
             formatTanggalSingkat(_date),
             style: theme.textTheme.bodySmall,
@@ -323,20 +396,56 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
                       AppTextFormField(
                         key: const Key('pickup-address'),
                         controller: _address,
-                        enabled: !_busy,
-                        maxLines: 3,
+                        enabled: !_busy && !_loadingAddress,
+                        readOnly: true,
+                        onTap: _chooseAddress,
+                        maxLines: 4,
                         minLines: 1,
-                        maxLength: 500,
-                        decoration: const InputDecoration(
-                          labelText: 'Alamat lengkap',
+                        decoration: InputDecoration(
+                          labelText: _loadingAddress
+                              ? 'Memuat alamat…'
+                              : (_selectedAddress?.label ?? 'Alamat jemput'),
+                          hintText: 'Pilih alamat',
+                          suffixIcon: IconButton(
+                            tooltip: 'Pilih alamat',
+                            onPressed: _busy || _loadingAddress
+                                ? null
+                                : _chooseAddress,
+                            icon: const Icon(AppIcons.location_on_outlined),
+                          ),
                         ),
-                        onChanged: (_) => _changed(),
-                        validator: (value) =>
+                        validator: (_) =>
+                            _error?.fieldError('id_alamat') ??
                             _error?.fieldError('alamat_jemput') ??
-                            ((value?.trim().length ?? 0) < 10
-                                ? 'Lengkapi alamat, minimal 10 karakter.'
+                            (_selectedAddress == null
+                                ? 'Pilih atau tambahkan alamat jemput.'
                                 : null),
                       ),
+                      if (_selectedAddress?.landmark.isNotEmpty == true)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            _selectedAddress!.landmark,
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ),
+                      if (_addressError != null)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _addressError!,
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _loadDefault,
+                              child: const Text('Coba lagi'),
+                            ),
+                          ],
+                        ),
                       const SizedBox(height: 10),
                       LayoutBuilder(
                         builder: (context, constraints) =>
@@ -364,7 +473,7 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(
-                            Icons.info_outline,
+                            AppIcons.info_outline,
                             size: 16,
                             color: theme.colorScheme.primary,
                           ),

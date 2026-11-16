@@ -1,3 +1,5 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -109,7 +111,7 @@ class _RedemptionPageState extends ConsumerState<RedemptionPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          Icons.check_circle_rounded,
+                          AppIcons.check_circle_rounded,
                           color: theme.colorScheme.primary,
                         ),
                         const SizedBox(height: 12),
