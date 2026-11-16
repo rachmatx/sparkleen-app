@@ -343,6 +343,7 @@ class _AddressEditPageState extends ConsumerState<AddressEditPage> {
                       decoration: const InputDecoration(
                         labelText: 'Label',
                         hintText: 'Rumah, kos, atau kantor',
+                        counterText: '',
                       ),
                       validator: (v) =>
                           (v ?? '').trim().isEmpty ? 'Isi label alamat.' : null,
@@ -357,6 +358,8 @@ class _AddressEditPageState extends ConsumerState<AddressEditPage> {
                       textCapitalization: TextCapitalization.sentences,
                       decoration: const InputDecoration(
                         labelText: 'Alamat lengkap',
+                        hintText: 'Jalan, nomor rumah, RT/RW, dan kecamatan',
+                        counterText: '',
                       ),
                       validator: (v) => (v ?? '').trim().length < 10
                           ? 'Alamat minimal 10 karakter.'
@@ -371,6 +374,8 @@ class _AddressEditPageState extends ConsumerState<AddressEditPage> {
                       maxLines: 3,
                       decoration: const InputDecoration(
                         labelText: 'Patokan (opsional)',
+                        hintText: 'Contoh: pagar biru, sebelah minimarket',
+                        counterText: '',
                       ),
                     ),
                     SwitchListTile.adaptive(

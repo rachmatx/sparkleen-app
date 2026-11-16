@@ -35,20 +35,26 @@ class CustomerHeader extends ConsumerWidget {
       ],
     );
     final balance = AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      radius: 999,
+      shadow: const [],
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       onTap: () => context.push('/poin'),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const AppArtwork(asset: AppAssets.points, height: 17, width: 17),
-          const SizedBox(width: 5),
-          Text(
-            '$points poin',
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.primary,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AppArtwork(asset: AppAssets.points, height: 18, width: 18),
+            const SizedBox(width: 6),
+            Text(
+              '$points poin',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
     if (MediaQuery.textScalerOf(context).scale(14) > 20) {

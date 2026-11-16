@@ -63,50 +63,52 @@ class HomePage extends ConsumerWidget {
                       style: TextStyle(color: colors.error),
                     ),
                   ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
                 _WelcomeHeader(nama: nama),
                 const SizedBox(height: 16),
                 AppCard(
                   color: colors.primaryContainer,
                   onTap: () => context.push('/jemput'),
-                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Laundry\ntanpa repot.',
-                              style: theme.textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Kami jemput dari rumahmu.',
-                              style: theme.textTheme.bodySmall,
-                            ),
-                            const SizedBox(height: 12),
-                            FilledButton(
-                              style: FilledButton.styleFrom(
-                                minimumSize: const Size(48, 42),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
+                  padding: const EdgeInsets.fromLTRB(20, 18, 8, 18),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Laundry tanpa repot.',
+                                style: theme.textTheme.titleLarge,
                               ),
-                              onPressed: () => context.push('/jemput'),
-                              child: const Text('Jadwalkan jemput'),
-                            ),
-                          ],
+                              const SizedBox(height: 6),
+                              Text(
+                                'Kami jemput dari rumahmu.',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                              const SizedBox(height: 12),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                  minimumSize: const Size(48, 48),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                ),
+                                onPressed: () => context.push('/jemput'),
+                                child: const Text('Jadwalkan jemput'),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (MediaQuery.textScalerOf(context).scale(14) < 20)
-                        const AppArtwork(
-                          asset: AppAssets.pickup,
-                          width: 144,
-                          height: 116,
-                        ),
-                    ],
+                        const SizedBox(width: 8),
+                        if (MediaQuery.textScalerOf(context).scale(14) < 20)
+                          AppArtwork(
+                            asset: AppAssets.pickup,
+                            width: constraints.maxWidth < 310 ? 108 : 128,
+                            height: 116,
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -287,9 +289,10 @@ class _ActiveOrderCard extends StatelessWidget {
       onTap: onTap,
       padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Wrap(
+            alignment: WrapAlignment.spaceBetween,
             spacing: 12,
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -412,7 +415,7 @@ class _ServiceCard extends StatelessWidget {
             IllustrationPanel(
               asset: asset,
               width: double.infinity,
-              height: 96,
+              height: 84,
               padding: const EdgeInsets.all(3),
             )
           else
@@ -426,7 +429,7 @@ class _ServiceCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             formatRupiah(layanan.hargaPerKg),
-            style: theme.textTheme.bodyMedium,
+            style: theme.textTheme.titleSmall,
           ),
           Text(
             'per kg · ${layanan.estimasiHari} hari',

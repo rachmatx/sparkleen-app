@@ -53,93 +53,99 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     scaffoldBackgroundColor: Colors.transparent,
   );
 
-  final textTheme = base.textTheme.copyWith(
-    headlineLarge: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 28,
-      height: 1.16,
+  final textTheme = base.textTheme
+      .apply(fontFamily: 'Inter')
+      .copyWith(
+        headlineLarge: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 28,
+          height: 1.16,
 
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.8,
-      color: colors.onSurface,
-    ),
-    headlineMedium: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 26,
-      height: 1.18,
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.7,
-      color: colors.onSurface,
-    ),
-    headlineSmall: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 22,
-      height: 1.2,
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.45,
-      color: colors.onSurface,
-    ),
-    titleLarge: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 20,
-      height: 1.22,
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.4,
-      color: colors.onSurface,
-    ),
-    titleMedium: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 17,
-      height: 1.3,
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.3,
-      color: colors.onSurface,
-    ),
-    titleSmall: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 15,
-      fontWeight: FontWeight.w600,
-      letterSpacing: -0.2,
-      color: colors.onSurface,
-    ),
-    bodyLarge: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 16,
-      height: 1.35,
-      color: colors.onSurface,
-    ),
-    bodyMedium: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 14,
-      height: 1.35,
-      color: colors.onSurface,
-    ),
-    bodySmall: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 12,
-      height: 1.35,
-      color: colors.onSurfaceVariant,
-    ),
-    labelLarge: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0,
-      color: colors.onSurface,
-    ),
-    labelMedium: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-      color: colors.onSurfaceVariant,
-    ),
-    labelSmall: TextStyle(
-      fontFamily: 'Inter',
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-      color: colors.onSurfaceVariant,
-    ),
-  );
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.8,
+          color: colors.onSurface,
+        ),
+        headlineMedium: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 26,
+          height: 1.18,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.7,
+          color: colors.onSurface,
+        ),
+        headlineSmall: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 22,
+          height: 1.2,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.45,
+          color: colors.onSurface,
+        ),
+        titleLarge: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 20,
+          height: 1.22,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.4,
+          color: colors.onSurface,
+        ),
+        titleMedium: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 17,
+          height: 1.3,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
+          color: colors.onSurface,
+        ),
+        titleSmall: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 15,
+          height: 1.35,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
+          color: colors.onSurface,
+        ),
+        bodyLarge: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          height: 1.35,
+          color: colors.onSurface,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          height: 1.35,
+          color: colors.onSurface,
+        ),
+        bodySmall: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          height: 1.45,
+          color: colors.onSurfaceVariant,
+        ),
+        labelLarge: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0,
+          color: colors.onSurface,
+        ),
+        labelMedium: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: colors.onSurfaceVariant,
+        ),
+        labelSmall: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: colors.onSurfaceVariant,
+        ),
+      );
 
   return base.copyWith(
     textTheme: textTheme,
@@ -176,7 +182,9 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       fillColor: colors.surface.withValues(alpha: 0.75),
       floatingLabelBehavior: FloatingLabelBehavior.always,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      hintStyle: textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+      hintStyle: textTheme.bodyMedium?.copyWith(
+        color: colors.onSurfaceVariant.withValues(alpha: .85),
+      ),
       labelStyle: textTheme.bodyMedium?.copyWith(
         color: colors.onSurfaceVariant,
       ),
@@ -238,7 +246,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     iconTheme: IconThemeData(color: colors.onSurfaceVariant),
     dividerTheme: DividerThemeData(
       color: colors.outlineVariant,
-      thickness: 1,
+      thickness: 0.6,
       space: 1,
     ),
     navigationBarTheme: NavigationBarThemeData(

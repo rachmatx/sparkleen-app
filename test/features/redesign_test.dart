@@ -49,7 +49,14 @@ class _PendingLogin extends FakeAuthRepository {
 }
 
 void main() {
-  setUpAll(() async => initializeDateFormatting('id_ID'));
+  setUpAll(() async {
+    await initializeDateFormatting('id_ID');
+    final inter = FontLoader('Inter');
+    for (final weight in [400, 500, 600, 700]) {
+      inter.addFont(rootBundle.load('assets/fonts/Inter-$weight.ttf'));
+    }
+    await inter.load();
+  });
 
   // Render the actual pages and scroll lazy children into layout. A single
   // viewport screenshot would miss overflow near the bottom of these screens.

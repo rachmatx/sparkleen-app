@@ -86,7 +86,7 @@ class TransaksiCard extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  'Lihat detail',
+                  'Detail',
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: theme.colorScheme.primary,
                   ),
@@ -94,8 +94,8 @@ class TransaksiCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Icon(
-                AppIcons.arrow_forward_rounded,
-                size: 19,
+                AppIcons.chevron_right_rounded,
+                size: 18,
                 color: theme.colorScheme.primary,
               ),
             ],

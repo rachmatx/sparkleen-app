@@ -211,46 +211,49 @@ class SettingsTile extends StatelessWidget {
     final large = MediaQuery.textScalerOf(context).scale(14) > 18;
     return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Icon(icon, color: theme.colorScheme.primary),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 3),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Icon(icon, size: 22, color: theme.colorScheme.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      subtitle!,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall,
+                      title,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle!,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                    if (value != null && large)
+                      Text(value!, style: theme.textTheme.bodySmall),
                   ],
-                  if (value != null && large)
-                    Text(value!, style: theme.textTheme.bodySmall),
-                ],
+                ),
               ),
-            ),
-            if (value != null && !large) ...[
-              const SizedBox(width: 6),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 88),
-                child: Text(value!, style: theme.textTheme.bodySmall),
-              ),
+              if (value != null && !large) ...[
+                const SizedBox(width: 6),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 88),
+                  child: Text(value!, style: theme.textTheme.bodySmall),
+                ),
+              ],
+              const SizedBox(width: 4),
+              const Icon(AppIcons.chevron_right, size: 20),
             ],
-            const SizedBox(width: 4),
-            const Icon(AppIcons.chevron_right, size: 20),
-          ],
+          ),
         ),
       ),
     );

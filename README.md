@@ -227,3 +227,7 @@ dan splash minimal dua detik. [Rincian dan screenshot hasil kode](docs/redesign-
 ### Alamat tersimpan dan UI 0.0.6
 
 CRUD alamat penjemputan (tambah, lihat, ubah, hapus), alamat utama, dan snapshot penjemputan lintas aplikasi. Navigasi glass lebih ramping dan ikon Phosphor lokal. Backend Laundry perlu diperbarui dan menjalankan migration sebelum APK baru digunakan. [Petunjuk pembaruan, pengujian, layanan Setrika Saja, dan APK](docs/redesign-v0.0.6.md).
+
+### Penyempurnaan UI 0.0.7
+
+Glass 75% dengan tepi dan bayangan lebih halus, hierarki beranda/profil yang dirapikan, input dengan placeholder yang langsung terlihat, serta aksi Detail yang konsisten. [Hasil render terang/gelap, pengujian, dan build APK](docs/ui-polish-v0.0.7.md). Tidak ada migration backend tambahan dari versi 0.0.6.

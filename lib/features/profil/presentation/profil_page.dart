@@ -86,14 +86,14 @@ class ProfilPage extends ConsumerWidget {
                               style: theme.textTheme.titleLarge,
                             ),
                             Text(
-                              'Pelanggan Sparkleen · ${pelanggan.kode}',
+                              pelanggan.kode,
                               style: theme.textTheme.bodySmall,
                             ),
                             TextButton(
                               onPressed: () => openEditProfile(context),
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
-                                minimumSize: const Size(48, 32),
+                                minimumSize: const Size(48, 48),
                                 alignment: Alignment.centerLeft,
                               ),
                               child: const Text('Ubah profil'),
@@ -234,12 +234,6 @@ class ProfilPage extends ConsumerWidget {
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'sparkleen laundry',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall,
                   ),
                 ],
               ],

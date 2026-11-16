@@ -44,9 +44,9 @@ class AppCard extends StatelessWidget {
               borderRadius: corners,
               side: BorderSide(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withValues(alpha: 0.14)
-                    : Colors.white.withValues(alpha: 0.82),
-                width: 1,
+                    ? Colors.white.withValues(alpha: 0.12)
+                    : Colors.white.withValues(alpha: 0.70),
+                width: 0.8,
               ),
             ),
             clipBehavior: Clip.antiAlias,

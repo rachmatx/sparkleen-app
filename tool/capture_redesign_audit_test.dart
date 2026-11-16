@@ -19,6 +19,7 @@ import 'package:sparkleen_mobile/core/router/app_router.dart';
 import 'package:sparkleen_mobile/core/security/biometric_service.dart';
 import 'package:sparkleen_mobile/core/settings/appearance_settings.dart';
 import 'package:sparkleen_mobile/features/auth/application/auth_controller.dart';
+import 'package:sparkleen_mobile/features/auth/data/pelanggan.dart';
 import 'package:sparkleen_mobile/features/home/application/home_providers.dart';
 import 'package:sparkleen_mobile/features/home/data/layanan.dart';
 import 'package:sparkleen_mobile/features/jemput/application/pickup_controller.dart';
@@ -60,8 +61,13 @@ class StartingPreview extends AuthController {
   Future<AuthState> build() => Completer<AuthState>().future;
 }
 
+class _AuditBinding extends AutomatedTestWidgetsFlutterBinding {
+  @override
+  bool get disableShadows => false;
+}
+
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  _AuditBinding();
   setUpAll(() async {
     await initializeDateFormatting('id_ID');
     for (final entry in {
@@ -246,7 +252,16 @@ void main() {
                     : ThemeMode.light,
               ),
               tokenStorageProvider.overrideWithValue(storage),
-              authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
+              authRepositoryProvider.overrideWithValue(FakeAuthRepository()
+                ..pelanggan = const Pelanggan(
+                  id: 12,
+                  kode: 'PLG012',
+                  nama: 'Budi Santoso',
+                  noTelp: '6281298765432',
+                  alamat: 'Jl. Merdeka No. 10',
+                  poin: 15,
+                  totalTransaksi: 73500,
+                )),
               biometricServiceProvider.overrideWithValue(biometric),
               homeRepositoryProvider.overrideWithValue(
                 FakeHomeRepository()
@@ -370,7 +385,7 @@ void main() {
                     .toImage();
             final png = await image.toByteData(format: ui.ImageByteFormat.png);
             final file = File(
-              '../.tooling/ui-qa-v006/${brightness.name}/$name.png',
+              "${const String.fromEnvironment('UI_AUDIT_OUTPUT', defaultValue: '../.tooling/ui-qa-v007')}/${brightness.name}/$name.png",
             );
             await file.parent.create(recursive: true);
             await file.writeAsBytes(png!.buffer.asUint8List());
