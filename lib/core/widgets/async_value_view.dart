@@ -1,7 +1,11 @@
+import '../theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api/api_exception.dart';
+import '../theme/app_assets.dart';
+import 'app_artwork.dart';
 import 'app_card.dart';
 
 class AsyncValueView<T> extends StatelessWidget {
@@ -91,6 +95,8 @@ class ErrorState extends StatelessWidget {
     final message = error is ApiException
         ? (error as ApiException).message
         : 'Terjadi kesalahan. Silakan coba lagi.';
+    final isConnectionError =
+        error is ApiException && (error as ApiException).isNetworkError;
 
     return AppCard(
       padding: const EdgeInsets.all(22),
@@ -99,19 +105,27 @@ class ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: colors.errorContainer,
-                borderRadius: BorderRadius.circular(14),
+            if (isConnectionError)
+              const IllustrationPanel(
+                asset: AppAssets.connectionError,
+                width: 148,
+                height: 116,
+                fallbackIcon: AppIcons.cloud_off_rounded,
+              )
+            else
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: colors.errorContainer,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  AppIcons.error_outline_rounded,
+                  size: 22,
+                  color: colors.onErrorContainer,
+                ),
               ),
-              child: Icon(
-                Icons.cloud_off_rounded,
-                size: 22,
-                color: colors.onErrorContainer,
-              ),
-            ),
             const SizedBox(height: 12),
             Text(
               message,
@@ -124,7 +138,7 @@ class ErrorState extends StatelessWidget {
               const SizedBox(height: 12),
               TextButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded, size: 18),
+                icon: const Icon(AppIcons.refresh_rounded, size: 18),
                 label: const Text('Coba lagi'),
               ),
             ],
@@ -139,13 +153,15 @@ class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
     this.message = 'Belum ada data.',
-    this.icon = Icons.inbox_rounded,
+    this.icon = AppIcons.inbox_rounded,
+    this.illustrationAsset,
     this.actionLabel,
     this.onAction,
   });
 
   final String message;
   final IconData icon;
+  final String? illustrationAsset;
   final String? actionLabel;
   final VoidCallback? onAction;
 
@@ -160,7 +176,10 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 30, color: colors.onSurfaceVariant),
+            if (illustrationAsset case final String asset)
+              IllustrationPanel(asset: asset, fallbackIcon: icon)
+            else
+              Icon(icon, size: 30, color: colors.onSurfaceVariant),
             const SizedBox(height: 12),
             Text(
               message,

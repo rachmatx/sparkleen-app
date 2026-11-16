@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 
 abstract final class AppColors {
   static const primary = Color(0xFF0D63D8);
+  static const link = Color(0xFF0B56C2);
+  static const backgroundDark = Color(0xFF0B1220);
   static const primaryDark = Color(0xFF084FAF);
-  static const primarySoft = Color(0xFFDCEBFC);
-  static const background = Color(0xFFE9F1F8);
-  static const surface = Color(0xFFF8FBFF);
+  static const primarySoft = Color(0xFFDCE9FF);
+  static const background = Color(0xFFF0F5FC);
+  static const surface = Color(0xFFFFFFFF);
   static const surfaceMuted = Color(0xFFE1EBF5);
-  static const border = Color(0xFFD0DDEB);
-  static const text = Color(0xFF0A1B30);
-  static const muted = Color(0xFF52657B);
-  static const soft = Color(0xFF60758C);
+  static const border = Color(0xFFC6D2E0);
+  static const text = Color(0xFF0C1B33);
+  static const muted = Color(0xFF40536A);
+  static const soft = Color(0xFF74869C);
   static const success = Color(0xFF08745D);
   static const warning = Color(0xFF875400);
   static const danger = Color(0xFFBE2647);
@@ -18,12 +20,12 @@ abstract final class AppColors {
   static const warningSoft = Color(0xFFFFF1D7);
   static const mintSoft = Color(0xFFDDF2E9);
 
-  static const radiusCard = 22.0;
-  static const radiusInput = 15.0;
-  static const radiusSheet = 30.0;
+  static const radiusCard = 24.0;
+  static const radiusInput = 18.0;
+  static const radiusSheet = 32.0;
 
   static const cardShadow = [
-    BoxShadow(color: Color(0x0C183A60), blurRadius: 24, offset: Offset(0, 8)),
+    BoxShadow(color: Color(0x09183A60), blurRadius: 20, offset: Offset(0, 6)),
   ];
   static const softShadow = [
     BoxShadow(color: Color(0x08183A60), blurRadius: 14, offset: Offset(0, 4)),

@@ -53,7 +53,7 @@ void main() {
   testWidgets('tanpa token aplikasi membuka halaman masuk', (tester) async {
     await tester.pumpWidget(buildApp(storage: FakeTokenStorage()));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 2200));
 
     expect(find.byType(LoginPage), findsOneWidget);
   });
@@ -61,11 +61,9 @@ void main() {
   testWidgets('dengan token aplikasi membuka beranda dan tiga tab', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      buildApp(storage: FakeTokenStorage('token-aktif')),
-    );
+    await tester.pumpWidget(buildApp(storage: FakeTokenStorage('token-aktif')));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 2200));
 
     expect(find.byType(HomePage), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);

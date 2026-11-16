@@ -1,8 +1,13 @@
+import '../../../core/theme/app_icons.dart';
+
+import 'package:go_router/go_router.dart';
+
+import '../../../core/widgets/app_text_field.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../auth/application/auth_controller.dart';
@@ -19,7 +24,6 @@ class EditProfilPage extends ConsumerStatefulWidget {
 class _EditProfilPageState extends ConsumerState<EditProfilPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nama;
-  late final TextEditingController _alamat;
   late final String _noTelp;
   ApiException? _serverError;
   bool _saving = false;
@@ -32,14 +36,12 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
       _ => null,
     };
     _nama = TextEditingController(text: pelanggan?.nama ?? '');
-    _alamat = TextEditingController(text: pelanggan?.alamat ?? '');
     _noTelp = pelanggan?.noTelp ?? '';
   }
 
   @override
   void dispose() {
     _nama.dispose();
-    _alamat.dispose();
     super.dispose();
   }
 
@@ -56,7 +58,7 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
     try {
       await ref
           .read(authControllerProvider.notifier)
-          .updateProfile(nama: _nama.text.trim(), alamat: _alamat.text.trim());
+          .updateProfile(nama: _nama.text.trim());
       if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Profil diperbarui.')));
@@ -81,93 +83,91 @@ class _EditProfilPageState extends ConsumerState<EditProfilPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
+    final name = _nama.text.trim();
     return AppBackdrop(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Ubah Profil')),
+        appBar: AppBar(title: const Text('Ubah profil')),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: theme.colorScheme.primaryContainer,
+                      child: Text(
+                        name.isEmpty
+                            ? '?'
+                            : name.characters.first.toUpperCase(),
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Informasi akun',
+                            style: theme.textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Pastikan data penjemputanmu sesuai.',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
                 if (_serverError != null) ...[
                   AuthErrorBanner(message: _serverError!.message),
                   const SizedBox(height: 16),
                 ],
-                AppCard(
-                  padding: const EdgeInsets.all(18),
-                  shadow: AppColors.softShadow,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Informasi akun',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _nama,
-                        textInputAction: TextInputAction.next,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: const InputDecoration(
-                          labelText: 'Nama lengkap',
-                          prefixIcon: Icon(Icons.person_outline_rounded),
-                        ),
-                        validator: (value) =>
-                            _serverError?.fieldError('nama') ??
-                            validateNama(value),
-                        onChanged: (_) => _clearServerError(),
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _alamat,
-                        textCapitalization: TextCapitalization.sentences,
-                        minLines: 1,
-                        maxLines: 3,
-                        decoration: const InputDecoration(
-                          labelText: 'Alamat',
-                          prefixIcon: Icon(Icons.location_on_outlined),
-                        ),
-                        validator: (value) =>
-                            _serverError?.fieldError('alamat') ??
-                            validateAlamat(value),
-                        onChanged: (_) => _clearServerError(),
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        initialValue: _noTelp,
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Nomor telepon',
-                          prefixIcon: Icon(Icons.phone_android_rounded),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.info_outline_rounded,
-                            size: 15,
-                            color: AppColors.soft,
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              'Hubungi outlet untuk mengubah nomor telepon.',
-                              style: theme.textTheme.bodySmall,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                AppTextFormField(
+                  controller: _nama,
+                  enabled: !_saving,
+                  textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'Nama lengkap',
+                    prefixIcon: Icon(AppIcons.person_outline_rounded),
+                  ),
+                  validator: (value) =>
+                      _serverError?.fieldError('nama') ?? validateNama(value),
+                  onChanged: (_) => _clearServerError(),
+                ),
+                const SizedBox(height: 24),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(AppIcons.location_on_outlined),
+                  title: const Text('Alamat penjemputan'),
+                  trailing: const Icon(AppIcons.chevron_right_rounded),
+                  onTap: _saving ? null : () => context.push('/alamat'),
+                ),
+                const SizedBox(height: 24),
+                AppTextFormField(
+                  initialValue: _noTelp,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Nomor telepon',
+                    prefixIcon: Icon(AppIcons.lock_outline_rounded),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
+                Text(
+                  'Hubungi outlet untuk mengubah nomor telepon.',
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: 32),
                 AppButton(
                   label: 'Simpan',
                   loading: _saving,

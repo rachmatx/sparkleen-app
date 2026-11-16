@@ -13,12 +13,7 @@ const testOutlet = OutletInfo(
 );
 
 final testLayanan = [
-  const Layanan(
-    id: 1,
-    nama: 'Cuci Kering',
-    hargaPerKg: 7000,
-    estimasiHari: 2,
-  ),
+  const Layanan(id: 1, nama: 'Cuci Kering', hargaPerKg: 7000, estimasiHari: 2),
 ];
 
 final testTransaksiAktif = TransaksiRingkas(

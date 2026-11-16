@@ -37,6 +37,7 @@ class FakeTransaksiRepository implements TransaksiRepository {
   final Map<int, NotaData> notaResults = {};
   final List<({String status, int page})> calls = [];
   final List<int> detailCalls = [];
+  final List<int> perPageCalls = [];
   final List<int> notaCalls = [];
 
   @override
@@ -46,6 +47,7 @@ class FakeTransaksiRepository implements TransaksiRepository {
     int perPage = 20,
   }) async {
     calls.add((status: status, page: page));
+    perPageCalls.add(perPage);
     final failure = error;
     if (failure != null) throw failure;
 

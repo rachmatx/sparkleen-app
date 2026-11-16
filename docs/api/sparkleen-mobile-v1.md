@@ -1,5 +1,7 @@
 # Sparkleen Mobile API v1
 
+> Status implementasi 10 November 2026: API pelanggan, permintaan jemput/antrean kasir, dan pembayaran pelanggan tersedia lokal pada `feat/customer-payments`. Pembayaran tetap SIMULATION, pembuatan default nonaktif. Notifikasi in-app dan penukaran poin dilanjutkan pada `feat/notifications-loyalty`; push OS belum tersedia. Belum push/deploy. Lihat `docs/customer-payments.md` dan `docs/notifications-and-points.md`.
+
 REST API untuk aplikasi mobile pelanggan Sparkleen Laundry. Hanya berisi kebutuhan
 pelanggan (auth, profil, katalog, transaksi, nota, permintaan jemput, pembayaran online,
 info outlet). Data karyawan, inventaris, dan laporan tetap di web kasir.
@@ -22,7 +24,7 @@ Authorization: Bearer <token>
 
 - Token berlaku 30 hari dan diperpanjang otomatis setiap kali dipakai.
 - Logout me-revoke token yang sedang dipakai.
-- PIN, token, dan hash tidak pernah dikembalikan oleh API maupun ditulis ke log.
+- PIN login dan hash tidak dikembalikan API. Token hanya dikirim saat autentikasi; PIN/token/hash tidak boleh ditulis ke log. PIN pengambilan hanya tersedia di detail transaksi milik pelanggan.
 
 ## Format response
 
@@ -76,7 +78,34 @@ Aturan data:
 | POST | `/permintaan/{id}/batal` | Bearer | Batalkan permintaan yang masih menunggu |
 | POST | `/transaksi/{id}/pembayaran` | Bearer | Buat / ambil ulang intent pembayaran online |
 | GET | `/transaksi/{id}/pembayaran` | Bearer | Status tagihan online (polling) |
+| POST | `/transaksi/{id}/pembayaran/sinkronisasi` | Bearer | Periksa gateway dan rekonsiliasi status bertanda tangan |
 | POST | `/transaksi/{id}/pembayaran/batal` | Bearer | Batalkan intent pembayaran online |
+
+### Notifikasi dan loyalitas (tahap 4)
+
+Semua endpoint memerlukan bearer pelanggan. Data difilter berdasarkan akun token.
+
+| Method | Path | Hasil/body |
+|---|---|---|
+| GET | `/notifikasi` | List + meta page/last_page/unread_count/latest_id |
+| GET | `/notifikasi/ringkasan` | unread_count/latest_id |
+| POST | `/notifikasi/{id}/baca` | Tanpa body; idempotent |
+| POST | `/notifikasi/baca-semua` | `{"through_id":123}`; hanya sampai cutoff |
+| GET | `/loyalitas` | balance, point_value, history; pagination meta |
+| GET | `/transaksi/{id}/poin` | Preview order_id/no_nota/balance/grand_total/earned_points/max_points/can_redeem/reason/redemption |
+| POST | `/transaksi/{id}/poin` | `{"points":20,"expected_grand_total":35000,"request_id":"client-random-key-16-to-64"}`; response preview 200 |
+
+Nilai poin Rp300, final dihitung server. Penukaran sekali/order, sebelum pembayaran
+pertama, belum diambil, tanpa referensi/attempt online. Total yang berubah 409
+ORDER_CHANGED; saldo/syarat berubah 409 POINTS_UNAVAILABLE; reuse key dengan isi
+berbeda 409 IDEMPOTENCY_CONFLICT. Retry identik tidak mengurangi poin kedua kali.
+Penyesuaian earned akibat grand total turun ditampilkan pada konfirmasi/riwayat.
+
+Notifikasi adalah inbox tersimpan, bukan push OS. Item: id, category, title, body,
+target_type (order/pickup/loyalty), target_id nullable, read_at, created_at. Tidak
+memuat PIN atau URL bebas. Riwayat poin berisi id, order_id, no_nota, delta,
+balance_after, reason, created_at; hanya event sejak fitur diaktifkan. Lihat
+`docs/notifications-and-points.md` untuk pengalaman pengguna dan batas pengujian.
 
 ### POST /auth/register
 
@@ -101,7 +130,7 @@ Response `201`:
 {
   "data": {
     "token": "<64 karakter hex>",
-    "expires_at": "2026-11-22 10:00:00",
+    "expires_at": "2026-11-22T10:00:00+07:00",
     "pelanggan": {
       "id_pelanggan": 12,
       "kode_pelanggan": "PLG012",
@@ -117,7 +146,7 @@ Response `201`:
 
 ### POST /auth/activate
 
-Untuk pelanggan lama yang belum punya PIN. `no_nota` harus milik nomor telepon tersebut.
+Untuk pelanggan lama yang belum punya PIN. `no_nota` harus merupakan nota terakhir yang belum dihapus milik nomor telepon tersebut.
 
 ```json
 {
@@ -190,7 +219,7 @@ Hanya layanan dengan `is_aktif = 1`, diurutkan berdasarkan nama.
 }
 ```
 
-Nilai diambil dari `Config\Outlet`, dapat dioverride lewat `.env` (`outlet.nama`, dst).
+Nilai diambil dari `Config\Outlet`, dapat dioverride lewat `.env` (`outlet.nama`, `outlet.noWa`, `outlet.alamat`, `outlet.jamBuka`, `outlet.jamTutup`).
 
 ### GET /transaksi
 
@@ -300,8 +329,10 @@ Data terstruktur untuk render nota digital. **Tidak** memuat `pin_pengambilan`.
 
 ### POST /permintaan
 
+Contoh tanggal harus diganti dengan slot yang belum lewat; koleksi Postman menyiapkan tanggal besok WIB secara otomatis.
+
 Mengajukan permintaan jemput. Satu pelanggan hanya boleh punya **satu** permintaan
-berstatus `menunggu`.
+berstatus `menunggu` atau `diproses` (belum menjadi transaksi).
 
 Body:
 
@@ -310,7 +341,7 @@ Body:
   "id_layanan": 1,
   "berat_perkiraan": 4.5,
   "alamat_jemput": "Jl. Melati No. 7, RT 2",
-  "tgl_jemput": "2026-10-25",
+  "tgl_jemput": "2026-11-11",
   "slot_jemput": "siang",
   "catatan": "Cuci pisah dengan handuk"
 }
@@ -318,10 +349,10 @@ Body:
 
 | Field | Tipe | Wajib | Aturan di server |
 |---|---|---|---|
-| `id_layanan` | int | ya | numerik; layanan harus ada dan `is_aktif = 1` |
-| `berat_perkiraan` | number | ya | > 0 dan ≤ 100; disimpan dibulatkan ke 2 desimal (pesan error menyebut "0.1 dan 100 kg") |
-| `alamat_jemput` | string | ya | minimal 10 karakter setelah `trim` |
-| `tgl_jemput` | string `YYYY-MM-DD` | ya | tanggal valid, tidak boleh di masa lalu |
+| `id_layanan` | int | ya | JSON integer positif; layanan harus ada dan `is_aktif = 1` |
+| `berat_perkiraan` | number | ya | 0,1–100 kg; disimpan dibulatkan ke 2 desimal |
+| `alamat_jemput` | string | ya | 10–500 karakter setelah `trim` |
+| `tgl_jemput` | string `YYYY-MM-DD` | ya | tanggal valid, hingga 30 hari ke depan; slot WIB harus belum lewat |
 | `slot_jemput` | string | ya | `pagi` \| `siang` \| `sore` |
 | `catatan` | string | tidak | maksimal 255 karakter; kosong disimpan sebagai `null` |
 
@@ -341,7 +372,7 @@ Response `201`:
     "berat_perkiraan": 4.5,
     "estimasi_harga": 31500,
     "alamat_jemput": "Jl. Melati No. 7, RT 2",
-    "tgl_jemput": "2026-10-25T12:00:00+07:00",
+    "tgl_jemput": "2026-11-11T12:00:00+07:00",
     "slot_jemput": "siang",
     "catatan": "Cuci pisah dengan handuk",
     "estimasi_hari": 2,
@@ -357,9 +388,9 @@ rupiah. `estimasi_hari` diambil dari layanan. `id_transaksi` terisi setelah kasi
 mengonfirmasi dan pesanan jadi transaksi nyata; selama itu `null`.
 
 Objek permintaan juga dipakai `GET /permintaan`, `GET /permintaan/{id}`, dan
-`POST /permintaan/{id}/batal`. `status` yang mungkin dilihat klien: `menunggu`,
-`dikonfirmasi`, `ditolak`, `dibatalkan`. State internal kasir `diproses` sengaja
-dinormalkan menjadi `menunggu` — bagi pelanggan belum ada yang berubah.
+`POST /permintaan/{id}/batal`. Status publik: `menunggu`, `diproses`, `dikonfirmasi`,
+`ditolak`, `dibatalkan`. Status `diproses` ditampilkan tersendiri agar pelanggan
+mengetahui penjemputan sudah ditangani kasir.
 `alasan_penolakan` hanya terisi saat `ditolak`.
 
 Error:
@@ -368,14 +399,13 @@ Error:
 |---|---|---|
 | 422 | `VALIDATION_ERROR` | Salah satu aturan tabel di atas gagal; `error.fields` memakai nama field yang sama |
 | 422 | `VALIDATION_ERROR` | `id_layanan` tidak ada atau tidak aktif → `error.fields.id_layanan = ["Layanan tidak tersedia."]` |
-| 409 | `ACTIVE_REQUEST_EXISTS` | Masih ada permintaan `menunggu` milik pelanggan ini |
+| 409 | `ACTIVE_REQUEST_EXISTS` | Masih ada permintaan `menunggu`/`diproses` milik pelanggan ini |
 
 ### GET /permintaan
 
-Query: `status=aktif|selesai|semua` (default `semua`; nilai lain diperlakukan sebagai
-`semua`), `page` (default 1), `per_page` (default 20, maksimal 50).
+Query: `status=aktif|selesai|semua` (default `semua`), `page` (default 1, maksimal 1.000.000), `per_page` (default 20, maksimal 50). Filter/pagination yang tidak valid menghasilkan 422.
 
-`aktif` = `menunggu`, `diproses`, `dikonfirmasi`. `selesai` = `ditolak`, `dibatalkan`.
+`aktif` = `menunggu`, `diproses`. `selesai` = `dikonfirmasi`, `ditolak`, `dibatalkan`. Setelah dikonfirmasi, kelanjutan cucian dipantau lewat `id_transaksi`.
 
 ```json
 {
@@ -388,7 +418,7 @@ Query: `status=aktif|selesai|semua` (default `semua`; nilai lain diperlakukan se
       "berat_perkiraan": 4.5,
       "estimasi_harga": 31500,
       "alamat_jemput": "Jl. Melati No. 7, RT 2",
-      "tgl_jemput": "2026-10-25T12:00:00+07:00",
+      "tgl_jemput": "2026-11-11T12:00:00+07:00",
       "slot_jemput": "siang",
       "catatan": "Cuci pisah dengan handuk",
       "estimasi_hari": 2,
@@ -411,244 +441,69 @@ di atas. Permintaan milik pelanggan lain atau ID yang tidak dikenal menghasilkan
 
 ### POST /permintaan/{id}/batal
 
-Tanpa body. Hanya permintaan berstatus `menunggu` yang bisa dibatalkan; pembatalannya
-atomik (satu `UPDATE` dengan predikat status), jadi dua tap cepat tetap menghasilkan
-satu pembatalan dan permintaan tidak pernah singgah di status `diproses`.
+Tanpa body. Hanya permintaan berstatus `menunggu` yang bisa dibatalkan; pembatalannya atomik dengan lock pelanggan dan permintaan. Pengiriman ulang pembatalan yang sudah berhasil mengembalikan 200 dengan status `dibatalkan`.
 
 Response `200` berisi objek permintaan dengan `status` sudah menjadi `dibatalkan`.
 
 | HTTP | Code | Kondisi |
 |---|---|---|
 | 404 | `NOT_FOUND` | Permintaan tidak ada atau bukan milik pelanggan pemilik token |
-| 409 | `CANNOT_CANCEL` | Status sudah bukan `menunggu` (sudah diproses/dikonfirmasi/ditolak/dibatalkan) |
-| 409 | `CANNOT_CANCEL` | Kasir mengambil permintaan di antara baca dan update ("Permintaan sudah sedang diproses.") — permintaan tetap utuh |
+| 409 | `REQUEST_NOT_CANCELLABLE` | Status sudah diproses/dikonfirmasi/ditolak |
+| 200 | - | Pengiriman ulang pembatalan yang sebelumnya berhasil |
 
-### POST /transaksi/{id}/pembayaran
+### Pembayaran pelanggan (tahap 3)
 
-Membuka tagihan online untuk sisa tagihan transaksi. `{id}` = `id_transaksi` numerik.
+Semua endpoint berikut memerlukan bearer token pelanggan dan kepemilikan transaksi.
+Kunci merchant dan `PAYMENT_WEBHOOK_SECRET` hanya berada pada server.
 
-Body:
-
-```json
-{ "metode": "QRIS" }
-```
-
-Hanya `metode` yang dibaca. Nilainya `QRIS` atau `TRANSFER` (server meng-`trim` lalu
-`strtoupper`, jadi `qris`/`transfer` juga diterima). **Nominal tidak dikirim klien** —
-server menghitung sendiri `sisa_tagihan` dan memakai angka itu sebagai nominal intent.
-
-Response `201` berisi objek intent berstatus `PENDING` (bentuk lengkapnya di
-`GET /transaksi/{id}/pembayaran`):
-
-```json
-{
-  "data": {
-    "status": "PENDING",
-    "metode": "QRIS",
-    "nominal": 21000,
-    "total_dibayar": 0,
-    "sisa": 21000,
-    "status_pembayaran": "belum",
-    "expired_at": "2026-10-24T12:15:00+07:00",
-    "payment_detail": {
-      "qris_data": "<string payload QRIS dari Payment API>",
-      "merchant_name": "Sparkleen",
-      "expired_at": "2026-10-24T12:15:00+07:00",
-      "metode": "QRIS"
-    }
-  }
-}
-```
-
-`payment_detail` adalah objek mentah dari Payment API (untuk QRIS berisi payload QRIS,
-untuk TRANSFER rekening tujuan) plus `expired_at` dan `metode` yang ditempel server.
-`transaction_id` dari provider **tidak** dikembalikan ke klien.
-
-Perilaku:
-
-- Transaksi fresh (`NONE`) → intent baru, `201`.
-- Sudah ada intent `PENDING` dengan metode yang sama → intent yang ada dikirim ulang
-  apa adanya, `200`, tanpa memanggil Payment API (idempoten).
-- Sudah ada intent `PENDING` metode lain → `409 CONFLICT_METHOD`; batalkan dulu.
-- Intent `EXPIRED` **tidak** otomatis berganti jadi intent baru. `payment_ref` intent
-  yang kedaluwarsa masih terisi (tidak ada yang membersihkannya otomatis), sedangkan
-  klaim atomik saat menyimpan intent baru mensyaratkan `payment_ref` kosong. Hasilnya:
-  `200` berisi intent lama yang tetap `EXPIRED`, bukan `201`. Untuk membuka ulang:
-  panggil `POST /transaksi/{id}/pembayaran/batal` lebih dulu, lalu `POST` yang sama untuk
-  mendapatkan intent baru (`201`).
-- Kasir membuka intent bersamaan sehingga klaim atomik kalah → `200` berisi intent yang
-  sedang aktif, bukan error.
-
-| HTTP | Code | Kondisi |
+| Method | Path relatif transaksi | Perilaku |
 |---|---|---|
-| 404 | `NOT_FOUND` | Transaksi tidak ada atau bukan milik pelanggan |
-| 422 | `VALIDATION_ERROR` | `metode` kosong / bukan `QRIS` atau `TRANSFER` (`error.fields.metode`) |
-| 409 | `ALREADY_PAID` | `sisa_tagihan` sudah `0` |
-| 409 | `CONFLICT_METHOD` | Ada intent `PENDING` metode berbeda |
-| 502 | `PAYMENT_API_UNAVAILABLE` | Payment API mati / menolak / belum dikonfigurasi (`PAYMENT_API_URL` atau `PAYMENT_API_KEY` kosong) |
+| GET | `/{id}/pembayaran` | Snapshot lokal, tanpa panggilan provider |
+| POST | `/{id}/pembayaran` | Body `{"metode":"QRIS"}` atau `{"metode":"TRANSFER"}`; response 200 |
+| POST | `/{id}/pembayaran/sinkronisasi` | Tanpa body; status gateway bertanda tangan diterapkan ke ledger |
+| POST | `/{id}/pembayaran/batal` | Tanpa body; batal hanya setelah provider mengonfirmasi |
 
-### GET /transaksi/{id}/pembayaran
-
-Endpoint polling status tagihan online. Isinya **murni dibaca dari DB lokal** — tidak ada
-pemanggilan ke Payment API sama sekali, sehingga latency dan matinya provider tidak
-membuat layar status error. `status` hanya berganti karena dua hal: app sendiri membuat
-atau membatalkan intent, atau webhook `POST /webhook/payment` mencatat pembayaran.
-Lunasnya hanya lewat webhook — lihat "Cara intent menjadi lunas".
-
-`status` selalu salah satu dari `NONE`, `PENDING`, `EXPIRED`, `SUCCESS`, dan **kedelapan
-key selalu ada** pada setiap status (perbedaannya hanya nilainya).
-
-`NONE` — belum pernah ada intent, atau intent dibatalkan (contoh ini transaksi yang belum
-pernah dibuka intent, sehingga `metode` masih `null`):
+Response snapshot:
 
 ```json
-{
-  "data": {
-    "status": "NONE",
-    "metode": null,
-    "nominal": 21000,
-    "total_dibayar": 0,
-    "sisa": 21000,
-    "status_pembayaran": "belum",
-    "expired_at": null,
-    "payment_detail": {}
-  }
-}
+{"data":{"status":"PENDING","enabled":true,"mode":"SIMULATION","metode":"QRIS","nominal":35000,"total_dibayar":0,"sisa":35000,"status_pembayaran":"belum","expired_at":"2026-11-10T12:15:00Z","payment_detail":{"simulation_code":"<gateway UUID>","qris_data":"<gateway UUID>","qr_image":"data:image/png;base64,..."}}}
 ```
 
-`PENDING` — intent aktif, bayar sekarang:
+| Status | Tindakan aplikasi |
+|---|---|
+| NONE | Pilihan metode jika `enabled`; bayar kasir jika nonaktif |
+| PROCESSING | Ulang sinkronisasi menggunakan request key yang tersimpan; jangan buat invoice lain |
+| PENDING | QR PNG/kode Smart Pay atau rekening dummy; sinkronisasi setiap 10 detik saat foreground |
+| EXPIRED | Sinkronisasi untuk konfirmasi expiry sebelum membuat tagihan berikutnya |
+| REVIEW | Tagihan legacy/tidak dikenal; hubungi kasir |
+| SUCCESS | Sisa ledger 0; tampilkan lunas dan muat ulang detail/nota |
 
-```json
-{
-  "data": {
-    "status": "PENDING",
-    "metode": "QRIS",
-    "nominal": 21000,
-    "total_dibayar": 0,
-    "sisa": 21000,
-    "status_pembayaran": "belum",
-    "expired_at": "2026-10-24T12:15:00+07:00",
-    "payment_detail": { "qris_data": "<payload QRIS>", "expired_at": "...", "metode": "QRIS" }
-  }
-}
-```
+- `nominal` selalu dihitung server dari grand total dikurangi pembayaran tercatat.
+  Client hanya mengirim metode, tidak dapat mengirim nominal/status pembayaran.
+- Satu order hanya memiliki satu attempt aktif; metode sama mengembalikan attempt sama,
+  metode lain 409. Attempt CREATING tersimpan sebelum HTTP; retry menggunakan
+  `Idempotency-Key` yang sama. Timeout tidak membuktikan kegagalan remote.
+- Snapshot PENDING mengekspos **QR simulasi berisi UUID**, bukan QRIS bank.
+  Transfer selalu `BANK SIMULASI`, `DEMO-NOT-A-BANK-ACCOUNT`; jangan transfer uang nyata.
+  Kode simulasi UUID sengaja dapat dibaca Smart Pay. Tidak ada credential di kode.
+- `MOBILE_PAYMENTS_ENABLED=false` secara default. Flag mengontrol pembuatan baru;
+  status, sinkronisasi, dan pembatalan existing tetap tersedia.
+- Pembatalan/ganti metode tidak menghapus intent lokal saat provider timeout. Server
+  hanya menutupnya setelah respons CANCELLED/EXPIRED/FAILED terverifikasi. Respons
+  SUCCESS saat pembatalan justru dicatat sebagai pembayaran, bukan disamarkan batal.
+- Tidak ada tombol/endpoint pelanggan yang bisa menyatakan dirinya sudah membayar.
 
-`EXPIRED` — bentuknya sama persis dengan `PENDING`, hanya `status` yang berganti, yaitu
-ketika `expired_at` sudah lewat sedangkan intent-nya belum dibatalkan:
+### Verifikasi gateway dan settlement
 
-```json
-{
-  "data": {
-    "status": "EXPIRED",
-    "metode": "TRANSFER",
-    "nominal": 15000,
-    "total_dibayar": 6000,
-    "sisa": 15000,
-    "status_pembayaran": "belum",
-    "expired_at": "2026-10-24T11:00:00+07:00",
-    "payment_detail": { "bank_name": "Bank BCA", "account_number": "1234567890", "metode": "TRANSFER" }
-  }
-}
-```
-
-`SUCCESS` — sisa tagihan sudah `0`:
-
-```json
-{
-  "data": {
-    "status": "SUCCESS",
-    "metode": "qris",
-    "nominal": 21000,
-    "total_dibayar": 21000,
-    "sisa": 0,
-    "status_pembayaran": "lunas",
-    "expired_at": null,
-    "payment_detail": {}
-  }
-}
-```
-
-Arti tiap key:
-
-| Key | Tipe | Keterangan |
-|---|---|---|
-| `status` | string | `NONE` \| `PENDING` \| `EXPIRED` \| `SUCCESS` |
-| `metode` | string\|null | `QRIS`/`TRANSFER` selama intent masih ada (diambil dari `payment_detail`); kalau `payment_detail` sudah dikosongkan — oleh webhook maupun oleh pembatalan — jatuh ke metode transaksi sehingga bernilai `cash`/`qris`/`transfer` huruf kecil, atau `null` |
-| `nominal` | int | rupiah yang masih harus dibayar sekarang (= `sisa`) |
-| `total_dibayar` | int | rupiah yang sudah tercatat di `tb_pembayaran` |
-| `sisa` | int | `grand_total - total_dibayar`, nilai negatif dipotong ke `0` |
-| `status_pembayaran` | string | `belum` \| `cicil` \| `lunas` dari master status |
-| `expired_at` | string\|null | ISO-8601 batas waktu intent; `null` pada `NONE` dan setelah webhook |
-| `payment_detail` | object | mentah dari Payment API; `{}` kalau tidak ada intent |
-
-Cara baca di app: `SUCCESS` → bayar selesai; `PENDING` → tampilkan `payment_detail` +
-`expired_at` dan jalankan polling; `EXPIRED` → tawarkan "coba lagi", yang harus memanggil
-`POST /transaksi/{id}/pembayaran/batal` lalu `POST /transaksi/{id}/pembayaran` (POST ulang
-tanpa pembatalan hanya mengembalikan `EXPIRED`, lihat di atas); `NONE` → tampilkan pilihan
-metode. Status `SUCCESS` diperiksa lebih dulu daripada `payment_ref`, karena webhook
-mengosongkan `payment_ref` tepat setelah mencatat pembayaran — tanpa urutan itu,
-pembayaran yang barusan sukses akan kelihatan sebagai `NONE`.
-
-Satu-satunya error endpoint ini adalah `404 NOT_FOUND` (transaksi tidak ada / bukan
-milik pelanggan).
-
-### POST /transaksi/{id}/pembayaran/batal
-
-Tanpa body. Mengosongkan `payment_ref` dan `payment_detail` transaksi, lalu mencoba
-membatalkan intent di Payment API. Pembatalan ke provider bersifat best-effort: kalau
-provider mati, tagihan lokal tetap batal dan response tetap `200`.
-
-Response `200` berisi objek intent yang sudah kembali ke `NONE` (`sisa` tetap sebesar
-tagihan yang belum dibayar):
-
-```json
-{
-  "data": {
-    "status": "NONE",
-    "metode": "qris",
-    "nominal": 21000,
-    "total_dibayar": 0,
-    "sisa": 21000,
-    "status_pembayaran": "belum",
-    "expired_at": null,
-    "payment_detail": {}
-  }
-}
-```
-
-`metode` di sini bukan `null`: pembatalan hanya mengosongkan `payment_ref` dan
-`payment_detail`, sedangkan `id_metode_pembayaran` yang ditulis saat intent dibuat tetap
-tinggal (untuk intent QRIS nilainya `qris` — huruf kecil, dari master metode). `null` hanya
-muncul kalau transaksi belum pernah punya metode.
-
-| HTTP | Code | Kondisi |
-|---|---|---|
-| 404 | `NOT_FOUND` | Transaksi tidak ada atau bukan milik pelanggan |
-| 409 | `NO_ACTIVE_PAYMENT` | Tidak ada tagihan online yang berjalan (`payment_ref` kosong) |
-| 409 | `NO_ACTIVE_PAYMENT` | `payment_ref` sudah diganti/dikosongkan pihak lain sejak dibaca ("Tagihan sudah diproses.") — pembatalan ditolak supaya tidak menghapus intent orang lain |
-
-## Cara intent menjadi lunas
-
-Untuk pembayaran online, satu-satunya penulis `tb_pembayaran` (dan status `lunas`/`cicil`
-pada transaksi) adalah **webhook ber-HMAC** `POST /webhook/payment` (`Webhook::payment()`)
-— dipanggil Payment API, bukan aplikasi. Tidak ada satu pun route mobile API yang
-menyisipkan pembayaran atau menandai lunas; pembayaran tunai tetap tercatat dari web kasir,
-di luar API ini. Verifikasinya: header `X-Signature` dibandingkan dengan
-`hash_hmac('sha256', raw body, PAYMENT_API_KEY)` lewat `hash_equals`, dan callback ganda
-ditolak lewat klaim atomik (`payment_ref` dikosongkan lebih dulu dalam transaksi yang
-sama; kalau tidak ada baris yang terkena, callback dianggap sudah diproses).
-
-Konsekuensinya bagi app:
-
-- **Tidak ada endpoint "sudah bayar"** dan tidak boleh ada tombolnya di UI. Klien tidak
-  pernah bisa menyatakan dirinya lunas.
-- App cukup **polling `GET /transaksi/{id}/pembayaran`** dan menganggap pembayaran sukses
-  saat `status == "SUCCESS"`, yang berarti `sisa <= 0`. `GET /transaksi/{id}` dengan
-  `sisa_tagihan == 0` adalah sumber kebenaran yang sama.
-- Sebelum webhook sempat masuk, status masih `PENDING` walaupun uang sudah dibayar.
-  Tampilkan "menunggu konfirmasi pembayaran", jangan langsung menandai lunas.
-- Webhook juga mengosongkan `payment_ref`, jadi setelah lunas intent tidak bisa dibatalkan
-  lagi dan `payment_detail` ikut kosong.
+Laundry memverifikasi raw response body Payment API dengan header
+`X-Webhook-Signature`, HMAC-SHA256 `PAYMENT_WEBHOOK_SECRET` yang terpisah dari
+`PAYMENT_API_KEY`. ID gateway, merchant, nota, nominal, metode dan mode harus sesuai.
+Webhook memakai header `X-Signature` dengan secret server yang sama.
+Webhook dan sinkronisasi menggunakan `PaymentSettlementService` yang sama dengan
+lock order, intent, ledger; pengulangan tidak membuat pembayaran kedua. Pembayaran
+kas kasir ditolak selama ada tagihan online aktif. Tidak ada fallback menjadi lunas
+ketika provider gagal. Retry callback persisten/outbox belum tersedia; pemulihan
+foreground mengandalkan sinkronisasi eksplisit.
 
 ## Kode error
 
@@ -662,11 +517,13 @@ Konsekuensinya bagi app:
 | 409 | `PHONE_TAKEN` | Nomor telepon sudah terdaftar |
 | 409 | `AUTH_NOT_ACTIVATED` | Akun belum punya PIN, harus aktivasi |
 | 409 | `AUTH_ALREADY_ACTIVATED` | Aktivasi ulang padahal PIN sudah ada |
-| 409 | `ACTIVE_REQUEST_EXISTS` | Masih ada permintaan jemput `menunggu` untuk pelanggan ini |
+| 409 | `ACTIVE_REQUEST_EXISTS` | Masih ada permintaan jemput `menunggu`/`diproses` untuk pelanggan ini |
 | 409 | `CANNOT_CANCEL` | Permintaan hanya bisa dibatalkan selama belum diproses kasir |
 | 409 | `ALREADY_PAID` | Tagihan transaksi sudah lunas, intent tidak dibuat |
 | 409 | `CONFLICT_METHOD` | Intent `PENDING` metode lain masih berjalan; batalkan dulu |
-| 409 | `NO_ACTIVE_PAYMENT` | Tidak ada tagihan online yang berjalan / sudah diproses pihak lain |
+| 409 | `PAYMENT_REVIEW_REQUIRED` | Referensi pembayaran lama perlu pemeriksaan outlet |
+| 502 | `PAYMENT_CONTRACT_MISMATCH` | Respons provider tidak sesuai snapshot tagihan |
+| 503 | `PAYMENTS_DISABLED` | Pembuatan pembayaran pelanggan nonaktif |
 | 422 | `VALIDATION_ERROR` | Input tidak valid, lihat `error.fields` |
 | 422 | `ACTIVATION_FAILED` | Kombinasi nomor telepon + nomor nota tidak cocok |
 | 429 | `AUTH_BLOCKED` | Terlalu banyak percobaan login gagal |
@@ -682,35 +539,12 @@ Konsekuensinya bagi app:
 
 ## Catatan implementasi
 
-- Path memakai ID numerik karena `no_nota` mengandung `/` yang ditolak Apache. Berlaku juga
-  untuk `/permintaan/{id}`, `/permintaan/{id}/batal`, dan seluruh route pembayaran.
-- `tb_transaksi` tidak diubah strukturnya; API hanya membaca. Pembayaran online memakai
-  kolom yang sudah ada (`payment_ref`, `payment_detail`, `id_metode_pembayaran`), dan
-  `expired_at` dititipkan di dalam JSON `payment_detail` — bukan kolom baru.
-- Migrasi yang ditambahkan: kolom PIN/login pada `tb_pelanggan`, tabel `tb_api_token`, dan
-  tabel `tb_permintaan_pesanan` (FK ke pelanggan, layanan, transaksi, serta kasir yang
-  mengonfirmasi).
-- Reset PIN dilakukan kasir dari web (`POST /pelanggan/reset-pin/{id}`), lalu pelanggan
-  aktivasi ulang memakai nomor nota terakhir.
+Path memakai ID numerik karena nota mengandung `/`. API membaca/memperbarui
+kolom pembayaran transaksi existing, dan menyimpan snapshot/lifecycle pada
+`tb_payment_intent`. Migrasi lifecycle menambah request key, unique active order,
+expiry, detail dan mode. Jalankan migrasi sebelum memakai backend baru.
+Permintaan jemput memakai `tb_permintaan_jemput`; reset PIN tetap melalui kasir.
 
-### Nilai uang dan rahasia pembayaran
-
-- **Tidak ada satu pun endpoint yang menerima nominal dari klien.** `POST /permintaan`
-  hanya menerima `berat_perkiraan` dan harga dihitung server dari `harga_per_kg` layanan
-  (`estimasi_harga`). `POST /transaksi/{id}/pembayaran` hanya membaca `metode`; nominal
-  intent diambil dari `sisa_tagihan = grand_total - SUM(tb_pembayaran.nominal_bayar)`
-  hasil hitung server. Field lain di body diabaikan, sehingga app tidak bisa
-  memengaruhi — apalagi menentukan — angka yang harus dibayar.
-- **`PAYMENT_API_KEY` tidak pernah meninggalkan server.** `PaymentApiService` membacanya
-  dari `.env` untuk header ke Payment API, dan `Webhook::payment()` memakainya sebagai
-  secret HMAC. Key tidak pernah masuk response, tidak pernah ditulis ke `payment_detail`,
-  dan tidak pernah muncul di log. Message `PaymentApiException` (termasuk isi mentah dari
-  hulu) hanya masuk `log_message('error', ...)`, sementara klien selalu menerima pesan
-  generik `"Payment API tidak dapat dihubungi. Coba lagi sebentar."` dengan code
-  `PAYMENT_API_UNAVAILABLE` — termasuk ketika provider menolak permintaan atau ketika
-  `PAYMENT_API_URL`/`PAYMENT_API_KEY` belum diset.
-- `transaction_id` / `payment_ref` provider tidak diekspos ke klien; app hanya melihat
-  bentuk intent yang sudah dinormalalkan (`status`, `nominal`, `sisa`, `expired_at`,
-  `payment_detail`).
-- Klien tidak punya jalur untuk menulis `tb_pembayaran`: pembayarannya dicatat webhook,
-  dan kasir bisa mencatat pembayaran manual dari web.
+Semua nilai uang berupa rupiah integer. `PAYMENT_API_KEY` dipakai untuk autentikasi
+server ke gateway; HMAC menggunakan `PAYMENT_WEBHOOK_SECRET` terpisah. Keduanya tidak
+masuk response Flutter, source klien, log mentah atau `--dart-define`.

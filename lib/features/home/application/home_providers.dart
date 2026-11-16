@@ -11,13 +11,16 @@ final homeRepositoryProvider = Provider<HomeRepository>((ref) {
 });
 
 final layananProvider = FutureProvider<List<Layanan>>((ref) {
+  ref.watch(customerSessionRevisionProvider);
   return ref.watch(homeRepositoryProvider).layanan();
 });
 
 final outletProvider = FutureProvider<OutletInfo>((ref) {
+  ref.watch(customerSessionRevisionProvider);
   return ref.watch(homeRepositoryProvider).outlet();
 });
 
 final pesananAktifProvider = FutureProvider<TransaksiRingkas?>((ref) {
+  ref.watch(customerSessionRevisionProvider);
   return ref.watch(homeRepositoryProvider).pesananAktif();
 });

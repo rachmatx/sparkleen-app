@@ -1,5 +1,7 @@
+import '../../../core/theme/app_icons.dart';
+import '../../../core/widgets/app_text_field.dart';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,6 +10,7 @@ import '../../../core/widgets/app_button.dart';
 import '../application/auth_controller.dart';
 import 'validators.dart';
 import 'widgets/auth_scaffold.dart';
+import 'widgets/pin_form_field.dart';
 
 class ActivatePage extends ConsumerStatefulWidget {
   const ActivatePage({super.key});
@@ -36,6 +39,7 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
   }
 
   Future<void> _submit() async {
+    if (ref.read(authControllerProvider).isLoading) return;
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _serverError = null);
     if (!_formKey.currentState!.validate()) return;
@@ -79,48 +83,42 @@ class _ActivatePageState extends ConsumerState<ActivatePage> {
               AuthErrorBanner(message: _serverError!.message),
               const SizedBox(height: 16),
             ],
-            TextFormField(
+            AppTextFormField(
               controller: _phone,
+              enabled: !isLoading,
+              autofillHints: const [AutofillHints.telephoneNumber],
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 labelText: 'Nomor telepon',
                 hintText: '0812xxxxxxx',
-                prefixIcon: Icon(Icons.phone_android_rounded),
+                prefixIcon: Icon(AppIcons.phone_android_rounded),
               ),
               validator: (value) =>
                   _serverError?.fieldError('no_telp') ?? validatePhone(value),
               onChanged: (_) => _clearServerError(),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            AppTextFormField(
               controller: _noNota,
               textInputAction: TextInputAction.next,
               textCapitalization: TextCapitalization.characters,
               decoration: const InputDecoration(
                 labelText: 'Nomor nota',
                 hintText: 'LAU/20261021/0001',
-                prefixIcon: Icon(Icons.receipt_long_rounded),
+                prefixIcon: Icon(AppIcons.receipt_long_rounded),
               ),
               validator: (value) =>
                   _serverError?.fieldError('no_nota') ?? validateNoNota(value),
               onChanged: (_) => _clearServerError(),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            PinFormField(
               controller: _pin,
-              obscureText: true,
-              keyboardType: TextInputType.number,
+              enabled: !isLoading,
+              label: 'PIN baru',
+              hint: '6 digit angka',
               textInputAction: TextInputAction.done,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ],
-              decoration: const InputDecoration(
-                labelText: 'PIN baru',
-                hintText: '6 digit angka',
-                prefixIcon: Icon(Icons.lock_outline_rounded),
-              ),
               validator: (value) =>
                   _serverError?.fieldError('pin') ?? validatePin(value),
               onChanged: (_) => _clearServerError(),

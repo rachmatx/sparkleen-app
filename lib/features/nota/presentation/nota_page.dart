@@ -1,18 +1,22 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/providers.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/status_chip.dart';
+import '../../../core/widgets/app_artwork.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../pesanan/application/pesanan_controller.dart';
-import '../../pesanan/data/transaksi_detail.dart';
 import '../data/nota_data.dart';
 
 final notaProvider = FutureProvider.autoDispose.family<NotaData, int>((
   ref,
   id,
 ) {
+  ref.watch(customerSessionRevisionProvider);
   return ref.watch(transaksiRepositoryProvider).nota(id);
 });
 
@@ -36,7 +40,7 @@ class NotaPage extends ConsumerWidget {
 
     return AppBackdrop(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Nota Digital')),
+        appBar: AppBar(title: const Text('Nota digital')),
         body: AsyncValueView<NotaData>(
           value: async,
           onRetry: () => ref.invalidate(notaProvider(id)),
@@ -60,321 +64,233 @@ class NotaPage extends ConsumerWidget {
 
 class _NotaReceipt extends StatelessWidget {
   const _NotaReceipt({required this.nota});
-
   final NotaData nota;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final lunas = nota.statusPembayaran == 'lunas';
-    final metode = nota.metode;
-
-    return AppCard(
-      padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                Icons.local_laundry_service_outlined,
-                color: Colors.white,
-                size: 23,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Center(
-            child: Text(
-              'Sparkleen',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: colors.primary,
-                letterSpacing: -0.5,
-              ),
-            ),
-          ),
-          if (nota.outlet.nama.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Center(
-              child: Text(
-                nota.outlet.nama,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colors.onSurface,
-                ),
-              ),
-            ),
-          ],
-          if (nota.outlet.alamat.isNotEmpty)
-            Center(
-              child: Text(
-                nota.outlet.alamat,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall,
-              ),
-            ),
-          if (nota.outlet.noWa.isNotEmpty)
-            Center(
-              child: Text(nota.outlet.noWa, style: theme.textTheme.bodySmall),
-            ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: TicketDivider(),
-          ),
-          _NotaRow(label: 'No. Nota', value: nota.noNota),
-          const SizedBox(height: 6),
-          _NotaRow(label: 'Tanggal', value: formatTanggal(nota.tanggal)),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: TicketDivider(),
-          ),
-          if (nota.items.isEmpty)
-            Text('Tidak ada rincian layanan.', style: theme.textTheme.bodySmall)
-          else
-            for (var index = 0; index < nota.items.length; index++) ...[
-              if (index > 0) const SizedBox(height: 12),
-              _NotaItem(item: nota.items[index]),
-            ],
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: TicketDivider(),
-          ),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: colors.primaryContainer.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.outlineVariant),
-            ),
-            child: Column(
-              children: [
-                _AmountRow(
-                  label: 'Subtotal',
-                  value: formatRupiah(nota.subtotal),
-                ),
-                if (nota.diskon > 0)
-                  _AmountRow(
-                    label: 'Diskon',
-                    value: '-${formatRupiah(nota.diskon)}',
-                    color: colors.primary,
-                  ),
-                const SizedBox(height: 4),
-                _AmountRow(
-                  label: 'Grand total',
-                  value: formatRupiah(nota.grandTotal),
-                  bold: true,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  'Pembayaran',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      lunas ? 'Lunas' : 'Belum dibayar',
-                      textAlign: TextAlign.right,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: colors.primary,
-                      ),
-                    ),
-                    if (metode != null && metode.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        metode,
-                        textAlign: TextAlign.right,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: Text(
-              'Terima kasih',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Center(
-            child: Text(
-              'Terima kasih telah menggunakan Sparkleen.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall,
-            ),
-          ),
-        ],
-      ),
+    final paid = nota.statusPembayaran == 'lunas';
+    Widget rule() => const Padding(
+      padding: EdgeInsets.symmetric(vertical: 14),
+      child: TicketDivider(),
     );
-  }
-}
-
-class _NotaRow extends StatelessWidget {
-  const _NotaRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          flex: 2,
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: colors.onSurface,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _NotaItem extends StatelessWidget {
-  const _NotaItem({required this.item});
-
-  final TransaksiItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.namaLayanan,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${formatBerat(item.berat)} × ${formatRupiah(item.hargaSatuan)}/kg',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Flexible(
-          child: Text(
-            formatRupiah(item.subtotal),
-            textAlign: TextAlign.right,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: colors.onSurface,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AmountRow extends StatelessWidget {
-  const _AmountRow({
-    required this.label,
-    required this.value,
-    this.bold = false,
-    this.color,
-  });
-
-  final String label;
-  final String value;
-  final bool bold;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final labelStyle =
-        (bold ? theme.textTheme.titleSmall : theme.textTheme.bodySmall)
-            ?.copyWith(
-              fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
-              color: bold ? colors.onSurface : colors.onSurfaceVariant,
-            );
-
-    return Padding(
+    Widget amount(String label, String value, {bool total = false}) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text(label, style: labelStyle)),
+          Expanded(
+            child: Text(
+              label,
+              style: total
+                  ? theme.textTheme.headlineSmall
+                  : theme.textTheme.bodyMedium,
+            ),
+          ),
           const SizedBox(width: 12),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style:
-                  (bold
-                          ? theme.textTheme.titleSmall
-                          : theme.textTheme.bodySmall)
-                      ?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color:
-                            color ?? (bold ? colors.primary : colors.onSurface),
-                      ),
+              style: total
+                  ? theme.textTheme.headlineSmall
+                  : theme.textTheme.bodyMedium,
             ),
           ),
         ],
       ),
     );
+    return Column(
+      children: [
+        ClipPath(
+          clipper: _TicketClipper(),
+          child: AppCard(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const BrandMark(size: 42),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'sparkleen',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              letterSpacing: -.8,
+                            ),
+                          ),
+                          Text(
+                            nota.outlet.nama.isEmpty
+                                ? 'Laundry & Dry Clean'
+                                : nota.outlet.nama,
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (nota.outlet.alamat.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      nota.outlet.alamat,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                rule(),
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(nota.noNota, style: theme.textTheme.titleSmall),
+                        const SizedBox(height: 3),
+                        Text(
+                          formatTanggal(nota.tanggal),
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                    StatusChip(
+                      status: paid ? 'lunas' : 'belum',
+                      label: paid ? 'Lunas' : 'Belum dibayar',
+                    ),
+                  ],
+                ),
+                rule(),
+                for (final item in nota.items)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.namaLayanan,
+                                style: theme.textTheme.titleSmall,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${formatBerat(item.berat)} × ${formatRupiah(item.hargaSatuan)}',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Flexible(
+                          child: Text(
+                            formatRupiah(item.subtotal),
+                            textAlign: TextAlign.right,
+                            style: theme.textTheme.titleSmall,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                rule(),
+                amount('Subtotal', formatRupiah(nota.subtotal)),
+                amount('Diskon', formatRupiah(nota.diskon)),
+                rule(),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer.withValues(alpha: .75),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: amount(
+                    'Total',
+                    formatRupiah(nota.grandTotal),
+                    total: true,
+                  ),
+                ),
+                rule(),
+                amount(
+                  'Metode',
+                  nota.metode?.isNotEmpty == true
+                      ? nota.metode!
+                      : 'Belum tercatat',
+                ),
+                if (paid) amount('Dibayar', formatRupiah(nota.grandTotal)),
+                rule(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      paid
+                          ? AppIcons.check_circle_rounded
+                          : AppIcons.schedule_outlined,
+                      color: colors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        paid ? 'Pembayaran tercatat' : 'Menunggu pembayaran',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: colors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                rule(),
+                Text(
+                  'Terima kasih',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleSmall,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Terima kasih sudah mempercayakan cucianmu.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Nota tersimpan pada detail pesanan.',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodySmall,
+        ),
+      ],
+    );
   }
+}
+
+class _TicketClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRRect(
+        RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(18)),
+      );
+    for (final y in [110.0, size.height - 96]) {
+      path.addOval(Rect.fromCircle(center: Offset(0, y), radius: 8));
+      path.addOval(Rect.fromCircle(center: Offset(size.width, y), radius: 8));
+    }
+    return path;
+  }
+
+  @override
+  bool shouldReclip(_TicketClipper oldClipper) => false;
 }

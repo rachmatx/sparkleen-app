@@ -1,10 +1,14 @@
+import '../../../core/theme/app_icons.dart';
+import '../../../core/theme/app_assets.dart';
+import '../../../core/widgets/app_artwork.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/providers.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/status_chip.dart';
@@ -14,6 +18,7 @@ import 'widgets/timeline_status.dart';
 
 final transaksiDetailProvider = FutureProvider.autoDispose
     .family<TransaksiDetail, int>((ref, id) {
+      ref.watch(customerSessionRevisionProvider);
       return ref.watch(transaksiRepositoryProvider).detail(id);
     });
 
@@ -37,7 +42,7 @@ class DetailPesananPage extends ConsumerWidget {
 
     return AppBackdrop(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Detail Pesanan')),
+        appBar: AppBar(title: const Text('Detail pesanan')),
         body: AsyncValueView<TransaksiDetail>(
           value: async,
           onRetry: () => ref.invalidate(transaksiDetailProvider(id)),
@@ -52,12 +57,28 @@ class DetailPesananPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
                 _HeaderCard(detail: detail),
-                _SectionCard(
-                  title: 'Status Pesanan',
-                  child: TimelineStatus(steps: detail.timeline),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'Perjalanan cucian',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 12, bottom: 20),
+                  child: TimelineStatus(
+                    steps: detail.customerTimeline
+                        .where(
+                          (step) =>
+                              step.status != 'diambil' ||
+                              step.state != TimelineState.pending,
+                        )
+                        .toList(),
+                  ),
                 ),
                 _ItemsCard(items: detail.items),
                 _PaymentCard(detail: detail),
+                const SizedBox(height: 16),
                 _PinCard(pin: detail.pinPengambilan),
               ],
             ),
@@ -70,156 +91,55 @@ class DetailPesananPage extends ConsumerWidget {
 
 class _HeaderCard extends StatelessWidget {
   const _HeaderCard({required this.detail});
-
   final TransaksiDetail detail;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      margin: const EdgeInsets.only(bottom: 18),
+      color: theme.colorScheme.primaryContainer,
+      padding: const EdgeInsets.all(14),
+      child: Row(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.receipt_long_outlined,
-                color: colors.primary,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          if (MediaQuery.textScalerOf(context).scale(14) < 20) ...[
+            const AppArtwork(asset: AppAssets.home, width: 94, height: 92),
+            const SizedBox(width: 12),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
-                      'NOMOR NOTA',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        letterSpacing: 1.4,
+                      detail.noNota,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      detail.noNota,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: colors.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    StatusChip(
+                      status: detail.status,
+                      label: detail.customerStatusLabel,
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          StatusChip(status: detail.status, label: detail.statusLabel),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: TicketDivider(),
-          ),
-          if (detail.tglEstimasi != null) ...[
-            Text(
-              'Estimasi selesai',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              formatTanggal(detail.tglEstimasi!),
-              style: theme.textTheme.headlineSmall?.copyWith(
-                color: colors.primary,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.6,
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-          _TicketInfoLine(
-            icon: Icons.login_rounded,
-            label: 'Masuk',
-            value: formatTanggal(detail.tglMasuk),
-          ),
-          if (detail.tglAktual != null)
-            _TicketInfoLine(
-              icon: Icons.task_alt_rounded,
-              label: 'Selesai',
-              value: formatTanggal(detail.tglAktual!),
-            ),
-          _TicketInfoLine(
-            icon: Icons.scale_outlined,
-            label: 'Total berat',
-            value: formatBerat(detail.totalBerat),
-            isLast: true,
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () => context.push('/pesanan/${detail.id}/nota'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(0, 48),
-              ),
-              icon: const Icon(Icons.receipt_long_outlined, size: 18),
-              label: const Text('Lihat Nota'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TicketInfoLine extends StatelessWidget {
-  const _TicketInfoLine({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.isLast = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 16, color: colors.primary),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
+                const SizedBox(height: 7),
+                Text('Estimasi selesai', style: theme.textTheme.bodySmall),
+                const SizedBox(height: 2),
+                Text(
+                  detail.tglEstimasi == null
+                      ? 'Menunggu estimasi'
+                      : formatEstimasi(detail.tglEstimasi!),
+                  style: theme.textTheme.titleMedium,
+                ),
+                Text(
+                  formatBerat(detail.totalBerat),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
             ),
           ),
         ],
@@ -271,10 +191,12 @@ class _ItemRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.local_laundry_service_outlined,
-          size: 22,
-          color: colors.primary,
+        AppArtwork(
+          asset:
+              AppAssets.serviceArtwork(name: item.namaLayanan) ??
+              AppAssets.home,
+          width: 48,
+          height: 48,
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -286,7 +208,7 @@ class _ItemRow extends StatelessWidget {
                 item.namaLayanan,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colors.onSurface,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
@@ -306,7 +228,7 @@ class _ItemRow extends StatelessWidget {
             textAlign: TextAlign.right,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colors.onSurface,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -315,122 +237,103 @@ class _ItemRow extends StatelessWidget {
   }
 }
 
-class _PaymentCard extends StatelessWidget {
+class _PaymentCard extends ConsumerWidget {
   const _PaymentCard({required this.detail});
-
   final TransaksiDetail detail;
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final lunas = detail.sudahLunas;
+    Future<void> open(String route) async {
+      await context.push(route);
+      if (context.mounted) ref.invalidate(transaksiDetailProvider(detail.id));
+    }
 
-    return _SectionCard(
-      title: 'Pembayaran',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _SummaryRow(
-            label: 'Total biaya',
-            value: formatRupiah(detail.totalBiaya),
-          ),
-          if (detail.diskon > 0)
-            _SummaryRow(
-              label: 'Diskon',
-              value: '-${formatRupiah(detail.diskon)}',
-              valueColor: colors.primary,
-            ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: TicketDivider(),
-          ),
-          _SummaryRow(
-            label: 'Grand total',
-            value: formatRupiah(detail.grandTotal),
-            bold: true,
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colors.primaryContainer.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.outlineVariant),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  lunas ? Icons.verified_outlined : Icons.info_outline_rounded,
-                  size: 18,
-                  color: colors.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    lunas ? 'Lunas' : 'Belum dibayar',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colors.onSurface,
-                    ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppCard(
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            runSpacing: 8,
+            spacing: 16,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Total tagihan', style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 4),
+                  Text(
+                    formatRupiah(detail.grandTotal),
+                    style: theme.textTheme.headlineSmall,
                   ),
-                ),
-                if (detail.metodePembayaran != null &&
-                    detail.metodePembayaran!.isNotEmpty) ...[
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      detail.metodePembayaran!,
-                      textAlign: TextAlign.right,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
+                  if (detail.diskon > 0)
+                    Text(
+                      'Diskon ${formatRupiah(detail.diskon)}',
+                      style: theme.textTheme.bodySmall,
                     ),
-                  ),
                 ],
-              ],
+              ),
+              StatusChip(
+                status: detail.sudahLunas ? 'selesai' : 'menunggu',
+                label: detail.sudahLunas ? 'Lunas' : 'Belum dibayar',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          alignment: WrapAlignment.spaceEvenly,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if (!detail.sudahLunas)
+              TextButton.icon(
+                onPressed: () => open('/pesanan/${detail.id}/poin'),
+                icon: const Icon(AppIcons.star_border_rounded, size: 20),
+                label: const Text('Gunakan poin'),
+              ),
+            TextButton.icon(
+              onPressed: () => context.push('/pesanan/${detail.id}/nota'),
+              icon: const Icon(AppIcons.receipt_long_outlined, size: 19),
+              label: const Text('Lihat Nota'),
+            ),
+          ],
+        ),
+        if (!detail.sudahLunas) ...[
+          const SizedBox(height: 8),
+          FilledButton(
+            onPressed: () => open('/pesanan/${detail.id}/pembayaran'),
+            child: const Text('Lihat pilihan pembayaran'),
+          ),
+        ],
+        if (detail.pembayaran.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: AppCard(
+              padding: EdgeInsets.zero,
+              child: ExpansionTile(
+                shape: const Border(),
+                collapsedShape: const Border(),
+                title: Text(
+                  'Riwayat pembayaran',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                children: [
+                  for (final p in detail.pembayaran)
+                    _SummaryRow(
+                      label: p.tglBayar == null
+                          ? p.metode
+                          : '${formatTanggalSingkat(p.tglBayar!)} · ${p.metode}',
+                      value: formatRupiah(p.nominalBayar),
+                      bold: true,
+                      valueColor: theme.colorScheme.onSurface,
+                    ),
+                ],
+              ),
             ),
           ),
-          if (detail.pembayaran.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: TicketDivider(),
-            ),
-            for (final pembayaran in detail.pembayaran)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        pembayaran.tglBayar == null
-                            ? pembayaran.metode
-                            : '${formatTanggalSingkat(pembayaran.tglBayar!)} · ${pembayaran.metode}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        formatRupiah(pembayaran.nominalBayar),
-                        textAlign: TextAlign.right,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ],
-      ),
+      ],
     );
   }
 }
@@ -455,7 +358,7 @@ class _SummaryRow extends StatelessWidget {
     final style =
         (bold ? theme.textTheme.titleSmall : theme.textTheme.bodySmall)
             ?.copyWith(
-              fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+              fontWeight: bold ? FontWeight.w600 : FontWeight.w500,
               color: bold ? colors.onSurface : colors.onSurfaceVariant,
             );
 
@@ -471,7 +374,7 @@ class _SummaryRow extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               style: style?.copyWith(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: valueColor ?? (bold ? colors.primary : colors.onSurface),
               ),
             ),
@@ -484,72 +387,58 @@ class _SummaryRow extends StatelessWidget {
 
 class _PinCard extends StatelessWidget {
   const _PinCard({required this.pin});
-
   final String? pin;
-
   @override
   Widget build(BuildContext context) {
     final value = pin;
     if (value == null || value.isEmpty) return const SizedBox.shrink();
-
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      child: Container(
-        padding: const EdgeInsets.only(left: 14),
-        decoration: BoxDecoration(
-          border: Border(left: BorderSide(color: colors.primary, width: 2)),
+      padding: EdgeInsets.zero,
+      child: ExpansionTile(
+        leading: Icon(
+          AppIcons.lock_outline_rounded,
+          color: theme.colorScheme.primary,
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'PIN Pengambilan',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 6,
-                      color: colors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Tunjukkan PIN ini saat mengambil cucian.',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: value));
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('PIN disalin.')));
-              },
-              style: IconButton.styleFrom(
-                minimumSize: const Size(48, 48),
-                backgroundColor: colors.primaryContainer,
-                foregroundColor: colors.primary,
-              ),
-              icon: const Icon(Icons.copy_outlined, size: 20),
-              tooltip: 'Salin PIN',
-            ),
-          ],
+        title: Text('PIN Pengambilan', style: theme.textTheme.titleSmall),
+        subtitle: Text(
+          'Buka saat mengambil cucian.',
+          style: theme.textTheme.bodySmall,
         ),
+        shape: const Border(),
+        collapsedShape: const Border(),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  value,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    letterSpacing: 6,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Salin PIN',
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: value));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('PIN disalin.')),
+                    );
+                  }
+                },
+                icon: const Icon(AppIcons.copy_outlined),
+              ),
+            ],
+          ),
+          Text(
+            'Tunjukkan PIN ini saat mengambil cucian.',
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
       ),
     );
   }
@@ -557,27 +446,18 @@ class _PinCard extends StatelessWidget {
 
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.title, required this.child});
-
   final String title;
   final Widget child;
-
   @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall
-                ?.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 10),
+        AppCard(child: child),
+      ],
+    ),
+  );
 }

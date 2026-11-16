@@ -46,9 +46,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          transaksiRepositoryProvider.overrideWithValue(repository),
-        ],
+        overrides: [transaksiRepositoryProvider.overrideWithValue(repository)],
         child: const MaterialApp(home: NotaPage(id: 87)),
       ),
     );

@@ -1,0 +1,412 @@
+import 'package:sparkleen_mobile/features/alamat/application/address_controller.dart';
+
+import '../test/support/address_fakes.dart';
+
+import 'dart:async';
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:sparkleen_mobile/main.dart';
+import 'package:sparkleen_mobile/core/api/api_exception.dart';
+import 'package:sparkleen_mobile/core/providers.dart';
+import 'package:sparkleen_mobile/core/router/app_router.dart';
+import 'package:sparkleen_mobile/core/security/biometric_service.dart';
+import 'package:sparkleen_mobile/core/settings/appearance_settings.dart';
+import 'package:sparkleen_mobile/features/auth/application/auth_controller.dart';
+import 'package:sparkleen_mobile/features/auth/data/pelanggan.dart';
+import 'package:sparkleen_mobile/features/home/application/home_providers.dart';
+import 'package:sparkleen_mobile/features/home/data/layanan.dart';
+import 'package:sparkleen_mobile/features/jemput/application/pickup_controller.dart';
+import 'package:sparkleen_mobile/features/loyalitas/application/loyalty_controller.dart';
+import 'package:sparkleen_mobile/features/notifikasi/application/notification_controller.dart';
+import 'package:sparkleen_mobile/features/notifikasi/data/notification_repository.dart';
+import 'package:sparkleen_mobile/features/pembayaran/application/payment_controller.dart';
+import 'package:sparkleen_mobile/features/pembayaran/data/payment_repository.dart';
+import 'package:sparkleen_mobile/features/pesanan/application/pesanan_controller.dart';
+import 'package:sparkleen_mobile/features/loyalitas/data/loyalty_repository.dart';
+
+import 'package:sparkleen_mobile/features/pesanan/data/transaksi_detail.dart';
+
+import '../test/support/auth_fakes.dart';
+import '../test/support/home_fakes.dart';
+import '../test/support/engagement_fakes.dart';
+import '../test/support/redesign_fixtures.dart';
+import '../test/features/payment_test.dart' show FakePayments;
+import '../test/features/pickup_test.dart' as pickup_fixture;
+import '../test/features/session_security_test.dart' show FakeBiometrics;
+
+class LockedPreview extends AuthController {
+  @override
+  Future<AuthState> build() async => const AuthLocked();
+}
+
+class OfflinePreview extends AuthController {
+  @override
+  Future<AuthState> build() async => const AuthSessionUnavailable(
+    ApiException(
+      code: 'NETWORK_ERROR',
+      message: 'Server pengujian belum tersedia.',
+    ),
+  );
+}
+
+class StartingPreview extends AuthController {
+  @override
+  Future<AuthState> build() => Completer<AuthState>().future;
+}
+
+class _AuditBinding extends AutomatedTestWidgetsFlutterBinding {
+  @override
+  bool get disableShadows => false;
+}
+
+void main() {
+  _AuditBinding();
+  setUpAll(() async {
+    await initializeDateFormatting('id_ID');
+    for (final entry in {
+      'Inter': [400, 500, 600, 700],
+    }.entries) {
+      final loader = FontLoader(entry.key);
+      for (final weight in entry.value) {
+        loader.addFont(
+          rootBundle.load('assets/fonts/${entry.key}-$weight.ttf'),
+        );
+      }
+      await loader.load();
+    }
+    for (final family in ['SparkleenIcons', 'SparkleenIconsFill']) {
+      await (FontLoader(
+        family,
+      )..addFont(rootBundle.load('assets/icons/$family.ttf'))).load();
+    }
+    await (FontLoader(
+      'MaterialIcons',
+    )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
+  });
+  final cases = <String, String>{
+    'home': '/beranda',
+    'profile': '/profil',
+    'addresses': '/alamat',
+    'address-form': '/alamat',
+    'settings': '/pengaturan',
+    'orders': '/pesanan',
+    'history': '/riwayat-pesanan',
+    'detail': '/pesanan/87',
+    'detail-ironing': '/pesanan/87',
+    'receipt': '/pesanan/87/nota',
+    'pickup': '/jemput',
+    'pickup-form': '/jemput/baru',
+    'notifications': '/notifikasi',
+    'points': '/poin',
+    'redeem': '/pesanan/87/poin',
+    'security': '/keamanan',
+    'server': '/server',
+    'edit-profile': '/ubah-profil',
+    'payment-choice': '/pesanan/87/pembayaran',
+    'payment-qr': '/pesanan/87/pembayaran',
+    'payment-success': '/pesanan/87/pembayaran',
+    'login': '/login',
+    'register': '/register',
+    'activate': '/activate',
+    'locked': '/session',
+    'offline': '/session',
+    'splash': '/splash',
+  };
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'capture all ${brightness.name} routes and scroll long content',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 868);
+        tester.view.devicePixelRatio = 1;
+        tester.view.padding = const FakeViewPadding(top: 32, bottom: 24);
+        addTearDown(tester.view.resetPadding);
+        tester.binding.platformDispatcher.accessibilityFeaturesTestValue =
+            const FakeAccessibilityFeatures(disableAnimations: true);
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(
+          tester.binding.platformDispatcher.clearAccessibilityFeaturesTestValue,
+        );
+        for (final entry in cases.entries) {
+          final name = entry.key;
+          final unauth = ['login', 'register', 'activate'].contains(name);
+          final storage = FakeTokenStorage(unauth ? null : 'demo');
+          final biometric = FakeBiometrics(storage);
+          final payments = FakePayments();
+          if (name == 'payment-qr') {
+            payments.current = PaymentSnapshot(
+              status: 'PENDING',
+              enabled: true,
+              amount: 35000,
+              remaining: 35000,
+              method: 'QRIS',
+              expiresAt: DateTime.now().add(const Duration(minutes: 15)),
+              detail: {
+                'simulation_code': 'SPARKLEEN-QA-SIMULATION-NOT-A-PAYMENT',
+                'qr_image': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQMAAACZOPi8AAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABWklEQVRoge2YO7KDMAxFlaGgzBJYCkuDpbEUlpCSIhM962Nh82wmZYqrAhv5VJorSzIRDPYDNrHZJpsPyeY1uu8FokXYsmzpMzDrZnyXRyCuhERQDp7H8Eko74l4aJRB3BM0hgpBfEtoAtNdTEEUeWsqpHnvZjYIXaI2qPgS2q8eICqb+KCHqbBjIPLBkGuDEimUVxWCqAjT3Dr7wSJEcmgCg2gRLBdccu0W05VykWAQHYLlgst2TgVrdoGoCXqylwRDlwjunGsDiIqQA1k1b72akugSRJc4THzyk/uPdx1TEBXh/5Q7ttbkCaIiVHPyHuQd26SFQXUJokGETWf/QVTGFERNWARjRKfQZYwHIC7EOaub+NRTdCQg/hE6A0j/YW+Onrd694G4JSyU0rG5MBnELSEqjHdtoqr/AFERnrdWVoPQDYgW4Yrb4qlx9yJRzA0gWv0YDPar9gf8cQEU8dcOBAAAAABJRU5ErkJggg==',
+              },
+            );
+          }
+          if (name == 'payment-success') {
+            payments.current = const PaymentSnapshot(
+              status: 'SUCCESS',
+              enabled: true,
+              amount: 0,
+              remaining: 0,
+              totalPaid: 35000,
+            );
+          }
+          final notifications = FakeNotifications()
+            ..current = NotificationList(
+              items: [
+                CustomerNotification(
+                  id: 1,
+                  title: 'Pembayaran lunas',
+                  body: 'Pembayaran online terkonfirmasi pada nota pesananmu.',
+                  category: 'payment',
+                  targetType: 'order',
+                  targetId: 87,
+                  createdAt: DateTime.now(),
+                ),
+                testNotification(2),
+              ],
+              unread: 2,
+              latestId: 2,
+            );
+          final orders = redesignTransaksiRepository();
+          if (name == 'detail' || name == 'detail-ironing') {
+            orders.detailResults[87] = TransaksiDetail.fromJson({
+              'id_transaksi': 87,
+              'no_nota': 'LAU/20261112/0003',
+              'tgl_masuk': '2026-11-12T08:00:00+07:00',
+              'tgl_selesai_estimasi': '2026-11-14T08:00:00+07:00',
+              'total_berat': 6,
+              'total_biaya': 42000,
+              'grand_total': 42000,
+              'status': name == 'detail' ? 'menunggu' : 'setrika',
+              'status_label': name == 'detail' ? 'Diterima' : 'Disetrika',
+              'status_pembayaran': 'lunas',
+              'metode_pembayaran': 'qris',
+              'items': [
+                {
+                  'nama_layanan': name == 'detail'
+                      ? 'Cuci Reguler'
+                      : 'Cuci + Setrika',
+                  'berat': 6,
+                  'harga_satuan': 7000,
+                  'subtotal': 42000,
+                },
+              ],
+              'timeline': [
+                for (final phase in const {
+                  'menunggu': 'Diterima',
+                  'proses': 'Dicuci',
+                  'setrika': 'Disetrika',
+                  'selesai': 'Siap diambil',
+                  'diambil': 'Selesai',
+                }.entries)
+                  {
+                    'status': phase.key,
+                    'label': phase.value,
+                    'state': 'pending',
+                    'at': phase.key == 'menunggu'
+                        ? '2026-11-12T08:00:00+07:00'
+                        : name == 'detail-ironing' && phase.key == 'proses'
+                        ? '2026-11-12T09:00:00+07:00'
+                        : null,
+                  },
+              ],
+            });
+          }
+          final loyalty = FakeLoyalty()
+            ..balance = LoyaltySummary(
+              balance: 10,
+              history: [
+                for (var i = 0; i < 3; i++)
+                  PointMovement(
+                    id: i + 1,
+                    orderId: 87,
+                    delta: i == 0 ? 4 : 3,
+                    balanceAfter: 10 - i * 3,
+                    reason: 'Poin pesanan baru',
+                    nota: 'LAU/20261112/000${3 - i}',
+                    createdAt: DateTime(2026, 11, 12 - i),
+                  ),
+              ],
+            );
+          final container = ProviderContainer(
+            retry: (_, _) => null,
+            overrides: [
+              addressRepositoryProvider.overrideWithValue(FakeAddresses()),
+              startupReadyProvider.overrideWith((ref) async {}),
+              initialThemeModeProvider.overrideWithValue(
+                brightness == Brightness.dark
+                    ? ThemeMode.dark
+                    : ThemeMode.light,
+              ),
+              tokenStorageProvider.overrideWithValue(storage),
+              authRepositoryProvider.overrideWithValue(FakeAuthRepository()
+                ..pelanggan = const Pelanggan(
+                  id: 12,
+                  kode: 'PLG012',
+                  nama: 'Budi Santoso',
+                  noTelp: '6281298765432',
+                  alamat: 'Jl. Merdeka No. 10',
+                  poin: 15,
+                  totalTransaksi: 73500,
+                )),
+              biometricServiceProvider.overrideWithValue(biometric),
+              homeRepositoryProvider.overrideWithValue(
+                FakeHomeRepository()
+                  ..layananResult = const [
+                    Layanan(
+                      id: 1,
+                      nama: 'Cuci + Setrika',
+                      hargaPerKg: 10000,
+                      estimasiHari: 1,
+                    ),
+                    Layanan(
+                      id: 4,
+                      nama: 'Setrika Saja',
+                      hargaPerKg: 5000,
+                      estimasiHari: 1,
+                    ),
+                    Layanan(
+                      id: 2,
+                      nama: 'Cuci Kilat',
+                      hargaPerKg: 10000,
+                      estimasiHari: 1,
+                    ),
+                  ]
+                  ..pesananAktifResult = testTransaksiAktif,
+              ),
+              transaksiRepositoryProvider.overrideWithValue(orders),
+              pickupRepositoryProvider.overrideWithValue(
+                pickup_fixture.FakePickupRepository()
+                  ..items = [
+                    pickup_fixture.pickup(),
+                    pickup_fixture.pickup(id: 2, status: 'dibatalkan'),
+                    pickup_fixture.pickup(
+                      id: 3,
+                      status: 'dikonfirmasi',
+                      transactionId: 87,
+                    ),
+                  ],
+              ),
+              loyaltyRepositoryProvider.overrideWithValue(loyalty),
+              notificationRepositoryProvider.overrideWithValue(notifications),
+              paymentRepositoryProvider.overrideWithValue(payments),
+              if (name == 'locked')
+                authControllerProvider.overrideWith(LockedPreview.new),
+              if (name == 'offline')
+                authControllerProvider.overrideWith(OfflinePreview.new),
+              if (name == 'splash')
+                authControllerProvider.overrideWith(StartingPreview.new),
+            ],
+          );
+          final key = GlobalKey();
+          await tester.pumpWidget(
+            UncontrolledProviderScope(
+              container: container,
+              child: RepaintBoundary(key: key, child: const SparkleenApp()),
+            ),
+          );
+          if (name == 'splash') {
+            await tester.pump(const Duration(milliseconds: 200));
+          } else {
+            await tester.pumpAndSettle();
+          }
+          final router = container.read(routerProvider);
+          if (![
+            'home',
+            'locked',
+            'offline',
+            'splash',
+            'login',
+          ].contains(name)) {
+            if (['profile', 'orders', 'register', 'activate'].contains(name)) {
+              router.go(entry.value);
+            } else {
+              unawaited(router.push(entry.value));
+            }
+            await tester.pumpAndSettle();
+          }
+          if (name == 'address-form') {
+            await tester.tap(find.byTooltip('Tambah alamat'));
+            await tester.pumpAndSettle();
+          }
+          if (name == 'security') {
+            await biometric.enable('demo');
+            await biometric.paymentPreference('demo', true);
+            container.invalidate(biometricSettingsProvider);
+            await tester.pumpAndSettle();
+          }
+          if (name == 'pickup-form') {
+            await tester.tap(find.byType(DropdownButtonFormField<int>));
+            await tester.pumpAndSettle();
+            await tester.tap(find.text('Cuci + Setrika').last);
+            await tester.enterText(find.byKey(const Key('pickup-weight')), '4');
+            FocusManager.instance.primaryFocus?.unfocus();
+            await tester.pumpAndSettle();
+          }
+          if (name == 'redeem') {
+            await tester.enterText(find.byType(TextField), '20');
+            await tester.pumpAndSettle();
+          }
+          final providers = find
+              .byType(Image)
+              .evaluate()
+              .map((el) => (el.widget as Image).image)
+              .toSet();
+          await tester.runAsync(
+            () => Future.wait(
+              providers.map(
+                (provider) => precacheImage(provider, key.currentContext!),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: '$name / ${brightness.name} before capture',
+          );
+          await tester.runAsync(() async {
+            final image =
+                await (key.currentContext!.findRenderObject()!
+                        as RenderRepaintBoundary)
+                    .toImage();
+            final png = await image.toByteData(format: ui.ImageByteFormat.png);
+            final file = File(
+              "${const String.fromEnvironment('UI_AUDIT_OUTPUT', defaultValue: '../.tooling/ui-qa-v007')}/${brightness.name}/$name.png",
+            );
+            await file.parent.create(recursive: true);
+            await file.writeAsBytes(png!.buffer.asUint8List());
+            image.dispose();
+          });
+          final scroll = find.byType(Scrollable);
+          if (scroll.evaluate().isNotEmpty && name != 'splash') {
+            for (var n = 0; n < 3; n++) {
+              await tester.drag(scroll.first, const Offset(0, -450));
+              await tester.pumpAndSettle();
+              expect(
+                tester.takeException(),
+                isNull,
+                reason: '$name / ${brightness.name} scroll $n',
+              );
+            }
+          }
+          await tester.pumpWidget(const SizedBox());
+          container.dispose();
+        }
+      },
+    );
+  }
+}

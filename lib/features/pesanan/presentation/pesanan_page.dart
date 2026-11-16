@@ -1,16 +1,21 @@
+import '../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_assets.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../application/pesanan_controller.dart';
 import 'widgets/transaksi_card.dart';
+import '../../home/presentation/widgets/customer_header.dart';
 
 class PesananPage extends ConsumerStatefulWidget {
-  const PesananPage({super.key});
+  const PesananPage({super.key, this.fullHistory = false});
+  final bool fullHistory;
 
   @override
   ConsumerState<PesananPage> createState() => _PesananPageState();
@@ -21,25 +26,9 @@ class _PesananPageState extends ConsumerState<PesananPage> {
   PesananScope _scope = PesananScope.aktif;
 
   @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
   void dispose() {
-    _scrollController
-      ..removeListener(_onScroll)
-      ..dispose();
+    _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
-      ref.read(pesananControllerProvider.notifier).loadMore();
-    }
   }
 
   Future<void> _refresh() =>
@@ -55,29 +44,31 @@ class _PesananPageState extends ConsumerState<PesananPage> {
 
     return AppBackdrop(
       child: Scaffold(
+        appBar: widget.fullHistory
+            ? AppBar(title: const Text('Riwayat pesanan'))
+            : null,
         body: SafeArea(
           bottom: false,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (!widget.fullHistory)
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  child: CustomerHeader(),
+                ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
+                padding: const EdgeInsets.fromLTRB(20, 6, 20, 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LAUNDRY KAMU',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: colors.primary,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.6,
-                      ),
+                      widget.fullHistory ? 'Semua pesanan' : 'Pesanan',
+                      style: textTheme.headlineMedium,
                     ),
-                    const SizedBox(height: 8),
-                    Text('Pesanan', style: textTheme.headlineMedium),
                     const SizedBox(height: 6),
                     Text(
-                      'Pantau cucian kamu dari masuk sampai siap diambil.',
+                      'Pantau perjalanan cucianmu.',
                       style: textTheme.bodySmall?.copyWith(
                         color: colors.onSurfaceVariant,
                       ),
@@ -86,53 +77,79 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
                 child: AppCard(
                   padding: const EdgeInsets.all(4),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<PesananScope>(
-                      style: SegmentedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        selectedBackgroundColor: AppColors.primary,
-                        selectedForegroundColor: Colors.white,
-                        foregroundColor: colors.onSurfaceVariant,
-                        side: BorderSide.none,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        textStyle: textTheme.labelMedium,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                      segments: const [
-                        ButtonSegment(
-                          value: PesananScope.aktif,
-                          label: Text('Aktif'),
-                        ),
-                        ButtonSegment(
-                          value: PesananScope.selesai,
-                          label: Text('Selesai'),
-                        ),
-                        ButtonSegment(
-                          value: PesananScope.semua,
-                          label: Text('Semua'),
-                        ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [
+                        for (final scope in PesananScope.values)
+                          SizedBox(
+                            width: (constraints.maxWidth - 8) / 3,
+                            child: Semantics(
+                              selected: scope == activeScope,
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  minimumSize: const Size(48, 48),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 12,
+                                  ),
+                                  backgroundColor: scope == activeScope
+                                      ? AppColors.primary
+                                      : Colors.transparent,
+                                  foregroundColor: scope == activeScope
+                                      ? Colors.white
+                                      : colors.onSurfaceVariant,
+                                  textStyle: textTheme.labelLarge?.copyWith(
+                                    fontSize: 13,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  if (scope == activeScope) return;
+                                  setState(() => _scope = scope);
+                                  ref
+                                      .read(pesananControllerProvider.notifier)
+                                      .load(scope);
+                                  if (_scrollController.hasClients) {
+                                    _scrollController.jumpTo(0);
+                                  }
+                                },
+                                child: Text(switch (scope) {
+                                  PesananScope.aktif => 'Aktif',
+                                  PesananScope.selesai => 'Selesai',
+                                  PesananScope.semua => 'Semua',
+                                }, textAlign: TextAlign.center),
+                              ),
+                            ),
+                          ),
                       ],
-                      selected: {activeScope},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (selection) {
-                        final next = selection.first;
-                        if (next == activeScope) return;
-                        setState(() => _scope = next);
-                        ref.read(pesananControllerProvider.notifier).load(next);
-                        if (_scrollController.hasClients) {
-                          _scrollController.jumpTo(0);
-                        }
-                      },
                     ),
                   ),
                 ),
               ),
+              if (!widget.fullHistory &&
+                  (async.value?.items.isNotEmpty ?? false))
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          '${async.value!.items.length.clamp(0, 20)} pesanan terbaru',
+                          style: textTheme.bodySmall,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(child: Divider(height: 1)),
+                    ],
+                  ),
+                ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -148,35 +165,69 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                         children: [
                           const SizedBox(height: 12),
                           EmptyState(
-                            icon: Icons.receipt_long_outlined,
+                            icon: AppIcons.receipt_long_outlined,
+                            illustrationAsset: activeScope == PesananScope.aktif
+                                ? AppAssets.emptyActiveOrder
+                                : AppAssets.emptyOrderHistory,
                             message: _emptyMessage(activeScope),
                           ),
                         ],
                       ),
                     ),
-                    builder: (context, data) => RefreshIndicator(
-                      onRefresh: _refresh,
-                      child: ListView.separated(
-                        controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(top: 4, bottom: 116),
-                        itemCount:
-                            data.items.length +
-                            (data.isLoadingMore || data.error != null ? 1 : 0),
-                        separatorBuilder: (_, _) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          if (index >= data.items.length) {
-                            return _LoadMoreFooter(state: data);
-                          }
-                          final transaksi = data.items[index];
-                          return TransaksiCard(
-                            transaksi: transaksi,
-                            onTap: () =>
-                                context.push('/pesanan/${transaksi.id}'),
-                          );
-                        },
-                      ),
-                    ),
+                    builder: (context, data) {
+                      final items = widget.fullHistory
+                          ? data.items
+                          : data.items.take(20).toList();
+                      final showFooter =
+                          data.hasMore ||
+                          (!widget.fullHistory && data.items.length > 20) ||
+                          data.error != null ||
+                          data.isLoadingMore;
+                      return RefreshIndicator(
+                        onRefresh: _refresh,
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.only(top: 4, bottom: 116),
+                          itemCount: items.length + (showFooter ? 1 : 0),
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            if (index >= items.length) {
+                              if (data.error != null || data.isLoadingMore) {
+                                return _LoadMoreFooter(state: data);
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                child: OutlinedButton(
+                                  onPressed: widget.fullHistory
+                                      ? ref
+                                            .read(
+                                              pesananControllerProvider
+                                                  .notifier,
+                                            )
+                                            .loadMore
+                                      : () => context.push('/riwayat-pesanan'),
+                                  child: Text(
+                                    widget.fullHistory
+                                        ? 'Muat 20 berikutnya'
+                                        : 'Lihat semua pesanan',
+                                  ),
+                                ),
+                              );
+                            }
+                            final transaksi = items[index];
+                            return TransaksiCard(
+                              transaksi: transaksi,
+                              onTap: () =>
+                                  context.push('/pesanan/${transaksi.id}'),
+                            );
+                          },
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

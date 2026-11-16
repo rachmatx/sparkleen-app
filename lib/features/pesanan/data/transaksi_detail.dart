@@ -1,3 +1,5 @@
+import 'laundry_workflow.dart';
+
 enum TimelineState { done, current, pending }
 
 class TimelineStep {
@@ -123,6 +125,50 @@ class TransaksiDetail {
   final List<PembayaranItem> pembayaran;
   final List<TimelineStep> timeline;
 
+  LaundryWorkflow get workflow =>
+      LaundryWorkflow.fromNames(items.map((item) => item.namaLayanan));
+  String get customerStatusLabel =>
+      workflow.known && workflow.customerStage(status) != status
+      ? 'Diproses'
+      : statusLabel;
+  List<TimelineStep> get customerTimeline {
+    final plan = workflow;
+    if (!plan.known) return timeline;
+    // Preserve new/unknown phases from the API rather than dropping real events.
+    if (timeline.any(
+      (step) => !const {
+        'menunggu',
+        'proses',
+        'setrika',
+        'selesai',
+        'diambil',
+      }.contains(step.status),
+    )) {
+      return timeline;
+    }
+    final stages = plan.stages;
+    final current = plan.customerStage(status);
+    final currentIndex = stages.indexOf(current);
+    return [
+      for (final step in timeline)
+        if (stages.contains(step.status))
+          TimelineStep(
+            status: step.status,
+            label: status != current && step.status == current
+                ? 'Diproses'
+                : step.label,
+            at: step.at,
+            state: currentIndex < 0
+                ? step.state
+                : stages.indexOf(step.status) < currentIndex
+                ? TimelineState.done
+                : stages.indexOf(step.status) == currentIndex
+                ? TimelineState.current
+                : TimelineState.pending,
+          ),
+    ];
+  }
+
   bool get sudahLunas => statusPembayaran == 'lunas';
 
   factory TransaksiDetail.fromJson(Map<String, dynamic> json) {
@@ -150,10 +196,7 @@ class TransaksiDetail {
   }
 }
 
-List<T> _parseList<T>(
-  Object? raw,
-  T Function(Map<String, dynamic>) parse,
-) {
+List<T> _parseList<T>(Object? raw, T Function(Map<String, dynamic>) parse) {
   if (raw is! List) return const [];
   return raw
       .whereType<Map>()

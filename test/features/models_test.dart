@@ -221,23 +221,26 @@ void main() {
       expect(detail.timeline[1].at?.toUtc(), DateTime.utc(2026, 10, 21, 6));
     });
 
-    test('list opsional hilang menjadi kosong dan state tak dikenal pending', () {
-      final detail = TransaksiDetail.fromJson({
-        'id_transaksi': 88,
-        'no_nota': 'LAU/20261021/0003',
-        'tgl_masuk': '2026-10-21T09:00:00+07:00',
-        'grand_total': 0,
-        'timeline': [
-          {'status': 'proses', 'label': 'Dicuci', 'state': 'aneh'},
-        ],
-      });
+    test(
+      'list opsional hilang menjadi kosong dan state tak dikenal pending',
+      () {
+        final detail = TransaksiDetail.fromJson({
+          'id_transaksi': 88,
+          'no_nota': 'LAU/20261021/0003',
+          'tgl_masuk': '2026-10-21T09:00:00+07:00',
+          'grand_total': 0,
+          'timeline': [
+            {'status': 'proses', 'label': 'Dicuci', 'state': 'aneh'},
+          ],
+        });
 
-      expect(detail.items, isEmpty);
-      expect(detail.pembayaran, isEmpty);
-      expect(detail.timeline, hasLength(1));
-      expect(detail.timeline.first.state, TimelineState.pending);
-      expect(detail.pinPengambilan, isNull);
-    });
+        expect(detail.items, isEmpty);
+        expect(detail.pembayaran, isEmpty);
+        expect(detail.timeline, hasLength(1));
+        expect(detail.timeline.first.state, TimelineState.pending);
+        expect(detail.pinPengambilan, isNull);
+      },
+    );
   });
 
   test('NotaData parsing tanpa PIN pengambilan', () {

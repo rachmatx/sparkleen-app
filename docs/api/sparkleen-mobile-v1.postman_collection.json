@@ -15,6 +15,8 @@
     ]
   },
   "variable": [
+    {"key":"id_notifikasi","value":"1","type":"string"},
+    {"key":"point_request_id","value":"set-a-new-request-key-for-each-redemption","type":"string"},
     {
       "key": "base_url",
       "value": "http://localhost:8080",
@@ -37,6 +39,18 @@
     }
   ],
   "item": [
+    {
+      "name": "Notifikasi dan loyalitas",
+      "item": [
+        {"name":"Kotak masuk", "request":{"method":"GET","url":"{{base_url}}/api/v1/notifikasi"}},
+        {"name":"Belum dibaca", "request":{"method":"GET","url":"{{base_url}}/api/v1/notifikasi/ringkasan"}},
+        {"name":"Baca satu notifikasi", "request":{"method":"POST","url":"{{base_url}}/api/v1/notifikasi/{{id_notifikasi}}/baca"}},
+        {"name":"Baca sampai batas yang ditampilkan", "request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"through_id\": {{id_notifikasi}}}"},"url":"{{base_url}}/api/v1/notifikasi/baca-semua"}},
+        {"name":"Saldo dan riwayat poin", "request":{"method":"GET","url":"{{base_url}}/api/v1/loyalitas"}},
+        {"name":"Preview poin pesanan", "request":{"method":"GET","url":"{{base_url}}/api/v1/transaksi/{{id_transaksi}}/poin"}},
+        {"name":"Tukar poin (request ID unik, pertahankan untuk retry)", "request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"points\":20,\"expected_grand_total\":35000,\"request_id\":\"{{point_request_id}}\"}"},"url":"{{base_url}}/api/v1/transaksi/{{id_transaksi}}/poin"}}
+      ]
+    },
     {
       "name": "Auth",
       "item": [
@@ -259,7 +273,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id_layanan\": 1,\n  \"berat_perkiraan\": 4.5,\n  \"alamat_jemput\": \"Jl. Melati No. 7, RT 2\",\n  \"tgl_jemput\": \"2026-10-25\",\n  \"slot_jemput\": \"siang\",\n  \"catatan\": \"Cuci pisah dengan handuk\"\n}"
+              "raw": "{\n  \"id_layanan\": 1,\n  \"berat_perkiraan\": 4.5,\n  \"alamat_jemput\": \"Jl. Melati No. 7, RT 2\",\n  \"tgl_jemput\": \"{{pickup_date}}\",\n  \"slot_jemput\": \"siang\",\n  \"catatan\": \"Cuci pisah dengan handuk\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/permintaan",
@@ -268,6 +282,13 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.variables.set('pickup_date', new Date(Date.now() + 31 * 60 * 60 * 1000).toISOString().slice(0, 10));"]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -378,6 +399,17 @@
               "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/pembayaran/batal",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "pembayaran", "batal"]
+            }
+          }
+        },
+        {
+          "name": "Sinkronisasi pembayaran",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/transaksi/{{id_transaksi}}/pembayaran/sinkronisasi",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "transaksi", "{{id_transaksi}}", "pembayaran", "sinkronisasi"]
             }
           }
         }

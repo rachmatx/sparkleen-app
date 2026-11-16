@@ -1,3 +1,5 @@
+import '../../../../core/theme/app_icons.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/formatters.dart';
@@ -53,21 +55,19 @@ class _TimelineTile extends StatelessWidget {
               children: [
                 Icon(
                   isDone
-                      ? Icons.check_circle_rounded
+                      ? AppIcons.check_circle_rounded
                       : isCurrent
-                      ? Icons.radio_button_checked_rounded
-                      : Icons.radio_button_unchecked_rounded,
+                      ? AppIcons.radio_button_checked_rounded
+                      : AppIcons.radio_button_unchecked_rounded,
                   size: 20,
                   color: color,
                 ),
                 if (!isLast)
                   Expanded(
                     child: Container(
-                      width: 1,
+                      width: 2,
                       margin: const EdgeInsets.symmetric(vertical: 4),
-                      color: isDone
-                          ? colors.primary.withValues(alpha: 0.5)
-                          : colors.outlineVariant,
+                      color: isDone ? colors.primary : colors.outline,
                     ),
                   ),
               ],
@@ -76,7 +76,7 @@ class _TimelineTile extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : 22),
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -84,7 +84,7 @@ class _TimelineTile extends StatelessWidget {
                     step.label,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: isCurrent
-                          ? FontWeight.w800
+                          ? FontWeight.w600
                           : isDone
                           ? FontWeight.w600
                           : FontWeight.w500,
@@ -97,7 +97,13 @@ class _TimelineTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    step.at == null ? 'Menunggu' : formatTanggal(step.at!),
+                    step.at != null
+                        ? formatTanggal(step.at!)
+                        : switch (step.state) {
+                            TimelineState.current => 'Sedang diproses',
+                            TimelineState.done => 'Tahap selesai',
+                            TimelineState.pending => 'Menunggu',
+                          },
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurfaceVariant,
                     ),

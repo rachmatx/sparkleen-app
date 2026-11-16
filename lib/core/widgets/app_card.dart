@@ -9,11 +9,13 @@ class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(18),
+    this.padding = const EdgeInsets.all(16),
     this.margin,
     this.onTap,
     this.color,
     this.shadow = AppColors.cardShadow,
+    this.radius = AppColors.radiusCard,
+    this.blur = 18,
   });
 
   final Widget child;
@@ -22,24 +24,29 @@ class AppCard extends StatelessWidget {
   final VoidCallback? onTap;
   final Color? color;
   final List<BoxShadow> shadow;
+  final double radius;
+  final double blur;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(AppColors.radiusCard);
+    final corners = BorderRadius.circular(radius);
     return Container(
       margin: margin,
-      decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow),
+      decoration: BoxDecoration(borderRadius: corners, boxShadow: shadow),
       child: ClipRRect(
-        borderRadius: radius,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        borderRadius: corners,
+        child: BackdropFilter.grouped(
+          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
           child: Material(
-            color: color ?? colors.surface.withValues(alpha: 0.72),
+            color: (color ?? colors.surface).withValues(alpha: 0.75),
             shape: RoundedRectangleBorder(
-              borderRadius: radius,
+              borderRadius: corners,
               side: BorderSide(
-                color: colors.outlineVariant.withValues(alpha: 0.65),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withValues(alpha: 0.12)
+                    : Colors.white.withValues(alpha: 0.70),
+                width: 0.8,
               ),
             ),
             clipBehavior: Clip.antiAlias,
@@ -67,53 +74,18 @@ class AppBackdrop extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: ColoredBox(
-        color: dark ? const Color(0xFF071523) : AppColors.background,
-        child: CustomPaint(
-          painter: _WeavePainter(dark: dark),
-          child: child,
+        color: dark ? AppColors.backgroundDark : AppColors.background,
+        child: BackdropGroup(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: child,
+            ),
+          ),
         ),
       ),
     );
   }
-}
-
-class _WeavePainter extends CustomPainter {
-  const _WeavePainter({required this.dark});
-
-  final bool dark;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.save();
-    canvas.clipRect(Offset.zero & size);
-    final cloth = Paint()
-      ..color = (dark ? const Color(0xFF123F6B) : const Color(0xFFB9D7F5))
-          .withValues(alpha: 0.38);
-    canvas.drawPath(
-      Path()
-        ..moveTo(size.width * 0.64, 0)
-        ..lineTo(size.width, 0)
-        ..lineTo(size.width, 270)
-        ..lineTo(size.width * 0.78, 225)
-        ..close(),
-      cloth,
-    );
-    final thread = Paint()
-      ..color = (dark ? Colors.white : AppColors.primary).withValues(
-        alpha: dark ? 0.025 : 0.035,
-      )
-      ..strokeWidth = 0.7;
-    for (double y = 0; y < size.height; y += 12) {
-      for (double x = 0; x < size.width; x += 12) {
-        canvas.drawLine(Offset(x, y), Offset(x + 5, y), thread);
-        canvas.drawLine(Offset(x, y + 3), Offset(x, y + 8), thread);
-      }
-    }
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(_WeavePainter oldDelegate) => dark != oldDelegate.dark;
 }
 
 class TicketDivider extends StatelessWidget {

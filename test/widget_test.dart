@@ -27,7 +27,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('SPARKLEEN'), findsOneWidget);
+    expect(find.text('sparkleen'), findsOneWidget);
     expect(find.text('Laundry jadi ringan'), findsOneWidget);
   });
 }
