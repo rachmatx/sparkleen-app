@@ -46,12 +46,13 @@ class _AddressPageState extends ConsumerState<AddressPage> {
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Batal'),
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(
-                'Hapus',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Hapus'),
             ),
           ],
         ),

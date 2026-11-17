@@ -218,20 +218,43 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(text, style: theme.textTheme.labelLarge),
     );
+    final today = jakartaCalendarDate();
     final dateField = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         label('Tanggal jemput'),
-        OutlinedButton.icon(
-          onPressed: _busy ? null : _chooseDate,
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-          ),
-          icon: const Icon(AppIcons.calendar_today_outlined, size: 17),
-          label: Text(
-            formatTanggalSingkat(_date),
-            style: theme.textTheme.bodySmall,
-          ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final (days, title) in [(0, 'Hari ini'), (1, 'Besok')])
+              ChoiceChip(
+                label: Text(title),
+                selected: DateUtils.isSameDay(
+                  _date,
+                  jakartaCalendarDate(daysAfter: days),
+                ),
+                onSelected: _busy
+                    ? null
+                    : (_) => setState(() {
+                        _date = jakartaCalendarDate(daysAfter: days);
+                        _error = null;
+                      }),
+              ),
+            ActionChip(
+              avatar: const Icon(AppIcons.calendar_today_outlined, size: 17),
+              label: Text(
+                DateUtils.isSameDay(_date, today) ||
+                        DateUtils.isSameDay(
+                          _date,
+                          jakartaCalendarDate(daysAfter: 1),
+                        )
+                    ? 'Tanggal lain'
+                    : formatTanggalSingkat(_date),
+              ),
+              onPressed: _busy ? null : _chooseDate,
+            ),
+          ],
         ),
         if (_error?.fieldError('tgl_jemput') case final String error)
           Text(error, style: TextStyle(color: theme.colorScheme.error)),
@@ -241,24 +264,26 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         label('Slot waktu'),
-        DropdownButtonFormField<String>(
-          style: theme.textTheme.bodyMedium,
-          initialValue: _slot,
-          isExpanded: true,
-          decoration: const InputDecoration(
-            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-          ),
-          items: const [
-            DropdownMenuItem(value: 'pagi', child: Text('Pagi · 08.00')),
-            DropdownMenuItem(value: 'siang', child: Text('Siang · 12.00')),
-            DropdownMenuItem(value: 'sore', child: Text('Sore · 15.00')),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final (slot, title) in [
+              ('pagi', 'Pagi · 08.00'),
+              ('siang', 'Siang · 12.00'),
+              ('sore', 'Sore · 15.00'),
+            ])
+              ChoiceChip(
+                label: Text(title),
+                selected: _slot == slot,
+                onSelected: _busy
+                    ? null
+                    : (_) => setState(() {
+                        _slot = slot;
+                        _error = null;
+                      }),
+              ),
           ],
-          onChanged: _busy
-              ? null
-              : (value) => setState(() {
-                  _slot = value!;
-                  _error = null;
-                }),
         ),
       ],
     );
@@ -447,27 +472,9 @@ class _PickupFormPageState extends ConsumerState<PickupFormPage> {
                           ],
                         ),
                       const SizedBox(height: 10),
-                      LayoutBuilder(
-                        builder: (context, constraints) =>
-                            constraints.maxWidth < 280 ||
-                                MediaQuery.textScalerOf(context).scale(14) > 18
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  dateField,
-                                  const SizedBox(height: 14),
-                                  slotField,
-                                ],
-                              )
-                            : Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(child: dateField),
-                                  const SizedBox(width: 10),
-                                  Expanded(child: slotField),
-                                ],
-                              ),
-                      ),
+                      dateField,
+                      const SizedBox(height: 16),
+                      slotField,
                       const SizedBox(height: 12),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,

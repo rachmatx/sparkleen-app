@@ -32,3 +32,20 @@ DateTime jakartaCalendarDate({DateTime? instant, int daysAfter = 0}) {
   );
   return DateTime(local.year, local.month, local.day + daysAfter);
 }
+
+/// Format Indonesian numbers for display without changing API payloads.
+String formatTelepon(String value) {
+  var digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.startsWith('0')) digits = '62${digits.substring(1)}';
+  if (!digits.startsWith('62') || digits.length < 10 || digits.length > 15) {
+    return value;
+  }
+  final national = digits.substring(2);
+  final groups = <String>[national.substring(0, 3)];
+  for (var index = 3; index < national.length; index += 4) {
+    groups.add(
+      national.substring(index, (index + 4).clamp(0, national.length)),
+    );
+  }
+  return '+62 ${groups.join('-')}';
+}

@@ -71,6 +71,10 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
             child: const Text('Kembali'),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Batalkan tagihan'),
           ),
@@ -303,10 +307,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
                           if (payment.expiresAt != null)
                             Padding(
                               padding: const EdgeInsets.only(top: 12),
-                              child: Text(
-                                'Berlaku hingga ${formatTanggal(payment.expiresAt!)} WIB',
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodySmall,
+                              child: PaymentExpiryCountdown(
+                                expiresAt: payment.expiresAt!,
                               ),
                             ),
                           const Divider(height: 28),
@@ -434,5 +436,44 @@ class _DemoQr extends StatelessWidget {
     } on FormatException {
       return const Text('QR belum tersedia. Gunakan kode simulasi di bawah.');
     }
+  }
+}
+
+/// Clock updates only this label; an expired clock never marks an invoice paid.
+class PaymentExpiryCountdown extends StatefulWidget {
+  const PaymentExpiryCountdown({super.key, required this.expiresAt});
+  final DateTime expiresAt;
+  @override
+  State<PaymentExpiryCountdown> createState() => _PaymentExpiryCountdownState();
+}
+
+class _PaymentExpiryCountdownState extends State<PaymentExpiryCountdown> {
+  Timer? _timer;
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final seconds = widget.expiresAt.difference(DateTime.now()).inSeconds;
+    final text = seconds <= 0
+        ? 'Waktu habis · menunggu status server'
+        : 'Sisa waktu ${seconds ~/ 3600 > 0 ? '${seconds ~/ 3600}:' : ''}${(seconds ~/ 60 % 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: Theme.of(context).textTheme.bodySmall
+          ?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+    );
   }
 }

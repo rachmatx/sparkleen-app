@@ -43,6 +43,9 @@ class DetailPesananPage extends ConsumerWidget {
     return AppBackdrop(
       child: Scaffold(
         appBar: AppBar(title: const Text('Detail pesanan')),
+        bottomNavigationBar: async.value != null && !async.value!.sudahLunas
+            ? _PaymentBar(detail: async.value!)
+            : null,
         body: AsyncValueView<TransaksiDetail>(
           value: async,
           onRetry: () => ref.invalidate(transaksiDetailProvider(id)),
@@ -299,13 +302,6 @@ class _PaymentCard extends ConsumerWidget {
             ),
           ],
         ),
-        if (!detail.sudahLunas) ...[
-          const SizedBox(height: 8),
-          FilledButton(
-            onPressed: () => open('/pesanan/${detail.id}/pembayaran'),
-            child: const Text('Lihat pilihan pembayaran'),
-          ),
-        ],
         if (detail.pembayaran.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -460,4 +456,54 @@ class _SectionCard extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _PaymentBar extends ConsumerWidget {
+  const _PaymentBar({required this.detail});
+  final TransaksiDetail detail;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final total = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('Total tagihan', style: theme.textTheme.bodySmall),
+        Text(
+          formatRupiah(detail.grandTotal),
+          style: theme.textTheme.titleMedium,
+        ),
+      ],
+    );
+    final pay = FilledButton(
+      key: const ValueKey('order-pay-now'),
+      onPressed: () async {
+        await context.push('/pesanan/${detail.id}/pembayaran');
+        if (context.mounted) ref.invalidate(transaksiDetailProvider(detail.id));
+      },
+      child: const Text('Bayar sekarang'),
+    );
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: AppCard(
+        blur: 24,
+        padding: const EdgeInsets.all(12),
+        child: MediaQuery.textScalerOf(context).scale(14) > 20
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [total, const SizedBox(height: 10), pay],
+              )
+            : Row(
+                children: [
+                  Expanded(child: total),
+                  const SizedBox(width: 12),
+                  pay,
+                ],
+              ),
+      ),
+    );
+  }
 }

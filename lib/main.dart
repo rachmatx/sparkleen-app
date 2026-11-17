@@ -10,10 +10,13 @@ import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/settings/server_settings.dart';
 import 'core/settings/appearance_settings.dart';
+import 'core/settings/notification_settings.dart';
 import 'core/security/session_boundary.dart';
+import 'core/platform/app_orientation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await lockAppOrientation();
   await initializeDateFormatting('id_ID');
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks([
@@ -22,11 +25,13 @@ Future<void> main() async {
   });
   final server = await const ServerSettings().load();
   final appearance = await const AppearanceSettings().load();
+  final notifications = await const NotificationSettings().load();
   runApp(
     ProviderScope(
       overrides: [
         initialServerAddressProvider.overrideWithValue(server),
         initialThemeModeProvider.overrideWithValue(appearance),
+        initialNotificationPreferencesProvider.overrideWithValue(notifications),
       ],
       retry: (retryCount, error) => null,
       child: const SparkleenApp(),

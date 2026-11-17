@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/settings/notification_settings.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/async_value_view.dart';
@@ -26,6 +27,7 @@ class _NotificationBellState extends ConsumerState<NotificationBell>
   void _refresh() {
     if (mounted &&
         _foreground &&
+        ref.read(notificationPreferencesProvider).autoRefresh &&
         !ref.read(unreadNotificationsProvider).isLoading) {
       ref.invalidate(unreadNotificationsProvider);
     }
@@ -55,6 +57,7 @@ class _NotificationBellState extends ConsumerState<NotificationBell>
   Widget build(BuildContext context) {
     final summary = ref.watch(unreadNotificationsProvider);
     final unread = summary.isLoading ? 0 : (summary.value ?? 0);
+    final showBadge = ref.watch(notificationPreferencesProvider).showBadge;
     return IconButton(
       tooltip: unread > 0 ? 'Notifikasi, $unread belum dibaca' : 'Notifikasi',
       onPressed: () async {
@@ -62,7 +65,7 @@ class _NotificationBellState extends ConsumerState<NotificationBell>
         if (mounted) ref.invalidate(unreadNotificationsProvider);
       },
       icon: Badge(
-        isLabelVisible: unread > 0,
+        isLabelVisible: showBadge && unread > 0,
         label: Text(unread > 99 ? '99+' : '$unread'),
         child: const Icon(AppIcons.notifications_none_rounded),
       ),

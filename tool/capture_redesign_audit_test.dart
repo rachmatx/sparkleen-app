@@ -96,9 +96,11 @@ void main() {
     'addresses': '/alamat',
     'address-form': '/alamat',
     'settings': '/pengaturan',
+    'notification-settings': '/pengaturan/notifikasi',
     'orders': '/pesanan',
     'history': '/riwayat-pesanan',
     'detail': '/pesanan/87',
+    'detail-unpaid': '/pesanan/87',
     'detail-ironing': '/pesanan/87',
     'receipt': '/pesanan/87/nota',
     'pickup': '/jemput',
@@ -181,7 +183,7 @@ void main() {
               latestId: 2,
             );
           final orders = redesignTransaksiRepository();
-          if (name == 'detail' || name == 'detail-ironing') {
+          if (name == 'detail' || name == 'detail-ironing' || name == 'detail-unpaid') {
             orders.detailResults[87] = TransaksiDetail.fromJson({
               'id_transaksi': 87,
               'no_nota': 'LAU/20261112/0003',
@@ -190,13 +192,13 @@ void main() {
               'total_berat': 6,
               'total_biaya': 42000,
               'grand_total': 42000,
-              'status': name == 'detail' ? 'menunggu' : 'setrika',
-              'status_label': name == 'detail' ? 'Diterima' : 'Disetrika',
-              'status_pembayaran': 'lunas',
+              'status': name != 'detail-ironing' ? 'menunggu' : 'setrika',
+              'status_label': name != 'detail-ironing' ? 'Diterima' : 'Disetrika',
+              'status_pembayaran': name == 'detail-unpaid' ? 'belum_lunas' : 'lunas',
               'metode_pembayaran': 'qris',
               'items': [
                 {
-                  'nama_layanan': name == 'detail'
+                  'nama_layanan': name != 'detail-ironing'
                       ? 'Cuci Reguler'
                       : 'Cuci + Setrika',
                   'berat': 6,
@@ -385,7 +387,7 @@ void main() {
                     .toImage();
             final png = await image.toByteData(format: ui.ImageByteFormat.png);
             final file = File(
-              "${const String.fromEnvironment('UI_AUDIT_OUTPUT', defaultValue: '../.tooling/ui-qa-v007')}/${brightness.name}/$name.png",
+              "${const String.fromEnvironment('UI_AUDIT_OUTPUT', defaultValue: '../.tooling/ui-qa-v008')}/${brightness.name}/$name.png",
             );
             await file.parent.create(recursive: true);
             await file.writeAsBytes(png!.buffer.asUint8List());

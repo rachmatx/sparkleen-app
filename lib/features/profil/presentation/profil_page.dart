@@ -32,7 +32,7 @@ class ProfilPage extends ConsumerWidget {
                 ref.read(customerRefreshProvider.notifier).refresh(),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 140),
               children: [
                 Row(
                   children: [
@@ -200,7 +200,7 @@ class ProfilPage extends ConsumerWidget {
                             color: theme.colorScheme.primary,
                           ),
                           title: const Text('Nomor telepon'),
-                          subtitle: Text(pelanggan.noTelp),
+                          subtitle: Text(formatTelepon(pelanggan.noTelp)),
                         ),
                         const Divider(indent: 16, endIndent: 16),
                         SettingsTile(

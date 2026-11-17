@@ -34,7 +34,7 @@ void main() {
 
       expect(find.text('Budi Santoso'), findsOneWidget);
       expect(find.textContaining('PLG012'), findsOneWidget);
-      expect(find.text('6281298765432'), findsOneWidget);
+      expect(find.text('+62 812-9876-5432'), findsOneWidget);
       expect(find.text('15 poin'), findsOneWidget);
       expect(find.text('Total belanja'), findsOneWidget);
       expect(find.text('Rp 4'), findsOneWidget);

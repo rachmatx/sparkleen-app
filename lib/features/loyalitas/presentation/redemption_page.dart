@@ -24,6 +24,9 @@ class RedemptionPage extends ConsumerStatefulWidget {
 
 class _RedemptionPageState extends ConsumerState<RedemptionPage> {
   final _input = TextEditingController(text: '1');
+  void _setPoints(int value, int maximum) => setState(() {
+    _input.text = value.clamp(1, maximum).toString();
+  });
   @override
   void dispose() {
     _input.dispose();
@@ -150,7 +153,20 @@ class _RedemptionPageState extends ConsumerState<RedemptionPage> {
                     ],
                     decoration: InputDecoration(
                       labelText: 'Jumlah poin',
-                      suffixText: 'poin',
+                      prefixIcon: IconButton(
+                        tooltip: 'Kurangi poin',
+                        onPressed: view.busy || points <= 1
+                            ? null
+                            : () => _setPoints(points - 1, quote.maxPoints),
+                        icon: const Text('−', style: TextStyle(fontSize: 24)),
+                      ),
+                      suffixIcon: IconButton(
+                        tooltip: 'Tambah poin',
+                        onPressed: view.busy || points >= quote.maxPoints
+                            ? null
+                            : () => _setPoints(points + 1, quote.maxPoints),
+                        icon: const Icon(AppIcons.add_rounded),
+                      ),
                       helperText: 'Masukkan 1–${quote.maxPoints} poin.',
                       errorText: valid
                           ? null
@@ -158,7 +174,16 @@ class _RedemptionPageState extends ConsumerState<RedemptionPage> {
                     ),
                     onChanged: (_) => setState(() {}),
                   ),
-                  const SizedBox(height: 22),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: view.busy || quote.maxPoints < 1
+                          ? null
+                          : () => _setPoints(quote.maxPoints, quote.maxPoints),
+                      child: const Text('Gunakan semua'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   if (valid) ...[
                     AppCard(
                       child: Column(

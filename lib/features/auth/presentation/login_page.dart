@@ -27,6 +27,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _phone = TextEditingController();
   final _pin = TextEditingController();
   ApiException? _serverError;
+  String? _autoSubmitted;
+
+  void _pinChanged(String value) {
+    _clearServerError();
+    if (value.length < 6) {
+      _autoSubmitted = null;
+      return;
+    }
+    final attempt = "${_phone.text.trim()}:$value";
+    if (validatePhone(_phone.text) == null &&
+        validatePin(value) == null &&
+        _autoSubmitted != attempt) {
+      _autoSubmitted = attempt;
+      _submit();
+    }
+  }
 
   @override
   void dispose() {
@@ -114,7 +130,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               textInputAction: TextInputAction.done,
               validator: (value) =>
                   _serverError?.fieldError('pin') ?? validatePin(value),
-              onChanged: (_) => _clearServerError(),
+              onChanged: _pinChanged,
               onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 24),

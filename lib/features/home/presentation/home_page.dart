@@ -17,6 +17,7 @@ import 'widgets/customer_header.dart';
 import '../../pesanan/data/transaksi_ringkas.dart';
 import '../../pesanan/presentation/widgets/order_stages.dart';
 import '../application/home_providers.dart';
+import '../../jemput/application/pickup_controller.dart';
 import '../data/layanan.dart';
 import '../data/outlet_info.dart';
 
@@ -40,10 +41,12 @@ class HomePage extends ConsumerWidget {
     final auth = ref.watch(authControllerProvider).value;
     final pelanggan = auth is AuthAuthenticated ? auth.pelanggan : null;
     final nama = pelanggan?.nama.isNotEmpty == true
-        ? pelanggan!.nama
+        ? pelanggan!.nama.trim().split(RegExp(r'\s+')).first
         : 'Pelanggan';
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final activeOrder = ref.watch(pesananAktifProvider);
+    final hasActiveOrder = activeOrder.value != null;
     return AppBackdrop(
       child: Scaffold(
         body: SafeArea(
@@ -52,7 +55,7 @@ class HomePage extends ConsumerWidget {
             onRefresh: () => _refresh(ref),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 140),
               children: [
                 const CustomerHeader(),
                 if (ref.watch(customerRefreshProvider).failed)
@@ -66,52 +69,10 @@ class HomePage extends ConsumerWidget {
                 const SizedBox(height: 20),
                 _WelcomeHeader(nama: nama),
                 const SizedBox(height: 16),
-                AppCard(
-                  color: colors.primaryContainer,
-                  onTap: () => context.push('/jemput'),
-                  padding: const EdgeInsets.fromLTRB(20, 18, 8, 18),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) => Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Laundry tanpa repot.',
-                                style: theme.textTheme.titleLarge,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Kami jemput dari rumahmu.',
-                                style: theme.textTheme.bodySmall,
-                              ),
-                              const SizedBox(height: 12),
-                              FilledButton(
-                                style: FilledButton.styleFrom(
-                                  minimumSize: const Size(48, 48),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                ),
-                                onPressed: () => context.push('/jemput'),
-                                child: const Text('Jadwalkan jemput'),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        if (MediaQuery.textScalerOf(context).scale(14) < 20)
-                          AppArtwork(
-                            asset: AppAssets.pickup,
-                            width: constraints.maxWidth < 310 ? 108 : 128,
-                            height: 116,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
+                if (!hasActiveOrder) ...[
+                  _PickupShortcut(compact: hasActiveOrder),
+                  const SizedBox(height: 16),
+                ],
                 Row(
                   children: [
                     Expanded(
@@ -127,7 +88,7 @@ class HomePage extends ConsumerWidget {
                   ],
                 ),
                 AsyncValueView<TransaksiRingkas?>(
-                  value: ref.watch(pesananAktifProvider),
+                  value: activeOrder,
                   loadingBuilder: (context) =>
                       const LoadingList(itemCount: 1, itemHeight: 210),
                   onRetry: () => ref.invalidate(pesananAktifProvider),
@@ -144,6 +105,11 @@ class HomePage extends ConsumerWidget {
                     onTap: () => context.push('/pesanan/${transaksi.id}'),
                   ),
                 ),
+                if (hasActiveOrder) ...[
+                  const SizedBox(height: 16),
+                  _PickupShortcut(compact: hasActiveOrder),
+                  const SizedBox(height: 16),
+                ],
                 const SizedBox(height: 14),
                 Text('Layanan', style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),
@@ -304,7 +270,9 @@ class _ActiveOrderCard extends StatelessWidget {
               Text(transaksi.noNota, style: theme.textTheme.bodySmall),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
+          Text(transaksi.serviceSummary, style: theme.textTheme.titleMedium),
+          const SizedBox(height: 6),
           Text('Estimasi selesai', style: theme.textTheme.bodySmall),
           const SizedBox(height: 4),
           Text(
@@ -435,6 +403,73 @@ class _ServiceCard extends StatelessWidget {
             'per kg · ${layanan.estimasiHari} hari',
             style: theme.textTheme.bodySmall,
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PickupShortcut extends ConsumerWidget {
+  const _PickupShortcut({required this.compact});
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final active =
+        ref
+            .watch(pickupControllerProvider)
+            .value
+            ?.result
+            .items
+            .any((item) => item.isActive) ??
+        false;
+    final label = active ? 'Lihat penjemputan' : 'Jadwalkan jemput';
+    void open() => context.push(active ? '/jemput' : '/jemput/baru');
+    return AppCard(
+      key: const ValueKey('home-pickup-shortcut'),
+      color: theme.colorScheme.primaryContainer,
+      onTap: open,
+      padding: EdgeInsets.all(compact ? 14 : 18),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  active ? 'Penjemputanmu' : 'Laundry tanpa repot.',
+                  style: theme.textTheme.titleMedium,
+                ),
+                if (!compact) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    active
+                        ? 'Pantau permintaan yang berjalan.'
+                        : 'Kami jemput dari rumahmu.',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+                const SizedBox(height: 10),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  onPressed: open,
+                  child: Text(label),
+                ),
+              ],
+            ),
+          ),
+          if (MediaQuery.textScalerOf(context).scale(14) < 20) ...[
+            const SizedBox(width: 8),
+            AppArtwork(
+              asset: AppAssets.pickup,
+              width: compact ? 76 : 108,
+              height: compact ? 76 : 108,
+            ),
+          ],
         ],
       ),
     );

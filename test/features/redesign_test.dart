@@ -156,7 +156,6 @@ void main() {
       );
       await tester.pumpAndSettle();
       final pin = find.byType(TextFormField).at(1);
-      await tester.enterText(find.byType(TextFormField).first, '081298765432');
       await tester.enterText(pin, '12a34567');
       expect(tester.widget<TextFormField>(pin).controller!.text, '123456');
       expect(
@@ -181,6 +180,7 @@ void main() {
             .obscureText,
         isTrue,
       );
+      await tester.enterText(find.byType(TextFormField).first, '081298765432');
       await tester.tap(find.widgetWithText(FilledButton, 'Masuk'));
       await tester.pump();
       expect(repository.loginCalls, 1);

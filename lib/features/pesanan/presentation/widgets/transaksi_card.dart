@@ -48,7 +48,10 @@ class TransaksiCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Pesanan laundry', style: theme.textTheme.titleSmall),
+                    Text(
+                      transaksi.serviceSummary,
+                      style: theme.textTheme.titleSmall,
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       '${formatBerat(transaksi.totalBerat)} · ${formatRupiah(transaksi.grandTotal)}',

@@ -70,11 +70,17 @@ void main() {
 
     await tester.enterText(find.byType(TextFormField).at(0), '081298765432');
     await tester.enterText(find.byType(TextFormField).at(1), '654321');
-    await tester.tap(find.widgetWithText(FilledButton, 'Masuk'));
     await tester.pump();
     await tester.pump();
 
     expect(repository.loginCalls, 1);
     expect(find.text('Nomor telepon atau PIN salah.'), findsOneWidget);
+    // Rebuilds do not retry credentials automatically after a rejection.
+    await tester.pumpAndSettle();
+    expect(repository.loginCalls, 1);
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Masuk'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Masuk'));
+    await tester.pumpAndSettle();
+    expect(repository.loginCalls, 2);
   });
 }

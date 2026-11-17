@@ -161,7 +161,7 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                       onRefresh: _refresh,
                       child: ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(bottom: 116),
+                        padding: const EdgeInsets.only(bottom: 140),
                         children: [
                           const SizedBox(height: 12),
                           EmptyState(
@@ -188,7 +188,7 @@ class _PesananPageState extends ConsumerState<PesananPage> {
                         child: ListView.separated(
                           controller: _scrollController,
                           physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.only(top: 4, bottom: 116),
+                          padding: const EdgeInsets.only(top: 4, bottom: 140),
                           itemCount: items.length + (showFooter ? 1 : 0),
                           separatorBuilder: (_, _) =>
                               const SizedBox(height: 10),

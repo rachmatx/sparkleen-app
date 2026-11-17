@@ -25,6 +25,7 @@ import '../../features/profil/presentation/edit_profil_page.dart';
 import '../../features/splash/splash_page.dart';
 import '../widgets/app_shell.dart';
 import '../../features/pengaturan/presentation/settings_page.dart';
+import '../../features/pengaturan/presentation/notification_settings_page.dart';
 import '../api/api_config.dart';
 import '../settings/server_page.dart';
 import '../../features/auth/presentation/session_page.dart';
@@ -82,6 +83,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/ubah-profil',
         builder: (context, state) => const EditProfilPage(),
+      ),
+      GoRoute(
+        path: '/pengaturan/notifikasi',
+        builder: (context, state) => const NotificationSettingsPage(),
       ),
       GoRoute(
         path: '/pengaturan',

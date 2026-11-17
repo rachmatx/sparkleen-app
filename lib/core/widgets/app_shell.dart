@@ -5,61 +5,156 @@ import 'package:go_router/go_router.dart';
 
 import 'app_card.dart';
 
-class AppShell extends StatelessWidget {
+/// Root tabs keep their scroll/filter state while tapping or swiping.
+class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.navigationShell});
   final StatefulNavigationShell navigationShell;
-  void _goBranch(int index) => navigationShell.goBranch(
-    index,
-    initialLocation: index == navigationShell.currentIndex,
-  );
+
   @override
-  Widget build(BuildContext context) => AppBackdrop(
-    child: Scaffold(
-      extendBody: true,
-      body: navigationShell,
-      bottomNavigationBar: SafeArea(
-        top: false,
-        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-        child: BackdropGroup(
-          child: AppCard(
-            radius: 999,
-            blur: 24,
-            padding: const EdgeInsets.all(4),
-            child: NavigationBar(
-              height: MediaQuery.textScalerOf(context).scale(12) > 16 ? 64 : 48,
-              backgroundColor: Colors.transparent,
-              surfaceTintColor: Colors.transparent,
-              selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: _goBranch,
-              destinations: [
-                _CapsuleDestination(
-                  label: 'Beranda',
-                  icon: AppIcons.home_outlined,
-                  selectedIcon: AppIcons.home_rounded,
-                  selected: navigationShell.currentIndex == 0,
-                  onTap: () => _goBranch(0),
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  int? _dragIndex;
+  double _pageDrag = 0;
+
+  void _goBranch(int index, {bool resetIfCurrent = false}) {
+    widget.navigationShell.goBranch(
+      index,
+      initialLocation:
+          resetIfCurrent && index == widget.navigationShell.currentIndex,
+    );
+  }
+
+  void _finishPageSwipe(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (_pageDrag.abs() >= 60 ||
+        (_pageDrag.abs() >= 24 && velocity.abs() >= 350)) {
+      final direction = _pageDrag < 0 ? 1 : -1;
+      final target = (widget.navigationShell.currentIndex + direction).clamp(
+        0,
+        2,
+      );
+      if (target != widget.navigationShell.currentIndex) _goBranch(target);
+    }
+    _pageDrag = 0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _dragIndex ?? widget.navigationShell.currentIndex;
+    final largeText = MediaQuery.textScalerOf(context).scale(13) > 18;
+    return AppBackdrop(
+      child: Scaffold(
+        extendBody: true,
+        body: GestureDetector(
+          key: const ValueKey('tab-swipe-area'),
+          behavior: HitTestBehavior.translucent,
+          onHorizontalDragStart: (_) => _pageDrag = 0,
+          onHorizontalDragUpdate: (details) =>
+              _pageDrag += details.primaryDelta ?? 0,
+          onHorizontalDragEnd: _finishPageSwipe,
+          onHorizontalDragCancel: () => _pageDrag = 0,
+          child: widget.navigationShell,
+        ),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          minimum: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          child: BackdropGroup(
+            child: AppCard(
+              radius: 999,
+              blur: 24,
+              padding: const EdgeInsets.all(4),
+              child: LayoutBuilder(
+                builder: (context, constraints) => GestureDetector(
+                  key: const ValueKey('tab-slide-bar'),
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragUpdate: (details) => setState(() {
+                    _dragIndex =
+                        (details.localPosition.dx / (constraints.maxWidth / 3))
+                            .floor()
+                            .clamp(0, 2);
+                  }),
+                  onHorizontalDragEnd: (_) {
+                    final target = _dragIndex;
+                    setState(() => _dragIndex = null);
+                    if (target != null &&
+                        target != widget.navigationShell.currentIndex) {
+                      _goBranch(target);
+                    }
+                  },
+                  onHorizontalDragCancel: () =>
+                      setState(() => _dragIndex = null),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: AnimatedAlign(
+                          duration: MediaQuery.disableAnimationsOf(context)
+                              ? Duration.zero
+                              : const Duration(milliseconds: 180),
+                          curve: Curves.easeOutCubic,
+                          alignment: Alignment(-1 + selected.toDouble(), 0),
+                          child: FractionallySizedBox(
+                            widthFactor: 1 / 3,
+                            heightFactor: 1,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary
+                                    .withValues(alpha: .10),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      NavigationBar(
+                        height: largeText ? 80 : 60,
+                        backgroundColor: Colors.transparent,
+                        surfaceTintColor: Colors.transparent,
+                        selectedIndex: widget.navigationShell.currentIndex,
+                        onDestinationSelected: (index) =>
+                            _goBranch(index, resetIfCurrent: true),
+                        destinations: [
+                          for (final (index, label, icon, selectedIcon) in [
+                            (
+                              0,
+                              'Beranda',
+                              AppIcons.home_outlined,
+                              AppIcons.home_rounded,
+                            ),
+                            (
+                              1,
+                              'Pesanan',
+                              AppIcons.receipt_long_outlined,
+                              AppIcons.receipt_long_rounded,
+                            ),
+                            (
+                              2,
+                              'Profil',
+                              AppIcons.person_outline_rounded,
+                              AppIcons.person_rounded,
+                            ),
+                          ])
+                            _CapsuleDestination(
+                              label: label,
+                              icon: icon,
+                              selectedIcon: selectedIcon,
+                              selected: selected == index,
+                              onTap: () =>
+                                  _goBranch(index, resetIfCurrent: true),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                _CapsuleDestination(
-                  label: 'Pesanan',
-                  icon: AppIcons.receipt_long_outlined,
-                  selectedIcon: AppIcons.receipt_long_rounded,
-                  selected: navigationShell.currentIndex == 1,
-                  onTap: () => _goBranch(1),
-                ),
-                _CapsuleDestination(
-                  label: 'Profil',
-                  icon: AppIcons.person_outline_rounded,
-                  selectedIcon: AppIcons.person_rounded,
-                  selected: navigationShell.currentIndex == 2,
-                  onTap: () => _goBranch(2),
-                ),
-              ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _CapsuleDestination extends StatelessWidget {
@@ -97,19 +192,17 @@ class _CapsuleDestination extends StatelessWidget {
                   : const Duration(milliseconds: 180),
               curve: Curves.easeOutCubic,
               decoration: BoxDecoration(
-                color: selected
-                    ? theme.colorScheme.primary.withValues(alpha: .10)
-                    : Colors.transparent,
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(999),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-              child: MediaQuery.textScalerOf(context).scale(12) > 16
+              child: MediaQuery.textScalerOf(context).scale(13) > 18
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           selected ? selectedIcon : icon,
-                          size: 20,
+                          size: 22,
                           color: color,
                         ),
                         const SizedBox(height: 3),
@@ -120,7 +213,7 @@ class _CapsuleDestination extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: color,
-                              fontSize: 12,
+                              fontSize: 13,
                               fontWeight: selected
                                   ? FontWeight.w600
                                   : FontWeight.w500,
@@ -134,7 +227,7 @@ class _CapsuleDestination extends StatelessWidget {
                       children: [
                         Icon(
                           selected ? selectedIcon : icon,
-                          size: 20,
+                          size: 22,
                           color: color,
                         ),
                         const SizedBox(width: 6),
@@ -145,7 +238,7 @@ class _CapsuleDestination extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: color,
-                              fontSize: 12,
+                              fontSize: 13,
                               fontWeight: selected
                                   ? FontWeight.w600
                                   : FontWeight.w500,

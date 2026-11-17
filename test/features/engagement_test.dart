@@ -222,6 +222,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), '20');
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.textContaining('penyesuaian 1 poin'),
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.textContaining('penyesuaian 1 poin'), findsOneWidget);
     await tester.drag(find.byType(ListView), const Offset(0, -600));
     await tester.pumpAndSettle();

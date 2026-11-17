@@ -47,7 +47,7 @@ class SettingsPage extends ConsumerWidget {
                 icon: AppIcons.notifications_none,
                 title: 'Notifikasi',
                 subtitle: 'Pembaruan pesanan',
-                onTap: () => context.push('/notifikasi'),
+                onTap: () => context.push('/pengaturan/notifikasi'),
               ),
               SettingsTile(
                 icon: AppIcons.brightness_6_outlined,
@@ -180,6 +180,10 @@ class SettingsPage extends ConsumerWidget {
             child: const Text('Batal'),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Keluar'),
           ),

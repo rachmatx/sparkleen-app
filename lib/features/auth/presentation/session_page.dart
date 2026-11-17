@@ -21,6 +21,7 @@ class SessionPage extends ConsumerStatefulWidget {
 
 class _SessionPageState extends ConsumerState<SessionPage> {
   bool _busy = false;
+  bool _autoPrompted = false;
   String? _error;
   Future<void> _run(Future<void> Function() action) async {
     if (_busy) return;
@@ -47,6 +48,14 @@ class _SessionPageState extends ConsumerState<SessionPage> {
   Widget build(BuildContext context) {
     final value = ref.watch(authControllerProvider);
     final locked = value.value is AuthLocked;
+    if (locked && !_autoPrompted) {
+      _autoPrompted = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && ref.read(authControllerProvider).value is AuthLocked) {
+          _run(ref.read(authControllerProvider.notifier).unlock);
+        }
+      });
+    }
     final controller = ref.read(authControllerProvider.notifier);
     final theme = Theme.of(context);
     final local = ref.watch(serverAddressProvider).startsWith('http://');

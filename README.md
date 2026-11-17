@@ -231,3 +231,7 @@ CRUD alamat penjemputan (tambah, lihat, ubah, hapus), alamat utama, dan snapshot
 ### Penyempurnaan UI 0.0.7
 
 Glass 75% dengan tepi dan bayangan lebih halus, hierarki beranda/profil yang dirapikan, input dengan placeholder yang langsung terlihat, serta aksi Detail yang konsisten. [Hasil render terang/gelap, pengujian, dan build APK](docs/ui-polish-v0.0.7.md). Tidak ada migration backend tambahan dari versi 0.0.6.
+
+### Navigasi portrait dan penyempurnaan alur 0.0.8
+
+Portrait Android, navbar lebih mudah disentuh dengan dukungan geser, prioritas pesanan aktif, bar bayar tetap, pilihan jadwal cepat, input PIN enam sel, preferensi notifikasi, dan countdown pembayaran simulasi. [Perubahan, hasil render, pengujian, serta catatan instalasi](docs/ui-flow-v0.0.8.md).

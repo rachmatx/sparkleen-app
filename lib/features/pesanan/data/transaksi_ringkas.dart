@@ -14,6 +14,17 @@ class TransaksiRingkas {
   });
 
   final List<String> serviceNames;
+  String get serviceSummary {
+    final names = serviceNames
+        .where((name) => name.trim().isNotEmpty)
+        .toSet()
+        .toList();
+    if (names.isEmpty) return 'Pesanan laundry';
+    return names.length == 1
+        ? names.first
+        : '${names.first} +${names.length - 1} layanan';
+  }
+
   LaundryWorkflow get workflow => LaundryWorkflow.fromNames(serviceNames);
   String get customerStatusLabel {
     final plan = workflow;

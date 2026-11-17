@@ -44,7 +44,7 @@ void main() {
     await tester.pumpWidget(_buildPage(FakeHomeRepository()));
     await _settleData(tester);
 
-    expect(find.text('Halo, Budi Santoso.'), findsOneWidget);
+    expect(find.text('Halo, Budi.'), findsOneWidget);
     expect(find.text('Belum ada pesanan aktif.'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Belum ada layanan tersedia.'),
